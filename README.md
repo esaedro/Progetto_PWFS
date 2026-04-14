@@ -25,5 +25,3 @@ Il sistema prevede una pagina in cui il docente può scegliere la data del propr
 - Frontend: React.js
 - Backend: Node.js con Nest.js
 - Database: PostgreSQL
-
-Ciao test push Viola
