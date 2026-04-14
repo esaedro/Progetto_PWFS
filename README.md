@@ -6,6 +6,8 @@ Progetto realizzato da G. Saleri, L. A. Stefini e L. Viola.
 
 L'applicazione web permette ai docenti di un corso di laurea di coordinarsi nella pianificazione degli appelli.
 
+Prova
+
 Il sistema prevede una pagina in cui il docente può scegliere la data del proprio appello:
 - La pagina permette la scelta del corso di laurea e relativo anno di frequenza (es, «INFLM-I»)
 - Il docente vede le date del periodo di appelli e, per ogni data, vede gli appelli già inseriti dai colleghi

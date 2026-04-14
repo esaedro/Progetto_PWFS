@@ -94,5 +94,12 @@
         }
       }
     }
-  }
+  },
+  "trustedDependencies": [
+    "@nestjs/core",
+    "@parcel/watcher",
+    "@swc/core",
+    "less",
+    "unrs-resolver"
+  ]
 }
