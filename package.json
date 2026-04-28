@@ -15,8 +15,8 @@
     "@nx/eslint": "22.5.1",
     "@nx/eslint-plugin": "22.5.1",
     "@nx/jest": "22.5.1",
-    "@nx/js": "22.5.1",
-    "@nx/nest": "^22.5.1",
+    "@nx/js": "22.5.3",
+    "@nx/nest": "22.5.3",
     "@nx/node": "22.5.1",
     "@nx/playwright": "22.5.1",
     "@nx/react": "^22.5.1",
@@ -31,8 +31,11 @@
     "@swc/jest": "~0.2.38",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.2.0",
@@ -65,15 +68,25 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "libs/server/*",
+    "libs/server/users/src/lib/libs/db/*",
+    "libs/db/*",
+    "libs/*"
   ],
   "dependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.0",
     "axios": "^1.6.0",
+    "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "6.30.3",
@@ -94,12 +107,5 @@
         }
       }
     }
-  },
-  "trustedDependencies": [
-    "@nestjs/core",
-    "@parcel/watcher",
-    "@swc/core",
-    "less",
-    "unrs-resolver"
-  ]
+  }
 }

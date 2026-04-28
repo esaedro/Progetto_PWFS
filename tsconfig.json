@@ -14,6 +14,21 @@
     },
     {
       "path": "./apps/ui"
+    },
+    {
+      "path": "./libs/server/users"
+    },
+    {
+      "path": "./libs/database"
+    },
+    {
+      "path": "./libs/server/books"
+    },
+    {
+      "path": "./libs/server/auth"
+    },
+    {
+      "path": "./libs/server/security"
     }
   ]
 }
