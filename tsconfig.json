@@ -29,6 +29,9 @@
     },
     {
       "path": "./libs/server/security"
+    },
+    {
+      "path": "./libs/server/esami"
     }
   ]
 }
