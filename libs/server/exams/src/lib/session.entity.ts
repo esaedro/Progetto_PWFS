@@ -1,8 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
-import { Appello } from './appello.entity';
+import { Exam } from './exam.entity';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { Secretariat } from '@server/people';
 
-@Entity('sessione')
-export class Sessione {
+@Entity('Sessions')
+export class Session {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -18,10 +20,10 @@ export class Sessione {
   @Column({ type: 'date', nullable: false })
   data_fine_calendarizzazione: Date;
 
-  @OneToMany(() => Appello, (appello) => appello.sessione)
-  appelli: Appello[];
+  @OneToMany(() => Exam, (exam) => exam.session)
+  exams: Exam[];
 
-  @ManyToOne(() => Segreteria, (segreteria) => segreteria.sessioni)
-  @JoinColumn({ name: 'segreteria_id' })
-  segretario: Segreteria;
+  @ManyToOne(() => Secretariat, (secretariat) => secretariat.sessions)
+  @JoinColumn({ name: 'secretariat_id' })
+  secretary: Secretariat;
 }

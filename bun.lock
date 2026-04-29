@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "@org/source",
@@ -123,8 +122,16 @@
       "name": "@org/books",
       "version": "0.0.1",
     },
-    "libs/server/esami": {
-      "name": "@server/esami",
+    "libs/server/courses": {
+      "name": "@server/courses",
+      "version": "0.0.1",
+    },
+    "libs/server/exams": {
+      "name": "@server/exams",
+      "version": "0.0.1",
+    },
+    "libs/server/people": {
+      "name": "@server/people",
       "version": "0.0.1",
     },
     "libs/server/security": {
@@ -954,7 +961,11 @@
 
     "@server/auth": ["@server/auth@workspace:libs/server/auth"],
 
-    "@server/esami": ["@server/esami@workspace:libs/server/esami"],
+    "@server/courses": ["@server/courses@workspace:libs/server/courses"],
+
+    "@server/exams": ["@server/exams@workspace:libs/server/exams"],
+
+    "@server/people": ["@server/people@workspace:libs/server/people"],
 
     "@server/security": ["@server/security@workspace:libs/server/security"],
 
