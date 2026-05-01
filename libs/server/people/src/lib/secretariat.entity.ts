@@ -1,4 +1,6 @@
 import { Entity, JoinColumn, OneToOne, OneToMany } from "typeorm";
+import type { Relation } from "typeorm";
+
 import { UserEntity } from '@server/users';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { Session } from '@server/exams';
@@ -11,6 +13,6 @@ export class Secretariat extends UserEntity {
     secretariat_id: number;
 
     @OneToMany(() => Session, (session) => session.secretary)
-    sessions: Session[];
+    sessions: Relation<Session[]>;
 
 }
