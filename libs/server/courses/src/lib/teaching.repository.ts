@@ -20,14 +20,25 @@ export class TeachingRepository {
         return this.repository.findOne({where: {id}});
     }
     
-    async findDegreeByTeachingId(teachingId: number): Promise<Degree | null> {
-        const teaching = await this.repository.findOne({ where: { id: teachingId }, relations: ['degree'] });
-        return teaching ? teaching.degree : null;
+    async findByDegreeAndYear(degreeId: number, year: number): Promise<Teaching[]> {
+        return this.repository.find({
+            where: {
+                degree: { id: degreeId },
+                year: year
+            },
+            relations: ['degree', 'subject'],
+            order: { id: 'ASC' }
+        });
     }
 
-    async findSubjectByTeachingId(teachingId: number): Promise<Subject | null> {
-        const teaching = await this.repository.findOne({ where: { id: teachingId }, relations: ['subject'] });
-        return teaching ? teaching.subject : null;
+    async findTeachingsBySubject(subjectId: number): Promise<Teaching[]> {
+        return this.repository.find({
+            where: {
+                subject: { id: subjectId }
+            },
+            relations: ['degree', 'subject'],
+            order: { id: 'ASC' }
+        });
     }
 
     // In exams mettere findExamsByTeachingId con un filtro

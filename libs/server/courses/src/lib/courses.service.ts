@@ -25,39 +25,87 @@ export class ServerCoursesService {
 
     async getDegrees(): Promise<Degree[]> {
         const degrees = await this.degreeRepository.findAll();
-        if (!degrees || degrees.length === 0) throw new NotFoundException('Non sono stati trovati corsi di laurea');
+        if (!degrees || degrees.length === 0) 
+            throw new NotFoundException('Non sono stati trovati corsi di laurea');
         return degrees;
     }
 
     async getSubjects(): Promise<Subject[]> {
         const subjects = await this.subjectRepository.findAll();
-        if (!subjects || subjects.length === 0) throw new NotFoundException('Non sono stati trovate materie');
+        if (!subjects || subjects.length === 0) 
+            throw new NotFoundException('Non sono stati trovate materie');
         return subjects;
     }
 
     async getTeachings(): Promise<Teaching[]> {
         const teachings = await this.teachingRepository.findAll();
-        if (!teachings || teachings.length === 0) throw new NotFoundException('Non sono stati trovati insegnamenti');
+        if (!teachings || teachings.length === 0) 
+            throw new NotFoundException('Non sono stati trovati insegnamenti');
         return teachings;
     }
 
     async getOneDegree(degreeID: number): Promise<Degree> {
         const degree = await this.degreeRepository.findByID(degreeID);
-        if (!degree) throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${degreeID}`);
+        if (!degree) 
+            throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${degreeID}`);
         return degree;
     }
 
     async getOneSubject(subjectID: number): Promise<Subject> {
         const subject = await this.subjectRepository.findByID(subjectID);
-        if (!subject) throw new NotFoundException(`Non è stata trovata la materia con id = ${subjectID}`);
+        if (!subject) 
+            throw new NotFoundException(`Non è stata trovata la materia con id = ${subjectID}`);
         return subject;
     }
 
     async getOneTeaching(teachingID: number): Promise<Teaching> {
         const teaching = await this.teachingRepository.findByID(teachingID);
-        if (!teaching) throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${teachingID}`);
+        if (!teaching) 
+            throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${teachingID}`);
         return teaching;
     }
+
+    async getTeachingsByDegreeAndYear(degreeId: number, year: number): Promise<Teaching[]> {
+        const teachings = await this.teachingRepository.findByDegreeAndYear(degreeId, year);
+        if (!teachings || teachings.length === 0) 
+            throw new NotFoundException(`Non sono stati trovati insegnamenti per il corso di laurea con id = ${degreeId} e anno = ${year}`);
+        return teachings;
+    }
+    
+    async getTeachingDetails(teachingId: number): Promise<{ degree: Degree; subject: Subject; year: number }> {
+        const teaching = await this.teachingRepository.findByID(teachingId);
+        if (!teaching) 
+            throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${teachingId}`);
+        
+        const degree = teaching.degree 
+        const subject = teaching.subject;
+        const year = teaching.year;
+        
+        return { degree, subject, year };
+    }
+    
+    
+    async getSubjectsByProfessor(professorId: number): Promise<Subject[]> {
+        const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
+        if (!subjects || subjects.length === 0)
+            throw new NotFoundException(`Non sono state trovate materie per il professore con id = ${professorId}`);
+        return subjects;
+    }
+
+    //da usare se il docente deve scegliere tra i propri insegnamenti
+    async getProfessorTeachings(professorId: number): Promise<Teaching[]> {
+        const subjects = this.getSubjectsByProfessor(professorId);
+        const teachings: Teaching[] = [];
+        for (const subject of await subjects) {
+            const subjectTeachings = await this.teachingRepository.findTeachingsBySubject(subject.id);
+            teachings.push(...subjectTeachings);
+        }
+        if (teachings.length === 0)
+            throw new NotFoundException(`Non sono stati trovati insegnamenti per il professore con id = ${professorId}`);
+        return teachings;
+    }
+
+    //async validateTeachingBelongsToDegreeAndYear(teachingId: number, degreeId: number, year: number): Promise<boolean> {}
 
 
 
