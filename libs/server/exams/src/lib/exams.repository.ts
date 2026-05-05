@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Session } from './session.entity';
+import { Degree, Teaching } from '@server/courses';
+import { Professor } from '@server/people';
 // import { CreateExamDto } from './dto/create-exam.dto';
 // import { UpdateExmaDto } from './dto/update-exam.dto';
 
@@ -22,35 +24,36 @@ export class ExamsRepository {
         return this.repository.find({ where: { session } });
     }
 
-    findByDateAndDegreeYear(sessionId: number, date: Date, degreeId: number, degreeYear: number): Promise<Exam[]> {
+    findByDateAndDegreeYear(session: Session, dateStart: Date, dateEnd: Date, degree: Degree, degreeYear: number): Promise<Exam[]> {
         return this.repository.find({
             where: {
-                sessionId,
-                dateTime: date,
+                session,
+                dateTimeStart: dateStart,
+                dateTimeEnd: dateEnd,
                 teaching: {
-                    degreeId,
-                    degreeYear
+                    degree,
+                    year: degreeYear
                 }
             },
             relations: ['teaching']
         });
     }
 
-    findByProfessor(professorId: number): Promise<Exam[]> {
-        return this.repository.find({ where: { professorId } });
+    findByProfessor(professor: Professor): Promise<Exam[]> {
+        return this.repository.find({ where: { professor } });
     }
 
-    findbyTeaching(teachingId: number): Promise<Exam[]> {
-        return this.repository.find({ where: { teachingId } });
+    findbyTeaching(teaching: Teaching): Promise<Exam[]> {
+        return this.repository.find({ where: { teaching } });
     }
 
-    findCalendarBySessionAndDegreeYear(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
+    findCalendarBySessionAndDegreeYear(session: Session, degree: Degree, degreeYear: number): Promise<Exam[]> {
         return this.repository.find({
             where: {
-                sessionId,
+                session,
                 teaching: {
-                    degreeId,
-                    degreeYear
+                    degree,
+                    year: degreeYear
                 }
             },
             relations: ['teaching']
@@ -65,9 +68,9 @@ export class ExamsRepository {
             description: dto.description,
             partial: dto.partial,
             type: dto.type,
-            teachingId: dto.teachingId,
-            professorId: dto.professorId,
-            sessionId: dto.sessionId
+            teaching: dto.teaching,
+            professor: dto.professor,
+            session: dto.session
         });
 
         return this.repository.save(exam);
@@ -89,9 +92,9 @@ export class ExamsRepository {
         if (dto.description !== undefined) exam.description = dto.description;
         if (dto.partial !== undefined) exam.partial = dto.partial;
         if (dto.type !== undefined) exam.type = dto.type;
-        if (dto.teachingId !== undefined) exam.teachingId = dto.teachingId;
-        if (dto.professorId !== undefined) exam.professorId = dto.professorId;
-        if (dto.sessionId !== undefined) exam.sessionId = dto.sessionId;
+        if (dto.teaching !== undefined) exam.teaching = dto.teaching;
+        if (dto.professor !== undefined) exam.professor = dto.professor;
+        if (dto.session !== undefined) exam.session = dto.session;
 
         return this.repository.save(exam);
     }
@@ -101,13 +104,13 @@ export class ExamsRepository {
         return (result.affected ?? 0) > 0;
     }
 
-    async existsConflictInSameYear(sessionId: number, dateTimeStart: Date, dateTimeEnd: Date, degreeId: number, degreeYear: number): Promise<boolean> {
+    async existsConflictInSameYear(session: Session, dateTimeStart: Date, dateTimeEnd: Date, degree: Degree, degreeYear: number): Promise<boolean> {
         const exams = await this.repository.find({
             where: {
-                sessionId,
+                session,
                 teaching: {
-                    degreeId,
-                    degreeYear
+                    degree,
+                    year: degreeYear
                 }
             },
             relations: ['teaching']
@@ -123,10 +126,10 @@ export class ExamsRepository {
         });
     }
 
-    async existsConflictInSameRoom(sessionId: number, dateTimeStart: Date, dateTimeEnd: Date, room: string): Promise<boolean> {
+    async existsConflictInSameRoom(session: Session, dateTimeStart: Date, dateTimeEnd: Date, room: string): Promise<boolean> {
         const exams = await this.repository.find({
             where: {
-                sessionId,
+                session,
                 room
             }
         });
@@ -139,41 +142,5 @@ export class ExamsRepository {
             const examEnd = exam.dateTimeEnd.getTime();
             return examStart < newEnd && examEnd > newStart;
         });
-    }
-
-    async createOne(dto: CreateExamDto, passwordHash: string): Promise<Exam> {
-        const user = this.repository.create({
-            name: dto.name,
-            email: dto.email,
-            passwordHash: passwordHash,
-            role: dto.role
-        });
-        return this.repository.save(user);
-    }
-
-    findAll(role?: UserRole): Promise<Exam[]> {
-        if (role) {
-            return this.repository.find({
-                where: { role },
-                order: { id: 'ASC' },
-            });
-        }
-        return this.repository.find({ order: { id: 'ASC' } });
-    }
-
-    async updateOne(id: number, dto: UpdateUserDto): Promise<Exam | null> {
-        const user = await this.findById(id);
-        if (!user)
-            return null;
-        if (dto.name !== undefined) user.name = dto.name;
-        if (dto.email !== undefined) user.email = dto.email;
-        if (dto.role !== undefined) user.role = dto.role;
-
-        return this.repository.save(user);
-    }
-
-    async deleteOne(id: number): Promise<boolean> {
-        const result = await this.repository.delete(id);
-        return (result.affected ?? 0) > 0;
     }
 }
