@@ -1,5 +1,8 @@
 import { IsBoolean, IsDateString, IsEnum, IsNumber, IsString } from "class-validator";
 import { ExamType } from "./exam-type.enum";
+import { Teaching } from "@server/courses";
+import { Professor } from "@server/people";
+import { Session } from "../session.entity";
 
 export class CreateExamDto {
 
@@ -22,11 +25,11 @@ export class CreateExamDto {
     type: ExamType;
 
     @IsNumber()
-    teachingId: number;
+    teaching: Teaching;
 
     @IsNumber()
-    professorId: number;
+    professor: Professor;
 
     @IsNumber()
-    sessionId: number;
+    session: Session;
 }
