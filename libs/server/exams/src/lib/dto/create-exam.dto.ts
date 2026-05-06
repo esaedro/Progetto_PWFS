@@ -25,11 +25,11 @@ export class CreateExamDto {
     type: ExamType;
 
     @IsNumber()
-    teaching: Teaching;
+    teachingId: number;
 
     @IsNumber()
-    professor: Professor;
+    professorId: number;
 
     @IsNumber()
-    session: Session;
+    sessionId: number;
 }

@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Session } from './session.entity';
-import { Degree, Teaching } from '@server/courses';
+import { Teaching } from '@server/courses';
 import { Professor } from '@server/people';
 // import { CreateExamDto } from './dto/create-exam.dto';
 // import { UpdateExmaDto } from './dto/update-exam.dto';
@@ -24,14 +24,14 @@ export class ExamsRepository {
         return this.repository.find({ where: { session } });
     }
 
-    findByDateAndDegreeYear(session: Session, dateStart: Date, dateEnd: Date, degree: Degree, degreeYear: number): Promise<Exam[]> {
+    findByDateAndDegreeYear(sessionId: number, dateStart: Date, dateEnd: Date, degreeId: number, degreeYear: number): Promise<Exam[]> {
         return this.repository.find({
             where: {
-                session,
+                session: { id: sessionId },
                 dateTimeStart: dateStart,
                 dateTimeEnd: dateEnd,
                 teaching: {
-                    degree,
+                    degree: { id: degreeId },
                     year: degreeYear
                 }
             },
@@ -39,20 +39,33 @@ export class ExamsRepository {
         });
     }
 
-    findByProfessor(professor: Professor): Promise<Exam[]> {
-        return this.repository.find({ where: { professor } });
+    findByProfessor(professorId: number): Promise<Exam[]> {
+        return this.repository.find({ where: { professor: { id: professorId } } });
     }
 
-    findbyTeaching(teaching: Teaching): Promise<Exam[]> {
-        return this.repository.find({ where: { teaching } });
+    findbyTeaching(teachingId: number): Promise<Exam[]> {
+        return this.repository.find({ where: { teaching: { id: teachingId } } });
     }
 
-    findCalendarBySessionAndDegreeYear(session: Session, degree: Degree, degreeYear: number): Promise<Exam[]> {
+    findBySessionAndDegree(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
         return this.repository.find({
             where: {
-                session,
+                session: { id: sessionId },
                 teaching: {
-                    degree,
+                    degree: { id: degreeId },
+                    year: degreeYear
+                }
+            },
+            relations: ['teaching']
+        });
+    }
+
+    findCalendarBySessionAndDegreeYear(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
+        return this.repository.find({
+            where: {
+                session: { id: sessionId },
+                teaching: {
+                    degree: { id: degreeId },
                     year: degreeYear
                 }
             },
@@ -61,6 +74,9 @@ export class ExamsRepository {
     }
 
     async create(dto: CreateExamDto): Promise<Exam> {
+        if (dto.dateTimeStart >= dto.dateTimeEnd) {
+            throw new Error('La data di inizio deve essere precedente alla data di fine');
+        }
         const exam = this.repository.create({
             dateTimeStart: dto.dateTimeStart,
             dateTimeEnd: dto.dateTimeEnd,
@@ -68,9 +84,9 @@ export class ExamsRepository {
             description: dto.description,
             partial: dto.partial,
             type: dto.type,
-            teaching: dto.teaching,
-            professor: dto.professor,
-            session: dto.session
+            teaching: { id: dto.teachingId },
+            professor: { id: dto.professorId },
+            session: { id: dto.sessionId }
         });
 
         return this.repository.save(exam);
@@ -80,11 +96,7 @@ export class ExamsRepository {
         return this.repository.save(exam);
     }
 
-    async update(examId: number, dto: UpdateExamDto): Promise<Exam> {
-        const exam = await this.findById(examId);
-        if (!exam) {
-            throw new Error('Esame non trovato');
-        }
+    async update(exam: Exam, dto: UpdateExamDto): Promise<Exam> {
 
         if (dto.dateTimeStart !== undefined) exam.dateTimeStart = dto.dateTimeStart;
         if (dto.dateTimeEnd !== undefined) exam.dateTimeEnd = dto.dateTimeEnd;
@@ -92,9 +104,9 @@ export class ExamsRepository {
         if (dto.description !== undefined) exam.description = dto.description;
         if (dto.partial !== undefined) exam.partial = dto.partial;
         if (dto.type !== undefined) exam.type = dto.type;
-        if (dto.teaching !== undefined) exam.teaching = dto.teaching;
-        if (dto.professor !== undefined) exam.professor = dto.professor;
-        if (dto.session !== undefined) exam.session = dto.session;
+        if (dto.teachingId !== undefined) exam.teaching = { id: dto.teachingId } as Teaching;
+        if (dto.professorId !== undefined) exam.professor = { id: dto.professorId } as Professor;
+        if (dto.sessionId !== undefined) exam.session = { id: dto.sessionId } as Session;
 
         return this.repository.save(exam);
     }
@@ -104,43 +116,24 @@ export class ExamsRepository {
         return (result.affected ?? 0) > 0;
     }
 
-    async existsConflictInSameYear(session: Session, dateTimeStart: Date, dateTimeEnd: Date, degree: Degree, degreeYear: number): Promise<boolean> {
-        const exams = await this.repository.find({
-            where: {
-                session,
-                teaching: {
-                    degree,
-                    year: degreeYear
-                }
-            },
-            relations: ['teaching']
-        });
+    //
+    // Probabilmente non serve perché non dobbiamo gestire le aule
+    //
+    // async existsConflictInSameRoom(sessionId: number, dateTimeStart: Date, dateTimeEnd: Date, room: string): Promise<boolean> {
+    //     const exams = await this.repository.find({
+    //         where: {
+    //             session: { id: sessionId },
+    //             room
+    //         }
+    //     });
 
-        const newStart = dateTimeStart.getTime();
-        const newEnd = dateTimeEnd.getTime();
+    //     const newStart = dateTimeStart.getTime();
+    //     const newEnd = dateTimeEnd.getTime();
 
-        return exams.some(exam => {
-            const examStart = exam.dateTimeStart.getTime();
-            const examEnd = exam.dateTimeEnd.getTime();
-            return examStart < newEnd && examEnd > newStart;
-        });
-    }
-
-    async existsConflictInSameRoom(session: Session, dateTimeStart: Date, dateTimeEnd: Date, room: string): Promise<boolean> {
-        const exams = await this.repository.find({
-            where: {
-                session,
-                room
-            }
-        });
-
-        const newStart = dateTimeStart.getTime();
-        const newEnd = dateTimeEnd.getTime();
-
-        return exams.some(exam => {
-            const examStart = exam.dateTimeStart.getTime();
-            const examEnd = exam.dateTimeEnd.getTime();
-            return examStart < newEnd && examEnd > newStart;
-        });
-    }
+    //     return exams.some(exam => {
+    //         const examStart = exam.dateTimeStart.getTime();
+    //         const examEnd = exam.dateTimeEnd.getTime();
+    //         return examStart < newEnd && examEnd > newStart;
+    //     });
+    // }
 }
