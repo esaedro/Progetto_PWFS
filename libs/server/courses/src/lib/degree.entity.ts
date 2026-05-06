@@ -9,7 +9,6 @@ export class Degree {
 
     @Column({type: "varchar", length: 255, nullable: false})
     name: string;
-    
 
     // Aggiungere un codice identificativo per il corso di laurea, diverso dall'id autoincrementale?
 
@@ -17,6 +16,4 @@ export class Degree {
     @OneToMany(() => Teaching, (teaching) => teaching.degree)
     teachings : Teaching[];
 
-
 }
-

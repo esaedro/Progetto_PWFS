@@ -34,4 +34,3 @@ export class Teaching {
     exams : Relation<Exam[]>;
 
 }
-
