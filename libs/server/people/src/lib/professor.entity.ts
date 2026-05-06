@@ -9,7 +9,7 @@ import { Subject } from "@server/courses";
 
 
 @Entity("Professors")
-export class Professor extends UserEntity {
+export class Professor {
 
     @OneToOne(() => UserEntity, (user) => user.id, { nullable: false, eager: true, onDelete: 'CASCADE' })
     @JoinColumn()
