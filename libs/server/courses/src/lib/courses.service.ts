@@ -6,6 +6,15 @@ import { Teaching } from './teaching.entity';
 import { SubjectRepository } from './subject.repository';
 import { DegreeRepository } from './degree.repository';
 import { TeachingRepository } from './teaching.repository';
+import { CreateSubjectDto } from './dto/create-subject.dto';
+import { UpdateSubjectDto } from './dto/update-subject.dto';
+import { CreateDegreeDto } from './dto/create-degree.dto';
+import { UpgradeDegreeDto } from './dto/update-degree.dto';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { ServerPeopleService, Professor } from '@server/people';
+import { CreateTeachingDto } from './dto/create-teaching.dto';
+import { UpdateTeachingDto } from './dto/update-teaching-dto';
+
 
 
 @Injectable()
@@ -19,7 +28,9 @@ export class ServerCoursesService {
         private readonly degreeRepository: DegreeRepository,
         
         @InjectRepository(Teaching)
-        private readonly teachingRepository: TeachingRepository
+        private readonly teachingRepository: TeachingRepository,
+
+        private readonly peopleService: ServerPeopleService
     ) {}
 
 
@@ -44,21 +55,21 @@ export class ServerCoursesService {
         return teachings;
     }
 
-    async getOneDegree(degreeID: number): Promise<Degree> {
+    async getDegreeByID(degreeID: number): Promise<Degree> {
         const degree = await this.degreeRepository.findByID(degreeID);
         if (!degree) 
             throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${degreeID}`);
         return degree;
     }
 
-    async getOneSubject(subjectID: number): Promise<Subject> {
+    async getSubjectByID(subjectID: number): Promise<Subject> {
         const subject = await this.subjectRepository.findByID(subjectID);
         if (!subject) 
             throw new NotFoundException(`Non è stata trovata la materia con id = ${subjectID}`);
         return subject;
     }
 
-    async getOneTeaching(teachingID: number): Promise<Teaching> {
+    async getTeachingByID(teachingID: number): Promise<Teaching> {
         const teaching = await this.teachingRepository.findByID(teachingID);
         if (!teaching) 
             throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${teachingID}`);
@@ -84,7 +95,6 @@ export class ServerCoursesService {
         return { degree, subject, year };
     }
     
-    
     async getSubjectsByProfessor(professorId: number): Promise<Subject[]> {
         const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
         if (!subjects || subjects.length === 0)
@@ -93,7 +103,7 @@ export class ServerCoursesService {
     }
 
     //da usare se il docente deve scegliere tra i propri insegnamenti
-    async getProfessorTeachings(professorId: number): Promise<Teaching[]> {
+    async getTeachingsByProfessor(professorId: number): Promise<Teaching[]> {
         const subjects = this.getSubjectsByProfessor(professorId);
         const teachings: Teaching[] = [];
         for (const subject of await subjects) {
@@ -105,10 +115,127 @@ export class ServerCoursesService {
         return teachings;
     }
 
-    //async validateTeachingBelongsToDegreeAndYear(teachingId: number, degreeId: number, year: number): Promise<boolean> {}
+    async createSubject(dto: CreateSubjectDto): Promise<Subject> {
+        // Carica tutti i professori dagli ID
+        const professors = [];
+        for (const professorId of dto.professorIds) {
+            const professor = await this.peopleService.findById(professorId);
+            if (!professor) 
+                throw new NotFoundException(`Non è stato trovato il professore con id = ${professorId}`);
+            professors.push(professor);
+        }
 
+        return this.subjectRepository.createSubject({
+            name: dto.name,
+            professors
+        });
+    }
 
+    async upgradeSubject(id: number, dto: UpdateSubjectDto): Promise<Subject> {
+        const subject = await this.subjectRepository.findByID(id);
+        if (!subject) 
+            throw new NotFoundException(`Non è stata trovata la materia con id = ${id}`);
 
+        const updateData: { name?: string; professors?: Professor[] } = {};
 
+        if (dto.name !== undefined) {
+            updateData.name = dto.name;
+        }
+
+        if (dto.professorIds && dto.professorIds.length > 0) {
+            const professors = [];
+            for (const professorId of dto.professorIds) {
+                const professor = await this.peopleService.findById(professorId);
+                if (!professor) 
+                    throw new NotFoundException(`Non è stato trovato il professore con id = ${professorId}`);
+                professors.push(professor);
+            }
+            updateData.professors = professors;
+        }
+
+        const result = await this.subjectRepository.upgradeSubject(id, updateData);
+        if (!result)
+            throw new NotFoundException(`Non è stata trovata la materia con id = ${id}`);
+        return result;
+    }
+
+    async deleteSubject(id: number): Promise<void> {
+        const deleted = await this.subjectRepository.deleteSubject(id);
+        if (!deleted) 
+            throw new NotFoundException(`Non è stata trovata la materia con id = ${id}`);
+    }
+
+    async createDegree(dto: CreateDegreeDto): Promise<Degree> {
+        return this.degreeRepository.createDegree(dto);
+    }
+
+    async updateDegree(id: number, dto: UpgradeDegreeDto): Promise<Degree> {
+        const degree = await this.degreeRepository.findByID(id);
+        if (!degree) 
+            throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${id}`);
+
+        const result = await this.degreeRepository.updateDegree(id, dto);
+        if (!result)
+            throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${id}`);
+        return result;
+    }
+
+    async deleteDegree(id: number): Promise<void> {
+        const deleted = await this.degreeRepository.deleteDegree(id);
+        if (!deleted) 
+            throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${id}`);
+    }
+
+    async createTeaching(dto: CreateTeachingDto): Promise<Teaching> {
+        const degree = await this.degreeRepository.findByID(dto.degreeId);
+        const subject = await this.subjectRepository.findByID(dto.subjectId);
+        if (!degree)
+            throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${dto.degreeId}`);
+        if (!subject)
+            throw new NotFoundException(`Non è stata trovata la materia con id = ${dto.subjectId}`);
+        
+        return this.teachingRepository.createTeaching({
+            year: dto.year,
+            degree,
+            subject
+        });
+    }
+
+    async updateTeaching(id: number, dto: UpdateTeachingDto): Promise<Teaching> {
+        const teaching = await this.teachingRepository.findByID(id);
+        if (!teaching) 
+            throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${id}`);
+
+        const updateData: { year?: number; subject?: Subject; degree?: Degree } = {};
+
+        if (dto.year !== undefined) {
+            updateData.year = dto.year;
+        }
+
+        if (dto.subjectId !== undefined) {
+            const subject = await this.subjectRepository.findByID(dto.subjectId);
+            if (!subject)
+                throw new NotFoundException(`Non è stata trovata la materia con id = ${dto.subjectId}`);
+            updateData.subject = subject;
+        }
+
+        if (dto.degreeId !== undefined) {
+            const degree = await this.degreeRepository.findByID(dto.degreeId);
+            if (!degree)
+                throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${dto.degreeId}`);
+            updateData.degree = degree;
+        }
+
+        const result = await this.teachingRepository.updateTeaching(id, updateData);
+        if (!result)
+            throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${id}`);
+        return result;
+    }
+
+    async deleteTeaching(id: number): Promise<void> {
+        const deleted = await this.teachingRepository.deleteTeaching(id);
+        if (!deleted) 
+            throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${id}`);
+    }
 
 }

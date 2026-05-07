@@ -4,22 +4,22 @@ import { Exam } from './exam.entity';
 
 @Entity('Sessions')
 export class Session {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @Column({ type: 'date', nullable: false })
-  data_inizio_esami: Date;
+    @Column({ type: 'date', nullable: false })
+    dateStartExamination: Date;
 
-  @Column({ type: 'date', nullable: false })
-  data_fine_esami: Date;
+    @Column({ type: 'date', nullable: false })
+    dateEndExamination: Date;
 
-  @Column({ type: 'date', nullable: false })
-  data_inizio_calendarizzazione: Date;
+    @Column({ type: 'date', nullable: false })
+    dateStartInsertion: Date;
 
-  @Column({ type: 'date', nullable: false })
-  data_fine_calendarizzazione: Date;
+    @Column({ type: 'date', nullable: false })
+    dateEndInsertion: Date;
 
-  @OneToMany(() => Exam, (exam) => exam.session)
-  exams: Exam[];
+    @OneToMany(() => Exam, (exam) => exam.session)
+    exams: Exam[];
 
 }
