@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, OneToOne, OneToMany, ManyToMany } from "typeorm";
+import { Entity, JoinColumn, OneToOne, OneToMany, ManyToMany, Column } from "typeorm";
 import type { Relation } from "typeorm";
 
 import { UserEntity } from '@server/users';
@@ -11,9 +11,12 @@ import { Subject } from "@server/courses";
 @Entity("Professors")
 export class Professor {
 
-    @OneToOne(() => UserEntity, (user) => user.id, { nullable: false, eager: true, onDelete: 'CASCADE' })
-    @JoinColumn()
+    @Column({ name: 'professor_id' })
     professor_id: number;
+
+    @OneToOne(() => UserEntity, { nullable: false, eager: true, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'professor_id' }) // Points to the exact same column
+    user: UserEntity;
 
     @OneToMany(() => Exam, (exam) => exam.professor)
     exams : Relation<Exam[]>;
