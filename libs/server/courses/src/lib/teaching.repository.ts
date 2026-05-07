@@ -4,6 +4,8 @@ import { Repository } from "typeorm";
 import { Teaching } from "./teaching.entity";
 import { Subject } from "./subject.entity";
 import { Degree } from "./degree.entity";
+import { CreateTeachingDto } from "./dto/create-teaching.dto";
+import { UpdateTeachingDto } from "./dto/update-teaching-dto";
 
 @Injectable()
 export class TeachingRepository {
@@ -43,22 +45,22 @@ export class TeachingRepository {
         });
     }
 
-    async createTeaching(data: { year: number; subject: Subject; degree: Degree }): Promise<Teaching> {
+    async createTeaching(dto: CreateTeachingDto): Promise<Teaching> {
         const teaching = this.repository.create({
-            year: data.year,
-            subject: data.subject,
-            degree: data.degree
+            year: dto.year,
+            subject: {id: dto.subjectId},
+            degree: {id: dto.degreeId}
         });
         return this.repository.save(teaching);
     }
 
-    async updateTeaching(id: number, data: { year?: number; subject?: Subject; degree?: Degree }): Promise<Teaching | null> {
+    async updateTeaching(id: number, dto: UpdateTeachingDto, subject?: Subject, degree?: Degree): Promise<Teaching | null> {
         const teaching = await this.findByID(id);
         if (!teaching)
             return null;
-        if (data.year !== undefined) teaching.year = data.year;
-        if (data.subject !== undefined) teaching.subject = data.subject;
-        if (data.degree !== undefined) teaching.degree = data.degree;
+        if (dto.year !== undefined) teaching.year = dto.year;
+        if (subject !== undefined) teaching.subject = subject;
+        if (degree !== undefined) teaching.degree = degree;
         
         return this.repository.save(teaching);
     }

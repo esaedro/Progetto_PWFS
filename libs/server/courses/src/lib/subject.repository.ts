@@ -4,6 +4,8 @@ import { Repository } from "typeorm";
 import { Subject } from "./subject.entity";
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { Professor } from "@server/people";
+import { CreateSubjectDto } from "./dto/create-subject.dto";
+import { UpdateSubjectDto } from "./dto/update-subject.dto";
 
 @Injectable()
 export class SubjectRepository { 
@@ -28,20 +30,20 @@ export class SubjectRepository {
             .getMany();
     } 
 
-    async createSubject(dto: { name: string; professors: Professor[] }): Promise<Subject> {
+    async createSubject(dto: CreateSubjectDto, professors: Professor[]): Promise<Subject> {
         const subject = this.repository.create({
             name: dto.name,
-            professors: dto.professors      // Passati gli oggetti Professor dal service
+            professors
         });
         return this.repository.save(subject);
     }
 
-    async upgradeSubject(id: number, data: { name?: string; professors?: Professor[] }): Promise<Subject|null> {
+    async upgradeSubject(id: number, dto: UpdateSubjectDto, professors?: Professor[]): Promise<Subject|null> {
         const subject = await this.findByID(id);
         if(!subject)
             return null;
-        if (data.name !== undefined) subject.name = data.name;
-        if (data.professors !== undefined) subject.professors = data.professors;
+        if (dto.name !== undefined) subject.name = dto.name;
+        if (professors !== undefined) subject.professors = professors;
         
         return this.repository.save(subject);
     }

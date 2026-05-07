@@ -116,19 +116,9 @@ export class ServerCoursesService {
     }
 
     async createSubject(dto: CreateSubjectDto): Promise<Subject> {
-        // Carica tutti i professori dagli ID
-        const professors = [];
-        for (const professorId of dto.professorIds) {
-            const professor = await this.peopleService.findById(professorId);
-            if (!professor) 
-                throw new NotFoundException(`Non è stato trovato il professore con id = ${professorId}`);
-            professors.push(professor);
-        }
+        const professors = await this.peopleService.getProfessorsByIds(dto.professorIds);
 
-        return this.subjectRepository.createSubject({
-            name: dto.name,
-            professors
-        });
+        return this.subjectRepository.createSubject(dto, professors);
     }
 
     async upgradeSubject(id: number, dto: UpdateSubjectDto): Promise<Subject> {
@@ -136,24 +126,13 @@ export class ServerCoursesService {
         if (!subject) 
             throw new NotFoundException(`Non è stata trovata la materia con id = ${id}`);
 
-        const updateData: { name?: string; professors?: Professor[] } = {};
+        let professors: Professor[] | undefined;
 
-        if (dto.name !== undefined) {
-            updateData.name = dto.name;
+        if (dto.professorIds !== undefined) {
+            professors = await this.peopleService.getProfessorsByIds(dto.professorIds);
         }
 
-        if (dto.professorIds && dto.professorIds.length > 0) {
-            const professors = [];
-            for (const professorId of dto.professorIds) {
-                const professor = await this.peopleService.findById(professorId);
-                if (!professor) 
-                    throw new NotFoundException(`Non è stato trovato il professore con id = ${professorId}`);
-                professors.push(professor);
-            }
-            updateData.professors = professors;
-        }
-
-        const result = await this.subjectRepository.upgradeSubject(id, updateData);
+        const result = await this.subjectRepository.upgradeSubject(id, dto, professors);
         if (!result)
             throw new NotFoundException(`Non è stata trovata la materia con id = ${id}`);
         return result;
@@ -194,11 +173,7 @@ export class ServerCoursesService {
         if (!subject)
             throw new NotFoundException(`Non è stata trovata la materia con id = ${dto.subjectId}`);
         
-        return this.teachingRepository.createTeaching({
-            year: dto.year,
-            degree,
-            subject
-        });
+        return this.teachingRepository.createTeaching(dto);
     }
 
     async updateTeaching(id: number, dto: UpdateTeachingDto): Promise<Teaching> {
@@ -206,27 +181,24 @@ export class ServerCoursesService {
         if (!teaching) 
             throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${id}`);
 
-        const updateData: { year?: number; subject?: Subject; degree?: Degree } = {};
-
-        if (dto.year !== undefined) {
-            updateData.year = dto.year;
-        }
+        let subject: Subject | undefined;
+        let degree: Degree | undefined;
 
         if (dto.subjectId !== undefined) {
-            const subject = await this.subjectRepository.findByID(dto.subjectId);
-            if (!subject)
+            const foundSubject = await this.subjectRepository.findByID(dto.subjectId);
+            if (!foundSubject)
                 throw new NotFoundException(`Non è stata trovata la materia con id = ${dto.subjectId}`);
-            updateData.subject = subject;
+            subject = foundSubject;
         }
 
         if (dto.degreeId !== undefined) {
-            const degree = await this.degreeRepository.findByID(dto.degreeId);
-            if (!degree)
+            const foundDegree = await this.degreeRepository.findByID(dto.degreeId);
+            if (!foundDegree)
                 throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${dto.degreeId}`);
-            updateData.degree = degree;
+            degree = foundDegree;
         }
 
-        const result = await this.teachingRepository.updateTeaching(id, updateData);
+        const result = await this.teachingRepository.updateTeaching(id, dto, subject, degree);
         if (!result)
             throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${id}`);
         return result;
