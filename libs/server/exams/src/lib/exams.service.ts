@@ -4,13 +4,17 @@ import { ServerCoursesService } from '@server/courses';
 import { ExamsRepository } from './exams.repository';
 import { Exam } from './exam.entity';
 import { CreateExamDto } from './dto/create-exam.dto';
+import { UpdateExamDto } from './dto/update-exam.dto';
+import { SessionsRepository } from './sessions.repository';
 
 @Injectable()
 export class ServerExamsService {
     constructor(
         private readonly coursesService: ServerCoursesService,
         @InjectRepository(ExamsRepository)
-        private readonly examsRepository: ExamsRepository
+        private readonly examsRepository: ExamsRepository,
+        @InjectRepository(SessionsRepository)
+        private readonly sessionsRepository: SessionsRepository
     ) { }
 
     async create(dto: CreateExamDto): Promise<Exam> {
@@ -21,13 +25,18 @@ export class ServerExamsService {
         return this.examsRepository.create(dto);
     }
 
-    async update(examId: number, dto: CreateExamDto): Promise<Exam> {
+    async update(examId: number, dto: UpdateExamDto): Promise<Exam> {
         const exam = await this.examsRepository.findById(examId);
         if (!exam) {
             throw new Error(`Esame con id ${examId} non trovato`);
         }
 
-        if (await this.existsConflictInSameYear(dto.sessionId, dto.dateTimeStart, dto.dateTimeEnd, dto.teachingId)) {
+        const sessionId = dto.sessionId !== undefined ? dto.sessionId : exam.session.id;
+        const dateTimeStart = dto.dateTimeStart !== undefined ? dto.dateTimeStart : exam.dateTimeStart;
+        const dateTimeEnd = dto.dateTimeEnd !== undefined ? dto.dateTimeEnd : exam.dateTimeEnd;
+        const teachingId = dto.teachingId !== undefined ? dto.teachingId : exam.teaching.id;
+
+        if (await this.existsConflictInSameYear(sessionId, dateTimeStart, dateTimeEnd, teachingId)) {
             throw new Error('Esame in conflitto con un altro esame dello stesso anno del corso di laurea');
         }
 
@@ -38,6 +47,45 @@ export class ServerExamsService {
         }
 
         return this.examsRepository.update(exam, dto);
+    }
+
+    async delete(examId: number): Promise<void> {
+        const exam = await this.examsRepository.findById(examId);
+        if (!exam) {
+            throw new Error(`Esame con id ${examId} non trovato`);
+        }
+
+        await this.examsRepository.delete(examId);
+    }
+
+    async findById(id: number): Promise<Exam | null> {
+        return this.examsRepository.findById(id);
+    }
+
+    async findAll(): Promise<Exam[]> {
+        return this.examsRepository.findAll();
+    }
+
+    async findBySessionAndDegree(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
+        return this.examsRepository.findBySessionAndDegree(sessionId, degreeId, degreeYear);
+    }
+
+    async findBySession(sessionId: number): Promise<Exam[] | null> {
+        const session = await this.sessionsRepository.findById(sessionId);
+
+        if (!session) {
+            throw new Error(`Sessione con id ${sessionId} non trovata`);
+        }
+
+        return this.examsRepository.findBySession(session);
+    }
+
+    async findByProfessor(professorId: number): Promise<Exam[]> {
+        return this.examsRepository.findByProfessor(professorId);
+    }
+
+    async findByTeaching(teachingId: number): Promise<Exam[]> {
+        return this.examsRepository.findbyTeaching(teachingId);
     }
 
     async existsConflictInSameYear(sessionId: number, dateTimeStart: Date, dateTimeEnd: Date, teachingId: number): Promise<boolean> {

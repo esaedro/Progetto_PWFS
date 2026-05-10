@@ -20,7 +20,11 @@ export class ExamsRepository {
         return this.repository.findOne({ where: { id } });
     }
 
-    findAllBySession(session: Session): Promise<Exam[] | null> {
+    findAll(): Promise<Exam[]> {
+        return this.repository.find();
+    }
+
+    findBySession(session: Session): Promise<Exam[] | null> {
         return this.repository.find({ where: { session } });
     }
 
@@ -48,19 +52,6 @@ export class ExamsRepository {
     }
 
     findBySessionAndDegree(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
-        return this.repository.find({
-            where: {
-                session: { id: sessionId },
-                teaching: {
-                    degree: { id: degreeId },
-                    year: degreeYear
-                }
-            },
-            relations: ['teaching']
-        });
-    }
-
-    findCalendarBySessionAndDegreeYear(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
         return this.repository.find({
             where: {
                 session: { id: sessionId },
