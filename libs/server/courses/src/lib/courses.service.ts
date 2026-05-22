@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Degree } from './degree.entity';
 import { Subject } from './subject.entity';
 import { Teaching } from './teaching.entity';
@@ -21,13 +20,8 @@ import { UpdateTeachingDto } from './dto/update-teaching-dto';
 export class ServerCoursesService {
 
     constructor(
-        @InjectRepository(Subject)
         private readonly subjectRepository: SubjectRepository,
-
-        @InjectRepository(Degree)
         private readonly degreeRepository: DegreeRepository,
-        
-        @InjectRepository(Teaching)
         private readonly teachingRepository: TeachingRepository,
 
         private readonly peopleService: ServerPeopleService

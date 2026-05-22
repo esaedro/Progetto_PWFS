@@ -23,13 +23,19 @@
   ],
   "references": [
     {
+      "path": "../../libs/server/people/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/server/exams/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/server/courses/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/server/auth/tsconfig.lib.json"
     },
     {
       "path": "../../libs/database/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/server/books/tsconfig.lib.json"
     },
     {
       "path": "../../libs/server/users/tsconfig.lib.json"

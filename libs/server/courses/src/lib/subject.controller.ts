@@ -27,13 +27,33 @@ export class ServerSubjectController {
 	}
 
 	@Post() // POST /subjects
-	@ApiBody({ type: CreateSubjectDto })
+	@ApiBody({
+		type: CreateSubjectDto,
+		examples: {
+			create: {
+				value: {
+					name: 'Basi di Dati',
+					professorIds: [1, 3],
+				},
+			},
+		},
+	})
 	createSubject(@Body(ValidationPipe) dto: CreateSubjectDto) {
 		return this.serverCoursesService.createSubject(dto);
 	}
 
 	@Patch(':id') // PATCH /subjects/:id
-	@ApiBody({ type: UpdateSubjectDto })
+	@ApiBody({
+		type: UpdateSubjectDto,
+		examples: {
+			update: {
+				value: {
+					name: 'Basi di Dati e Sistemi Informativi',
+					professorIds: [1, 2, 3],
+				},
+			},
+		},
+	})
 	updateSubject(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) dto: UpdateSubjectDto) {
 		return this.serverCoursesService.upgradeSubject(id, dto);
 	}

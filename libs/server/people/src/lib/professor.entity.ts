@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, OneToOne, OneToMany, ManyToMany, Column } from "typeorm";
+import { Entity, JoinColumn, OneToOne, OneToMany, ManyToMany, Column, PrimaryColumn } from "typeorm";
 import type { Relation } from "typeorm";
 
 import { UserEntity } from '@server/users';
@@ -11,7 +11,7 @@ import { Subject } from "@server/courses";
 @Entity("Professors")
 export class Professor {
 
-    @Column({ name: 'professor_id' })
+    @PrimaryColumn({ name: 'professor_id' })
     professor_id: number;
 
     @OneToOne(() => UserEntity, { nullable: false, eager: true, onDelete: 'CASCADE' })

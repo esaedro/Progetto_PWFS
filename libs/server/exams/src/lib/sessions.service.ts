@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { SessionsRepository } from './sessions.repository';
 import { Session } from './session.entity';
 import { CreateSessionDto } from './dto/create-session.dto';
@@ -8,7 +7,6 @@ import { UpdateSessionDto } from './dto/update-session.dto';
 @Injectable()
 export class ServerSessionsService {
     constructor(
-        @InjectRepository(SessionsRepository)
         private readonly sessionsRepository: SessionsRepository
     ) { }
 

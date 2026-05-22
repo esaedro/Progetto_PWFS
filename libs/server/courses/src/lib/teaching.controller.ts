@@ -40,13 +40,34 @@ export class ServerTeachingController {
 	}
 
 	@Post() // POST /teachings
-	@ApiBody({ type: CreateTeachingDto })
+	@ApiBody({
+		type: CreateTeachingDto,
+		examples: {
+			create: {
+				value: {
+					year: 2,
+					subjectId: 10,
+					degreeId: 3,
+				},
+			},
+		},
+	})
 	createTeaching(@Body(ValidationPipe) dto: CreateTeachingDto) {
 		return this.serverCoursesService.createTeaching(dto);
 	}
 
 	@Patch(':id') // PATCH /teachings/:id
-	@ApiBody({ type: UpdateTeachingDto })
+	@ApiBody({
+		type: UpdateTeachingDto,
+		examples: {
+			update: {
+				value: {
+					year: 3,
+					subjectId: 12,
+				},
+			},
+		},
+	})
 	updateTeaching(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) dto: UpdateTeachingDto) {
 		return this.serverCoursesService.updateTeaching(id, dto);
 	}

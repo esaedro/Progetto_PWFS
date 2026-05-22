@@ -22,13 +22,31 @@ export class ServerDegreeController {
 	}
 
 	@Post() // POST /degrees
-	@ApiBody({ type: CreateDegreeDto })
+	@ApiBody({
+		type: CreateDegreeDto,
+		examples: {
+			create: {
+				value: {
+					name: 'Informatica',
+				},
+			},
+		},
+	})
 	createDegree(@Body(ValidationPipe) dto: CreateDegreeDto) {
 		return this.serverCoursesService.createDegree(dto);
 	}
 
 	@Patch(':id') // PATCH /degrees/:id
-	@ApiBody({ type: UpgradeDegreeDto })
+	@ApiBody({
+		type: UpgradeDegreeDto,
+		examples: {
+			update: {
+				value: {
+					name: 'Informatica e Ingegneria',
+				},
+			},
+		},
+	})
 	updateDegree(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) dto: UpgradeDegreeDto) {
 		return this.serverCoursesService.updateDegree(id, dto);
 	}

@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ServerPeopleService } from './people.service';
 import { Professor } from './professor.entity';
 
-@Controller('people')
+@Controller('People APIs')
 export class ServerPeopleController {
     constructor(private serverPeopleService: ServerPeopleService) {}
 

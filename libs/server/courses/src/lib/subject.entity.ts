@@ -17,7 +17,7 @@ export class Subject {
     @JoinTable({
         name: "professor_subject", // nome della tabella di join
         joinColumn: {name: "subject_id", referencedColumnName: "id"}, // colonna che fa riferimento alla materia
-        inverseJoinColumn: {name: "professor_id", referencedColumnName: "id"} // colonna che fa riferimento al docente
+        inverseJoinColumn: {name: "professor_id", referencedColumnName: "professor_id"} // colonna che fa riferimento al docente
     })
     professors: Professor[];
 

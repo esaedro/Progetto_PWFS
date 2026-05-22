@@ -8,6 +8,9 @@ import { ServerCoursesService } from './courses.service';
 import { Degree } from './degree.entity';
 import { Subject } from './subject.entity';
 import { Teaching } from './teaching.entity';
+import { DegreeRepository } from './degree.repository';
+import { SubjectRepository } from './subject.repository';
+import { TeachingRepository } from './teaching.repository';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { ServerPeopleModule } from '@server/people';
 
@@ -22,7 +25,7 @@ import { ServerPeopleModule } from '@server/people';
     ServerSubjectController,
     ServerTeachingController,
   ],
-  providers: [ServerCoursesService],
+  providers: [ServerCoursesService, DegreeRepository, SubjectRepository, TeachingRepository],
   exports: [ServerCoursesService],
 })
 export class ServerCoursesModule {}

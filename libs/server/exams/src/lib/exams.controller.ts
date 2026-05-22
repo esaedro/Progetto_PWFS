@@ -1,7 +1,9 @@
 import { Controller, Get, Param, Post } from '@nestjs/common';
 import { ServerExamsService } from './exams.service';
 import { Exam } from './exam.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Exams APIs')
 @Controller('exams')
 export class ServerExamsController {
     constructor(private serverExamsService: ServerExamsService) { }

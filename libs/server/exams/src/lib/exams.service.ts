@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ServerCoursesService } from '@server/courses';
 import { ExamsRepository } from './exams.repository';
 import { Exam } from './exam.entity';
@@ -10,10 +10,9 @@ import { SessionsRepository } from './sessions.repository';
 @Injectable()
 export class ServerExamsService {
     constructor(
+        @Inject(forwardRef(() => ServerCoursesService))
         private readonly coursesService: ServerCoursesService,
-        @InjectRepository(ExamsRepository)
         private readonly examsRepository: ExamsRepository,
-        @InjectRepository(SessionsRepository)
         private readonly sessionsRepository: SessionsRepository
     ) { }
 
@@ -89,7 +88,7 @@ export class ServerExamsService {
     }
 
     async existsConflictInSameYear(sessionId: number, dateTimeStart: Date, dateTimeEnd: Date, teachingId: number): Promise<boolean> {
-        const teaching = await this.coursesService.getTeachingById(teachingId);
+        const teaching = await this.coursesService.getTeachingByID(teachingId);
         const degreeId = teaching.degree.id;
         const degreeYear = teaching.year;
         const exams = await this.examsRepository.findBySessionAndDegree(sessionId, degreeId, degreeYear);

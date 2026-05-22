@@ -1,6 +1,8 @@
 import { Controller, Get, Param, Post } from '@nestjs/common';
 import { ServerSessionsService } from './sessions.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Sessions APIs')
 @Controller('sessions')
 export class ServerSessionsController {
     constructor(private serverSessionsService: ServerSessionsService) { }
