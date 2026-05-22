@@ -9,7 +9,6 @@ import { Session } from './session.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExamsRepository } from './exams.repository';
 import { SessionsRepository } from './sessions.repository';
-import { ServerSessionsService } from './sessions.service';
 
 @Module({
     imports: [
@@ -17,10 +16,10 @@ import { ServerSessionsService } from './sessions.service';
         forwardRef(() => ServerCoursesModule),
     ],
     controllers: [
-        ServerExamsController, 
-        ServerSessionsController        
+        ServerExamsController,
+        ServerSessionsController
     ],
-    providers: [ServerExamsService, ServerSessionsService, ExamsRepository, SessionsRepository],
-    exports: [ServerExamsService, ServerSessionsService],
+    providers: [ServerExamsService, ExamsRepository, SessionsRepository],
+    exports: [ServerExamsService],
 })
 export class ServerExamsModule { }

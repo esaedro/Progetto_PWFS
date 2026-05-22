@@ -1,30 +1,30 @@
 import { Controller, Get, Param, Post } from '@nestjs/common';
-import { ServerSessionsService } from './sessions.service';
 import { ApiTags } from '@nestjs/swagger';
+import { ServerExamsService } from './exams.service';
 
 @ApiTags('Sessions APIs')
 @Controller('sessions')
 export class ServerSessionsController {
-    constructor(private serverSessionsService: ServerSessionsService) { }
+    constructor(private serverExamsService: ServerExamsService) { }
 
     @Get()
     async findAll() {
-        return this.serverSessionsService.findAll();
+        return this.serverExamsService.findAllSessions();
     }
 
     @Get(':id')
     async findById(@Param('id') id: number) {
-        return this.serverSessionsService.findById(id);
+        return this.serverExamsService.findSessionById(id);
     }
 
     @Get('current-planning-window')
     async findCurrentPlanningWindow() {
-        return this.serverSessionsService.findCurrentPlanningWindow();
+        return this.serverExamsService.findSessionByCurrentPlanningWindow();
     }
 
     @Get('current-examination-window')
     async findCurrentExaminationWindow() {
-        return this.serverSessionsService.findCurrentExaminationWindow();
+        return this.serverExamsService.findSessionByCurrentExaminationWindow();
     }
 
     @Post('create')

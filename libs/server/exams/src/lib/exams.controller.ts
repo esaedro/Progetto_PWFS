@@ -10,12 +10,12 @@ export class ServerExamsController {
 
     @Get()
     async findAll(): Promise<Exam[]> {
-        return this.serverExamsService.findAll();
+        return this.serverExamsService.findAllExams();
     }
 
     @Get(':id')
     async findById(@Param('id') id: number): Promise<Exam | null> {
-        return this.serverExamsService.findById(id);
+        return this.serverExamsService.findExamById(id);
     }
 
     @Get('session/:sessionId/degree/:degreeId/year/:degreeYear')
@@ -24,22 +24,22 @@ export class ServerExamsController {
         @Param('degreeId') degreeId: number,
         @Param('degreeYear') degreeYear: number
     ): Promise<Exam[]> {
-        return this.serverExamsService.findBySessionAndDegree(sessionId, degreeId, degreeYear);
+        return this.serverExamsService.findExamsBySessionAndDegree(sessionId, degreeId, degreeYear);
     }
 
     @Get('session/:sessionId')
     async findBySession(@Param('sessionId') sessionId: number): Promise<Exam[] | null> {
-        return this.serverExamsService.findBySession(sessionId);
+        return this.serverExamsService.findExamsBySession(sessionId);
     }
 
     @Get('professor/:professorId')
     async findByProfessor(@Param('professorId') professorId: number): Promise<Exam[]> {
-        return this.serverExamsService.findByProfessor(professorId);
+        return this.serverExamsService.findExamsByProfessor(professorId);
     }
 
     @Get('teaching/:teachingId')
     async findByTeaching(@Param('teachingId') teachingId: number): Promise<Exam[]> {
-        return this.serverExamsService.findByTeaching(teachingId);
+        return this.serverExamsService.findExamsByTeaching(teachingId);
     }
 
     @Post('create')

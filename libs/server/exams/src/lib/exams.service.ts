@@ -6,6 +6,9 @@ import { Exam } from './exam.entity';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { SessionsRepository } from './sessions.repository';
+import { CreateSessionDto } from './dto/create-session.dto';
+import { UpdateSessionDto } from './dto/update-session.dto';
+import { Session } from './session.entity';
 
 @Injectable()
 export class ServerExamsService {
@@ -16,7 +19,11 @@ export class ServerExamsService {
         private readonly sessionsRepository: SessionsRepository
     ) { }
 
-    async create(dto: CreateExamDto): Promise<Exam> {
+    ////////////////////
+    /// Exam section ///
+    ////////////////////
+
+    async createExam(dto: CreateExamDto): Promise<Exam> {
         if (await this.existsConflictInSameYear(dto.sessionId, dto.dateTimeStart, dto.dateTimeEnd, dto.teachingId)) {
             throw new Error('Esame in conflitto con un altro esame dello stesso anno del corso di laurea');
         }
@@ -24,7 +31,7 @@ export class ServerExamsService {
         return this.examsRepository.create(dto);
     }
 
-    async update(examId: number, dto: UpdateExamDto): Promise<Exam> {
+    async updateExam(examId: number, dto: UpdateExamDto): Promise<Exam> {
         const exam = await this.examsRepository.findById(examId);
         if (!exam) {
             throw new Error(`Esame con id ${examId} non trovato`);
@@ -48,7 +55,7 @@ export class ServerExamsService {
         return this.examsRepository.update(exam, dto);
     }
 
-    async delete(examId: number): Promise<void> {
+    async deleteExam(examId: number): Promise<void> {
         const exam = await this.examsRepository.findById(examId);
         if (!exam) {
             throw new Error(`Esame con id ${examId} non trovato`);
@@ -57,19 +64,19 @@ export class ServerExamsService {
         await this.examsRepository.delete(examId);
     }
 
-    async findById(id: number): Promise<Exam | null> {
+    async findExamById(id: number): Promise<Exam | null> {
         return this.examsRepository.findById(id);
     }
 
-    async findAll(): Promise<Exam[]> {
+    async findAllExams(): Promise<Exam[]> {
         return this.examsRepository.findAll();
     }
 
-    async findBySessionAndDegree(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
+    async findExamsBySessionAndDegree(sessionId: number, degreeId: number, degreeYear: number): Promise<Exam[]> {
         return this.examsRepository.findBySessionAndDegree(sessionId, degreeId, degreeYear);
     }
 
-    async findBySession(sessionId: number): Promise<Exam[] | null> {
+    async findExamsBySession(sessionId: number): Promise<Exam[] | null> {
         const session = await this.sessionsRepository.findById(sessionId);
 
         if (!session) {
@@ -79,11 +86,11 @@ export class ServerExamsService {
         return this.examsRepository.findBySession(session);
     }
 
-    async findByProfessor(professorId: number): Promise<Exam[]> {
+    async findExamsByProfessor(professorId: number): Promise<Exam[]> {
         return this.examsRepository.findByProfessor(professorId);
     }
 
-    async findByTeaching(teachingId: number): Promise<Exam[]> {
+    async findExamsByTeaching(teachingId: number): Promise<Exam[]> {
         return this.examsRepository.findbyTeaching(teachingId);
     }
 
@@ -101,5 +108,67 @@ export class ServerExamsService {
             const examEnd = exam.dateTimeEnd.getTime();
             return examStart < newEnd && examEnd > newStart;
         });
+    }
+
+    ///////////////////////
+    /// Session section ///
+    ///////////////////////
+
+    async createSession(dto: CreateSessionDto): Promise<Session> {
+
+        if (this.checkDateOverlapOrInversion(dto.dateStartInsertion, dto.dateEndInsertion, dto.dateStartExamination, dto.dateEndExamination)) {
+            throw new Error('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');
+        }
+
+        return this.sessionsRepository.create(dto);
+    }
+
+    async updateSession(sessionId: number, dto: UpdateSessionDto): Promise<Session> {
+        const session = await this.sessionsRepository.findById(sessionId);
+
+        if (!session) {
+            throw new Error(`Sessione con id ${sessionId} non trovata`);
+        }
+
+        const date1 = dto.dateStartInsertion !== undefined ? dto.dateStartInsertion : session.dateStartInsertion;
+        const date2 = dto.dateEndInsertion !== undefined ? dto.dateEndInsertion : session.dateEndInsertion;
+        const date3 = dto.dateStartExamination !== undefined ? dto.dateStartExamination : session.dateStartExamination;
+        const date4 = dto.dateEndExamination !== undefined ? dto.dateEndExamination : session.dateEndExamination;
+
+        if (this.checkDateOverlapOrInversion(date1, date2, date3, date4)) {
+            throw new Error('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');
+        }
+
+        return this.sessionsRepository.update(session, dto);
+    }
+
+    async deleteSession(sessionId: number): Promise<void> {
+        const session = await this.sessionsRepository.findById(sessionId);
+
+        if (!session) {
+            throw new Error(`Sessione con id ${sessionId} non trovata`);
+        }
+
+        await this.sessionsRepository.delete(sessionId);
+    }
+
+    async findSessionById(id: number): Promise<Session | null> {
+        return this.sessionsRepository.findById(id);
+    }
+
+    async findAllSessions(): Promise<Session[]> {
+        return this.sessionsRepository.findAll();
+    }
+
+    async findSessionByCurrentPlanningWindow(): Promise<Session | null> {
+        return this.sessionsRepository.findCurrentPlanningWindow();
+    }
+
+    async findSessionByCurrentExaminationWindow(): Promise<Session | null> {
+        return this.sessionsRepository.findCurrentExaminationWindow();
+    }
+
+    checkDateOverlapOrInversion(start1: Date, end1: Date, start2: Date, end2: Date): boolean {
+        return (start1 < end2 && start2 < end1) || (start1 > end2);
     }
 }
