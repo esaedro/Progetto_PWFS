@@ -1,7 +1,9 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, ValidationPipe } from '@nestjs/common';
 import { ServerExamsService } from './exams.service';
 import { Exam } from './exam.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { CreateExamDto } from './dto/create-exam.dto';
+import { UpdateExamDto } from './dto/update-exam.dto';
 
 @ApiTags('Exams APIs')
 @Controller('exams')
@@ -43,17 +45,45 @@ export class ServerExamsController {
     }
 
     @Post('create')
-    async create(): Promise<void> {
-        // Implementa la logica per creare un esame
+    @ApiBody({
+        type: CreateExamDto,
+        examples: {
+            create: {
+                value: {
+                    dateTimeStart: '2024-07-01T09:00:00Z',
+                    dateTimeEnd: '2024-07-01T12:00:00Z',
+                    teachingId: 5,
+                    sessionId: 2,
+                    professorId: 3
+                },
+            },
+        },
+    })
+    async create(@Body(ValidationPipe) dto: CreateExamDto): Promise<Exam> {
+        return this.serverExamsService.createExam(dto);
     }
 
     @Post('update/:id')
-    async update(@Param('id') id: number): Promise<void> {
-        // Implementa la logica per aggiornare un esame
+    @ApiBody({
+        type: UpdateExamDto,
+        examples: {
+            update: {
+                value: {
+                    dateTimeStart: '2024-07-01T09:00:00Z',
+                    dateTimeEnd: '2024-07-01T12:00:00Z',
+                    teachingId: 5,
+                    sessionId: 2,
+                    professorId: 3
+                },
+            },
+        },
+    })
+    async update(@Param('id') id: number, @Body(ValidationPipe) dto: UpdateExamDto): Promise<Exam> {
+        return this.serverExamsService.updateExam(id, dto);
     }
 
     @Post('delete/:id')
     async delete(@Param('id') id: number): Promise<void> {
-        // Implementa la logica per eliminare un esame
+        return this.serverExamsService.deleteExam(id);
     }
 }
