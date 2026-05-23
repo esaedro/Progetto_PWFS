@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServerPeopleController } from './people.controller';
 import { ServerPeopleService } from './people.service';
@@ -7,7 +7,7 @@ import { PeopleRepository } from './people.repository';
 import { ServerUsersModule } from '@server/users';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Professor]), ServerUsersModule],
+  imports: [TypeOrmModule.forFeature([Professor]), forwardRef(() => ServerUsersModule)],
   controllers: [ServerPeopleController],
   providers: [ServerPeopleService, PeopleRepository],  //repository nei provider? 
   exports: [ServerPeopleService],

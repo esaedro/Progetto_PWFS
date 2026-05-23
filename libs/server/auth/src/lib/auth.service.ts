@@ -1,15 +1,17 @@
 import { NotFoundException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ServerUsersService } from '@server/users';
+import { ServerUsersService, UserRole } from '@server/users';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthenticatedUser } from './interfaces/authenticated-user.interface';
 import { AuthResponse } from './interfaces/auth-response.interface';
 import { RegisterDto } from './dto/register.dto';
+import { ServerPeopleService } from '@server/people';
 
 @Injectable()
 export class ServerAuthService {
     // Injecting the used services
     constructor(private readonly usersService: ServerUsersService,
+        private readonly peopleService: ServerPeopleService,
         private readonly jwtService: JwtService) {}
 
     async validateUser(email: string, password: string): Promise<AuthenticatedUser> {
@@ -32,8 +34,14 @@ export class ServerAuthService {
     }
 
     async register(dto: RegisterDto): Promise<AuthResponse> {
-        const user = await this.usersService.create(dto);
-
+        const user = (dto.role == UserRole.PROFESSOR) ? 
+        await this.peopleService.create({ 
+            ...dto, 
+            exams: [],
+            subjects: []
+        }) : 
+        await this.usersService.create(dto);
+        
         const { passwordHash, ...result } = user;
         return this.login(result);
     }

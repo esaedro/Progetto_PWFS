@@ -19,6 +19,9 @@
   "include": ["src/**/*.ts"],
   "references": [
     {
+      "path": "../people/tsconfig.lib.json"
+    },
+    {
       "path": "../users/tsconfig.lib.json"
     }
   ],

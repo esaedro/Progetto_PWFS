@@ -45,7 +45,8 @@ export class ServerPeopleService {
             role: professorDto.role
         });
 
-        return await this.peopleRepository.create(createdUser.id);
+        await this.peopleRepository.create(createdUser.id);
+        return createdUser;
     }
 
 }

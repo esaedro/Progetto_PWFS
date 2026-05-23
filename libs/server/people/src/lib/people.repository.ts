@@ -63,6 +63,5 @@ export class PeopleRepository {
             professor_id : professor_id
         });
         return this.repository.save(professor);
-
     }
 }

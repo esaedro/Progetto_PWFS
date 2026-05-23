@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException } from '@nestjs/common';
 import { Degree } from './degree.entity';
 import { Subject } from './subject.entity';
 import { Teaching } from './teaching.entity';
@@ -24,7 +24,8 @@ export class ServerCoursesService {
         private readonly degreeRepository: DegreeRepository,
         private readonly teachingRepository: TeachingRepository,
 
-        private readonly peopleService: ServerPeopleService
+            @Inject(forwardRef(() => ServerPeopleService))
+        private readonly peopleService: ServerPeopleService,
     ) {}
 
 
