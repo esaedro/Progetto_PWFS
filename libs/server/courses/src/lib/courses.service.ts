@@ -38,7 +38,7 @@ export class ServerCoursesService {
     async getSubjects(): Promise<Subject[]> {
         const subjects = await this.subjectRepository.findAll();
         if (!subjects || subjects.length === 0) 
-            throw new NotFoundException('Non sono stati trovate materie');
+            throw new NotFoundException('Non sono state trovate materie');
         return subjects;
     }
 
@@ -92,7 +92,7 @@ export class ServerCoursesService {
     async getSubjectsByProfessor(professorId: number): Promise<Subject[]> {
         const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
         if (!subjects || subjects.length === 0)
-            throw new NotFoundException(`Non sono state trovate materie per il professore con id = ${professorId}`);
+            throw new NotFoundException(`Non sono state trovate materie per il professore con id = $rId}`);
         return subjects;
     }
 
