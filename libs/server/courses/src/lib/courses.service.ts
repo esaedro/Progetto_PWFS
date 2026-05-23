@@ -91,9 +91,10 @@ export class ServerCoursesService {
     }
     
     async getSubjectsByProfessor(professorId: number): Promise<Subject[]> {
+        await this.peopleService.findById(professorId);
         const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
         if (!subjects || subjects.length === 0)
-            throw new NotFoundException(`Non sono state trovate materie per il professore con id = $rId}`);
+            throw new NotFoundException(`Non sono state trovati insegnamenti per il professore con id = ${professorId}`);
         return subjects;
     }
 

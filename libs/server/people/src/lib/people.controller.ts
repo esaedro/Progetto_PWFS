@@ -6,7 +6,7 @@ import { CreatePeopleDto } from './dto/create-people.dto';
 import { UserRole } from '@server/users';
 
 @ApiTags('People APIs')
-@Controller('People')
+@Controller('people')
 export class ServerPeopleController {
     constructor(private serverPeopleService: ServerPeopleService) {}
 

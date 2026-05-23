@@ -21,15 +21,12 @@ export class ServerTeachingController {
         return this.serverCoursesService.getTeachings();
     }
 
-    @Get('degree/:degreeId/year/:year') // GET /teachings/degree/:degreeId/year/:year
+    @Get(':id') // GET /teachings/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
-    getTeachingsByDegreeAndYear(
-        @Param('degreeId', ParseIntPipe) degreeId: number,
-        @Param('year', ParseIntPipe) year: number
-    ) {
-        return this.serverCoursesService.getTeachingsByDegreeAndYear(degreeId, year);
+    getTeachingById(@Param('id', ParseIntPipe) id: number) {
+        return this.serverCoursesService.getTeachingByID(id);
     }
 
     @Get(':id/details') // GET /teachings/:id/details
@@ -48,12 +45,15 @@ export class ServerTeachingController {
         return this.serverCoursesService.getTeachingsByProfessor(professorId);
     }
 
-    @Get(':id') // GET /teachings/:id
+    @Get('degree/:degreeId/year/:year') // GET /teachings/degree/:degreeId/year/:year
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
-    getTeachingById(@Param('id', ParseIntPipe) id: number) {
-        return this.serverCoursesService.getTeachingByID(id);
+    getTeachingsByDegreeAndYear(
+        @Param('degreeId', ParseIntPipe) degreeId: number,
+        @Param('year', ParseIntPipe) year: number
+    ) {
+        return this.serverCoursesService.getTeachingsByDegreeAndYear(degreeId, year);
     }
 
     @Post("create") // POST /teachings
