@@ -22,6 +22,12 @@
       "path": "../exams/tsconfig.lib.json"
     },
     {
+      "path": "../users/tsconfig.lib.json"
+    },
+    {
+      "path": "../security/tsconfig.lib.json"
+    },
+    {
       "path": "../people/tsconfig.lib.json"
     }
   ]

@@ -4,26 +4,26 @@ import { ApiTags, ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './dto/user-role.enum';
-import { CurrentUser, JwtAuthGuard, Roles, Guard } from '@server/security';
+import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from '@server/security';
 
 @ApiTags('Users APIs')
 @Controller('users')
 export class ServerUsersController {
-  constructor(private serverUsersService: ServerUsersService) {}
+    constructor(private serverUsersService: ServerUsersService) { }
 
     @Get() // GET /users or /users?role=value
-    @UseGuards(JwtAuthGuard,RolesGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR)
     @ApiBearerAuth()
     @ApiQuery({ name: 'role', required: false, enum: UserRole })
-    getUsers(@Query('role', new ParseEnumPipe(UserRole, {optional: true})) role?: UserRole) {
+    getUsers(@Query('role', new ParseEnumPipe(UserRole, { optional: true })) role?: UserRole) {
         return this.serverUsersService.getUsers(role);
     }
 
     @Get('me')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    getMe(@CurrentUser() user:unknown) {
+    getMe(@CurrentUser() user: unknown) {
         return user;
     }
 
@@ -47,8 +47,8 @@ export class ServerUsersController {
             properties: {
                 name: { type: 'string', example: 'Devis' },
                 email: { type: 'string', example: 'bianchin@unibs.it' },
-                password: {type: 'string', example: 'Password1!'},
-                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.PROFESSOR}
+                password: { type: 'string', example: 'Password1!' },
+                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.PROFESSOR }
             },
             required: ['name', 'email', 'password', 'role'],
         },
@@ -58,7 +58,7 @@ export class ServerUsersController {
     }
 
     @Patch(':id') // PATCH /users/:id
-    @UseGuards(JwtAuthGuard,RolesGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR)
     @ApiBearerAuth()
     @ApiBody({
@@ -67,21 +67,21 @@ export class ServerUsersController {
             properties: {
                 name: { type: 'string', example: 'Devis' },
                 email: { type: 'string', example: 'bianchin@unibs.it' },
-                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.PROFESSOR}
+                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.PROFESSOR }
             },
             required: ['name', 'email', 'role'],
         },
     })
     update(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) userUpdate: UpdateUserDto) {
         //return {id, ...userUpdate};
-        return this.serverUsersService.update(id,userUpdate);
+        return this.serverUsersService.update(id, userUpdate);
     }
 
     @Delete(':id') // DELETE /users/:id
-    @UseGuards(JwtAuthGuard,RolesGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR)
     @ApiBearerAuth()
     removeUser(@Param('id', ParseIntPipe) id: number) {
-        return this.serverUsersService.removeUser(id);    
+        return this.serverUsersService.removeUser(id);
     }
 }

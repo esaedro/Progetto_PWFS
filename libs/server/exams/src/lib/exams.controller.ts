@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ServerExamsService } from './exams.service';
 import { Exam } from './exam.entity';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { Roles, JwtAuthGuard, RolesGuard } from '@server/security';
+import { UserRole } from '@server/users';
 
 @ApiTags('Exams APIs')
 @Controller('exams')
@@ -11,16 +13,25 @@ export class ServerExamsController {
     constructor(private serverExamsService: ServerExamsService) { }
 
     @Get()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     async findAll(): Promise<Exam[]> {
         return this.serverExamsService.findAllExams();
     }
 
     @Get(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     async findById(@Param('id') id: number): Promise<Exam | null> {
         return this.serverExamsService.findExamById(id);
     }
 
     @Get('session/:sessionId/degree/:degreeId/year/:degreeYear')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     async findBySessionAndDegree(
         @Param('sessionId') sessionId: number,
         @Param('degreeId') degreeId: number,
@@ -30,21 +41,33 @@ export class ServerExamsController {
     }
 
     @Get('session/:sessionId')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     async findBySession(@Param('sessionId') sessionId: number): Promise<Exam[] | null> {
         return this.serverExamsService.findExamsBySession(sessionId);
     }
 
     @Get('professor/:professorId')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     async findByProfessor(@Param('professorId') professorId: number): Promise<Exam[]> {
         return this.serverExamsService.findExamsByProfessor(professorId);
     }
 
     @Get('teaching/:teachingId')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     async findByTeaching(@Param('teachingId') teachingId: number): Promise<Exam[]> {
         return this.serverExamsService.findExamsByTeaching(teachingId);
     }
 
     @Post('create')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     @ApiBody({
         type: CreateExamDto,
         examples: {
@@ -63,7 +86,10 @@ export class ServerExamsController {
         return this.serverExamsService.createExam(dto);
     }
 
-    @Post('update/:id')
+    @Patch('update/:id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     @ApiBody({
         type: UpdateExamDto,
         examples: {
@@ -82,7 +108,10 @@ export class ServerExamsController {
         return this.serverExamsService.updateExam(id, dto);
     }
 
-    @Post('delete/:id')
+    @Delete('delete/:id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
     async delete(@Param('id') id: number): Promise<void> {
         return this.serverExamsService.deleteExam(id);
     }

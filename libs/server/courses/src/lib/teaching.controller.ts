@@ -1,79 +1,105 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, ParseIntPipe, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiBody } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, ParseIntPipe, ValidationPipe, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { ServerCoursesService } from './courses.service';
 import { CreateTeachingDto } from './dto/create-teaching.dto';
 import { UpdateTeachingDto } from './dto/update-teaching-dto';
+import { Roles, JwtAuthGuard, RolesGuard } from '@server/security';
+import { UserRole } from '@server/users';
 
 @ApiTags('Teachings APIs')
 @Controller('teachings')
 export class ServerTeachingController {
-	constructor(private serverCoursesService: ServerCoursesService) {}
+    constructor(private serverCoursesService: ServerCoursesService) { }
 
     //TODO: eventuali guardie
 
-	@Get() // GET /teachings
-	getTeachings() {
-		return this.serverCoursesService.getTeachings();
-	}
+    @Get() // GET /teachings
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachings() {
+        return this.serverCoursesService.getTeachings();
+    }
 
-	@Get('degree/:degreeId/year/:year') // GET /teachings/degree/:degreeId/year/:year
-	getTeachingsByDegreeAndYear(
-		@Param('degreeId', ParseIntPipe) degreeId: number,
-		@Param('year', ParseIntPipe) year: number
-	) {
-		return this.serverCoursesService.getTeachingsByDegreeAndYear(degreeId, year);
-	}
+    @Get('degree/:degreeId/year/:year') // GET /teachings/degree/:degreeId/year/:year
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachingsByDegreeAndYear(
+        @Param('degreeId', ParseIntPipe) degreeId: number,
+        @Param('year', ParseIntPipe) year: number
+    ) {
+        return this.serverCoursesService.getTeachingsByDegreeAndYear(degreeId, year);
+    }
 
-	@Get(':id/details') // GET /teachings/:id/details
-	getTeachingDetails(@Param('id', ParseIntPipe) id: number) {
-		return this.serverCoursesService.getTeachingDetails(id);
-	}
+    @Get(':id/details') // GET /teachings/:id/details
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachingDetails(@Param('id', ParseIntPipe) id: number) {
+        return this.serverCoursesService.getTeachingDetails(id);
+    }
 
-	@Get('professor/:professorId') // GET /teachings/professor/:professorId
-	getTeachingsByProfessor(@Param('professorId', ParseIntPipe) professorId: number) {
-		return this.serverCoursesService.getTeachingsByProfessor(professorId);
-	}
+    @Get('professor/:professorId') // GET /teachings/professor/:professorId
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachingsByProfessor(@Param('professorId', ParseIntPipe) professorId: number) {
+        return this.serverCoursesService.getTeachingsByProfessor(professorId);
+    }
 
-	@Get(':id') // GET /teachings/:id
-	getTeachingById(@Param('id', ParseIntPipe) id: number) {
-		return this.serverCoursesService.getTeachingByID(id);
-	}
+    @Get(':id') // GET /teachings/:id
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachingById(@Param('id', ParseIntPipe) id: number) {
+        return this.serverCoursesService.getTeachingByID(id);
+    }
 
-	@Post() // POST /teachings
-	@ApiBody({
-		type: CreateTeachingDto,
-		examples: {
-			create: {
-				value: {
-					year: 2,
-					subjectId: 10,
-					degreeId: 3,
-				},
-			},
-		},
-	})
-	createTeaching(@Body(ValidationPipe) dto: CreateTeachingDto) {
-		return this.serverCoursesService.createTeaching(dto);
-	}
+    @Post() // POST /teachings
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SECRETARY)
+    @ApiBearerAuth()
+    @ApiBody({
+        type: CreateTeachingDto,
+        examples: {
+            create: {
+                value: {
+                    year: 2,
+                    subjectId: 10,
+                    degreeId: 3,
+                },
+            },
+        },
+    })
+    createTeaching(@Body(ValidationPipe) dto: CreateTeachingDto) {
+        return this.serverCoursesService.createTeaching(dto);
+    }
 
-	@Patch(':id') // PATCH /teachings/:id
-	@ApiBody({
-		type: UpdateTeachingDto,
-		examples: {
-			update: {
-				value: {
-					year: 3,
-					subjectId: 12,
-				},
-			},
-		},
-	})
-	updateTeaching(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) dto: UpdateTeachingDto) {
-		return this.serverCoursesService.updateTeaching(id, dto);
-	}
+    @Patch(':id') // PATCH /teachings/:id
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SECRETARY)
+    @ApiBearerAuth()
+    @ApiBody({
+        type: UpdateTeachingDto,
+        examples: {
+            update: {
+                value: {
+                    year: 3,
+                    subjectId: 12,
+                },
+            },
+        },
+    })
+    updateTeaching(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) dto: UpdateTeachingDto) {
+        return this.serverCoursesService.updateTeaching(id, dto);
+    }
 
-	@Delete(':id') // DELETE /teachings/:id
-	deleteTeaching(@Param('id', ParseIntPipe) id: number) {
-		return this.serverCoursesService.deleteTeaching(id);
-	}
+    @Delete(':id') // DELETE /teachings/:id
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SECRETARY)
+    @ApiBearerAuth()
+    deleteTeaching(@Param('id', ParseIntPipe) id: number) {
+        return this.serverCoursesService.deleteTeaching(id);
+    }
 }
