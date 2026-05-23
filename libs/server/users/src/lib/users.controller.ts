@@ -4,7 +4,7 @@ import { ApiTags, ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './dto/user-role.enum';
-import { ServerPeopleService } from '@server/people'
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from '@server/security';
 
 @ApiTags('Users APIs')

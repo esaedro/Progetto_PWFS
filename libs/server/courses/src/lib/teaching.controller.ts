@@ -56,7 +56,7 @@ export class ServerTeachingController {
         return this.serverCoursesService.getTeachingByID(id);
     }
 
-    @Post() // POST /teachings
+    @Post("create") // POST /teachings
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -76,7 +76,7 @@ export class ServerTeachingController {
         return this.serverCoursesService.createTeaching(dto);
     }
 
-    @Patch(':id') // PATCH /teachings/:id
+    @Patch('update/:id') // PATCH /teachings/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -95,7 +95,7 @@ export class ServerTeachingController {
         return this.serverCoursesService.updateTeaching(id, dto);
     }
 
-    @Delete(':id') // DELETE /teachings/:id
+    @Delete('delete/:id') // DELETE /teachings/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()

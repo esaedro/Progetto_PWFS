@@ -15,7 +15,7 @@ export class ServerPeopleService {
         const professor = await this.peopleRepository.findById(professor_id);
 
         if (!professor) {
-            throw new NotFoundException("Non è stato trovato il professore con id = ${professor_id}");
+            throw new NotFoundException(`Non è stato trovato il professore con id = ${professor_id}`);
         }
 
         return professor

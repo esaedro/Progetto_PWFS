@@ -29,7 +29,7 @@ export class ServerDegreeController {
         return this.serverCoursesService.getDegreeByID(id);
     }
 
-    @Post() // POST /degrees
+    @Post("create") // POST /degrees
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -38,7 +38,7 @@ export class ServerDegreeController {
         examples: {
             create: {
                 value: {
-                    name: 'Informatica',
+                    name: 'Ingegneria Informatica',
                 },
             },
         },
@@ -47,7 +47,7 @@ export class ServerDegreeController {
         return this.serverCoursesService.createDegree(dto);
     }
 
-    @Patch(':id') // PATCH /degrees/:id
+    @Patch('update/:id') // PATCH /degrees/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -56,7 +56,7 @@ export class ServerDegreeController {
         examples: {
             update: {
                 value: {
-                    name: 'Informatica e Ingegneria',
+                    name: 'Ingegneria Informatica',
                 },
             },
         },
@@ -65,7 +65,7 @@ export class ServerDegreeController {
         return this.serverCoursesService.updateDegree(id, dto);
     }
 
-    @Delete(':id') // DELETE /degrees/:id
+    @Delete('delete/:id') // DELETE /degrees/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()

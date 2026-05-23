@@ -37,7 +37,7 @@ export class ServerSubjectController {
         return this.serverCoursesService.getSubjectByID(id);
     }
 
-    @Post() // POST /subjects
+    @Post("create") // POST /subjects
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -47,7 +47,7 @@ export class ServerSubjectController {
             create: {
                 value: {
                     name: 'Basi di Dati',
-                    professorIds: [1, 3],
+                    professorIds: [1],
                 },
             },
         },
@@ -56,7 +56,7 @@ export class ServerSubjectController {
         return this.serverCoursesService.createSubject(dto);
     }
 
-    @Patch(':id') // PATCH /subjects/:id
+    @Patch('update/:id') // PATCH /subjects/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -75,7 +75,7 @@ export class ServerSubjectController {
         return this.serverCoursesService.upgradeSubject(id, dto);
     }
 
-    @Delete(':id') // DELETE /subjects/:id
+    @Delete('delete/:id') // DELETE /subjects/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
