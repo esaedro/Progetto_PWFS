@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PeopleRepository } from './people.repository';
 import { Professor } from './professor.entity';
+import { ServerUsersService } from '@server/users';
+import { CreatePeopleDto } from './dto/create-people.dto';
 
 @Injectable()
 export class ServerPeopleService {
- 
-    constructor(private readonly peopleRepository: PeopleRepository){}
+
+    constructor(private readonly peopleRepository: PeopleRepository, 
+        private readonly serverUsersService: ServerUsersService
+    ){}
 
     async findById(professor_id: number): Promise<Professor | null> {
         const professor = await this.peopleRepository.findById(professor_id);
@@ -31,6 +35,17 @@ export class ServerPeopleService {
         }
 
         return professors;
+    }
+
+    async create(professorDto: CreatePeopleDto) {
+        const createdUser = await this.serverUsersService.create({
+            name: professorDto.name,
+            email: professorDto.email,
+            password: professorDto.password,
+            role: professorDto.role
+        });
+
+        return await this.peopleRepository.create(createdUser.id);
     }
 
 }

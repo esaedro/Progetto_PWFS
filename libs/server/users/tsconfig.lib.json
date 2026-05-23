@@ -20,6 +20,9 @@
   "references": [
     {
       "path": "../security/tsconfig.lib.json"
+    },
+    {
+      "path": "../people/tsconfig.lib.json"
     }
   ],
   "exclude": [

@@ -1,13 +1,21 @@
-import { IsNumber} from "class-validator";
+import { CreateUserDto } from "@server/users";
+import { IsNumber, IsArray, IsOptional} from "class-validator";
 
-export class CreatePeopleDto {
+export class CreatePeopleDto extends CreateUserDto{
+
+    readonly user: CreateUserDto;
     
+    @IsOptional()
     @IsNumber()
-    professor_id: number;
+    readonly professor_id: number;
 
-    @IsNumber()
-    exams : number;
+    @IsOptional()
+    @IsNumber({}, { each: true })
+    @IsArray()
+    readonly exams?: number[];
 
-    @IsNumber()
-    subjects: number;
+    @IsOptional()
+    @IsNumber({}, { each: true })
+    @IsArray()
+    readonly subjects?: number[];
 }
