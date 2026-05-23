@@ -58,4 +58,11 @@ export class PeopleRepository {
         return (result.affected ?? 0) > 0;
     }
 
+    async create(professor_id: number) {
+        const professor = this.repository.create({
+            professor_id : professor_id
+        });
+        return this.repository.save(professor);
+
+    }
 }

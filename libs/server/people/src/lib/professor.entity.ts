@@ -11,7 +11,7 @@ import { Subject } from "@server/courses";
 @Entity("Professors")
 export class Professor {
 
-    @PrimaryColumn({ name: 'professor_id' })
+    @PrimaryColumn({ name: 'professor_id', type: 'int' })
     professor_id: number;
 
     @OneToOne(() => UserEntity, { nullable: false, eager: true, onDelete: 'CASCADE' })
