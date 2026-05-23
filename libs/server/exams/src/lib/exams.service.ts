@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { ServerCoursesService } from '@server/courses';
 import { ExamsRepository } from './exams.repository';
@@ -25,7 +25,7 @@ export class ServerExamsService {
 
     async createExam(dto: CreateExamDto): Promise<Exam> {
         if (await this.existsConflictInSameYear(dto.sessionId, dto.dateTimeStart, dto.dateTimeEnd, dto.teachingId)) {
-            throw new Error('Esame in conflitto con un altro esame dello stesso anno del corso di laurea');
+            throw new ConflictException('Esame in conflitto con un altro esame dello stesso anno del corso di laurea');
         }
 
         return this.examsRepository.create(dto);
@@ -34,7 +34,7 @@ export class ServerExamsService {
     async updateExam(examId: number, dto: UpdateExamDto): Promise<Exam> {
         const exam = await this.examsRepository.findById(examId);
         if (!exam) {
-            throw new Error(`Esame con id ${examId} non trovato`);
+            throw new NotFoundException(`Esame con id ${examId} non trovato`);
         }
 
         const sessionId = dto.sessionId !== undefined ? dto.sessionId : exam.session.id;
@@ -43,13 +43,13 @@ export class ServerExamsService {
         const teachingId = dto.teachingId !== undefined ? dto.teachingId : exam.teaching.id;
 
         if (await this.existsConflictInSameYear(sessionId, dateTimeStart, dateTimeEnd, teachingId)) {
-            throw new Error('Esame in conflitto con un altro esame dello stesso anno del corso di laurea');
+            throw new ConflictException('Esame in conflitto con un altro esame dello stesso anno del corso di laurea');
         }
 
         const date1 = dto.dateTimeStart !== undefined ? dto.dateTimeStart : exam.dateTimeStart;
         const date2 = dto.dateTimeEnd !== undefined ? dto.dateTimeEnd : exam.dateTimeEnd;
         if (date1 >= date2) {
-            throw new Error('La data di inizio deve essere precedente alla data di fine');
+            throw new ForbiddenException('La data di inizio deve essere precedente alla data di fine');
         }
 
         return this.examsRepository.update(exam, dto);
@@ -58,7 +58,7 @@ export class ServerExamsService {
     async deleteExam(examId: number): Promise<void> {
         const exam = await this.examsRepository.findById(examId);
         if (!exam) {
-            throw new Error(`Esame con id ${examId} non trovato`);
+            throw new NotFoundException(`Esame con id ${examId} non trovato`);
         }
 
         await this.examsRepository.delete(examId);
@@ -80,7 +80,7 @@ export class ServerExamsService {
         const session = await this.sessionsRepository.findById(sessionId);
 
         if (!session) {
-            throw new Error(`Sessione con id ${sessionId} non trovata`);
+            throw new NotFoundException(`Sessione con id ${sessionId} non trovata`);
         }
 
         return this.examsRepository.findBySession(session);
@@ -117,7 +117,7 @@ export class ServerExamsService {
     async createSession(dto: CreateSessionDto): Promise<Session> {
 
         if (this.checkDateOverlapOrInversion(dto.dateStartInsertion, dto.dateEndInsertion, dto.dateStartExamination, dto.dateEndExamination)) {
-            throw new Error('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');
+            throw new ConflictException('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');
         }
 
         return this.sessionsRepository.create(dto);
@@ -127,7 +127,7 @@ export class ServerExamsService {
         const session = await this.sessionsRepository.findById(sessionId);
 
         if (!session) {
-            throw new Error(`Sessione con id ${sessionId} non trovata`);
+            throw new NotFoundException(`Sessione con id ${sessionId} non trovata`);
         }
 
         const date1 = dto.dateStartInsertion !== undefined ? dto.dateStartInsertion : session.dateStartInsertion;
@@ -136,7 +136,7 @@ export class ServerExamsService {
         const date4 = dto.dateEndExamination !== undefined ? dto.dateEndExamination : session.dateEndExamination;
 
         if (this.checkDateOverlapOrInversion(date1, date2, date3, date4)) {
-            throw new Error('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');
+            throw new ConflictException('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');
         }
 
         return this.sessionsRepository.update(session, dto);
@@ -146,7 +146,7 @@ export class ServerExamsService {
         const session = await this.sessionsRepository.findById(sessionId);
 
         if (!session) {
-            throw new Error(`Sessione con id ${sessionId} non trovata`);
+            throw new NotFoundException(`Sessione con id ${sessionId} non trovata`);
         }
 
         await this.sessionsRepository.delete(sessionId);

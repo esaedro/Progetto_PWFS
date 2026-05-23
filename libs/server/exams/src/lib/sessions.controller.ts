@@ -12,22 +12,6 @@ import { UserRole } from '@server/users';
 export class ServerSessionsController {
     constructor(private serverExamsService: ServerExamsService) { }
 
-    @Get()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
-    async findAll() {
-        return this.serverExamsService.findAllSessions();
-    }
-
-    @Get(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
-    async findById(@Param('id') id: number) {
-        return this.serverExamsService.findSessionById(id);
-    }
-
     @Get('current-planning-window')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
@@ -42,6 +26,22 @@ export class ServerSessionsController {
     @ApiBearerAuth()
     async findCurrentExaminationWindow() {
         return this.serverExamsService.findSessionByCurrentExaminationWindow();
+    }
+
+    @Get()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    async findAll() {
+        return this.serverExamsService.findAllSessions();
+    }
+
+    @Get(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    async findById(@Param('id') id: number) {
+        return this.serverExamsService.findSessionById(id);
     }
 
     @Post('create')
@@ -62,7 +62,12 @@ export class ServerSessionsController {
         },
     })
     async create(@Body(ValidationPipe) dto: CreateSessionDto): Promise<Session> {
-        return this.serverExamsService.createSession(dto);
+        try {
+            return this.serverExamsService.createSession(dto);
+        } catch (error) {
+            console.error('Errore nella creazione della sessione:', error);
+            throw error;
+        }
     }
 
     @Patch('update/:id')
@@ -83,7 +88,12 @@ export class ServerSessionsController {
         },
     })
     async update(@Param('id') id: number, @Body(ValidationPipe) dto: UpdateSessionDto): Promise<Session> {
-        return this.serverExamsService.updateSession(id, dto);
+        try {
+            return this.serverExamsService.updateSession(id, dto);
+        } catch (error) {
+            console.error('Errore nell\'aggiornamento della sessione:', error);
+            throw error;
+        }
     }
 
     @Delete('delete/:id')
@@ -91,6 +101,11 @@ export class ServerSessionsController {
     @Roles(UserRole.SECRETARY)
     @ApiBearerAuth()
     async delete(@Param('id') id: number): Promise<void> {
-        return this.serverExamsService.deleteSession(id);
+        try {
+            return this.serverExamsService.deleteSession(id);
+        } catch (error) {
+            console.error('Errore nella cancellazione della sessione:', error);
+            throw error;
+        }
     }
 }

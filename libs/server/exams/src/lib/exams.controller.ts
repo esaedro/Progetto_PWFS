@@ -12,22 +12,6 @@ import { UserRole } from '@server/users';
 export class ServerExamsController {
     constructor(private serverExamsService: ServerExamsService) { }
 
-    @Get()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
-    @ApiBearerAuth()
-    async findAll(): Promise<Exam[]> {
-        return this.serverExamsService.findAllExams();
-    }
-
-    @Get(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
-    @ApiBearerAuth()
-    async findById(@Param('id') id: number): Promise<Exam | null> {
-        return this.serverExamsService.findExamById(id);
-    }
-
     @Get('session/:sessionId/degree/:degreeId/year/:degreeYear')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR)
@@ -64,6 +48,22 @@ export class ServerExamsController {
         return this.serverExamsService.findExamsByTeaching(teachingId);
     }
 
+    @Get()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
+    async findAll(): Promise<Exam[]> {
+        return this.serverExamsService.findAllExams();
+    }
+
+    @Get(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
+    async findById(@Param('id') id: number): Promise<Exam | null> {
+        return this.serverExamsService.findExamById(id);
+    }
+
     @Post('create')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR)
@@ -83,7 +83,12 @@ export class ServerExamsController {
         },
     })
     async create(@Body(ValidationPipe) dto: CreateExamDto): Promise<Exam> {
-        return this.serverExamsService.createExam(dto);
+        try {
+            return this.serverExamsService.createExam(dto);
+        } catch (error) {
+            console.error('Errore nella creazione dell\'esame:', error);
+            throw error;
+        }
     }
 
     @Patch('update/:id')
@@ -105,7 +110,12 @@ export class ServerExamsController {
         },
     })
     async update(@Param('id') id: number, @Body(ValidationPipe) dto: UpdateExamDto): Promise<Exam> {
-        return this.serverExamsService.updateExam(id, dto);
+        try {
+            return this.serverExamsService.updateExam(id, dto);
+        } catch (error) {
+            console.error('Errore nell\'aggiornamento dell\'esame:', error);
+            throw error;
+        }
     }
 
     @Delete('delete/:id')
@@ -113,6 +123,11 @@ export class ServerExamsController {
     @Roles(UserRole.PROFESSOR)
     @ApiBearerAuth()
     async delete(@Param('id') id: number): Promise<void> {
-        return this.serverExamsService.deleteExam(id);
+        try {
+            return this.serverExamsService.deleteExam(id);
+        } catch (error) {
+            console.error('Errore nella cancellazione dell\'esame:', error);
+            throw error;
+        }
     }
 }
