@@ -4,7 +4,7 @@ import { ApiTags, ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './dto/user-role.enum';
-import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from '@server/security';
+import { CurrentUser, JwtAuthGuard, Roles, Guard } from '@server/security';
 
 @ApiTags('Users APIs')
 @Controller('users')
@@ -13,7 +13,7 @@ export class ServerUsersController {
 
     @Get() // GET /users or /users?role=value
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.PROFESSOR)
     @ApiBearerAuth()
     @ApiQuery({ name: 'role', required: false, enum: UserRole })
     getUsers(@Query('role', new ParseEnumPipe(UserRole, {optional: true})) role?: UserRole) {
@@ -34,7 +34,7 @@ export class ServerUsersController {
 
     @Get(':id') // GET /users/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.ADMIN,UserRole.USER)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
     getOneUser(@Param('id', ParseIntPipe) id: number) {
         return this.serverUsersService.getOneUser(id);
@@ -48,7 +48,7 @@ export class ServerUsersController {
                 name: { type: 'string', example: 'Devis' },
                 email: { type: 'string', example: 'bianchin@unibs.it' },
                 password: {type: 'string', example: 'Password1!'},
-                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.USER}
+                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.PROFESSOR}
             },
             required: ['name', 'email', 'password', 'role'],
         },
@@ -59,7 +59,7 @@ export class ServerUsersController {
 
     @Patch(':id') // PATCH /users/:id
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.PROFESSOR)
     @ApiBearerAuth()
     @ApiBody({
         schema: {
@@ -67,7 +67,7 @@ export class ServerUsersController {
             properties: {
                 name: { type: 'string', example: 'Devis' },
                 email: { type: 'string', example: 'bianchin@unibs.it' },
-                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.USER}
+                role: { type: 'string', enum: Object.values(UserRole), example: UserRole.PROFESSOR}
             },
             required: ['name', 'email', 'role'],
         },
@@ -79,7 +79,7 @@ export class ServerUsersController {
 
     @Delete(':id') // DELETE /users/:id
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.PROFESSOR)
     @ApiBearerAuth()
     removeUser(@Param('id', ParseIntPipe) id: number) {
         return this.serverUsersService.removeUser(id);    

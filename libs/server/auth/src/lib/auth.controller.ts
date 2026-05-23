@@ -39,7 +39,7 @@ export class ServerAuthController {
                   name: { type: 'string', example: 'Devis' },
                   email: { type: 'string', example: 'devis.bianchini@unibs.it' },
                   password: {type: 'string', example: 'Password1!'},
-                  role: { type: 'string', enum: Object.values(UserRole), example: UserRole.USER}
+                  role: { type: 'string', enum: Object.values(UserRole), example: UserRole.PROFESSOR}
               },
               required: ['name', 'email', 'password', 'role'],
           },
