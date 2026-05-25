@@ -44,7 +44,7 @@ export class ExamsRepository {
     }
 
     findByProfessor(professorId: number): Promise<Exam[]> {
-        return this.repository.find({ where: { professor: { id: professorId } } });
+        return this.repository.find({ where: { professor: { professor_id: professorId } } });
     }
 
     findbyTeaching(teachingId: number): Promise<Exam[]> {
@@ -76,7 +76,7 @@ export class ExamsRepository {
             partial: dto.partial,
             type: dto.type,
             teaching: { id: dto.teachingId },
-            professor: { id: dto.professorId },
+            professor: { professor_id: dto.professorId },
             session: { id: dto.sessionId }
         });
 
@@ -96,7 +96,7 @@ export class ExamsRepository {
         if (dto.partial !== undefined) exam.partial = dto.partial;
         if (dto.type !== undefined) exam.type = dto.type;
         if (dto.teachingId !== undefined) exam.teaching = { id: dto.teachingId } as Teaching;
-        if (dto.professorId !== undefined) exam.professor = { id: dto.professorId } as Professor;
+        if (dto.professorId !== undefined) exam.professor = { professor_id: dto.professorId } as Professor;
         if (dto.sessionId !== undefined) exam.session = { id: dto.sessionId } as Session;
 
         return this.repository.save(exam);

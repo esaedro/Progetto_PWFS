@@ -1,15 +1,15 @@
-import { IsBoolean, IsDateString, IsEnum, IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsEnum, IsNumber, IsString } from "class-validator";
 import { ExamType } from "./exam-type.enum";
-import { Teaching } from "@server/courses";
-import { Professor } from "@server/people";
-import { Session } from "../session.entity";
+import { Type } from "class-transformer";
 
 export class CreateExamDto {
 
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     dateTimeStart: Date;
 
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     dateTimeEnd: Date;
 
     @IsString()

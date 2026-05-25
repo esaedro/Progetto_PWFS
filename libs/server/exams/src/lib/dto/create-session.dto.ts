@@ -1,17 +1,22 @@
-import { IsDateString } from "class-validator";
+import { Type } from "class-transformer";
+import { IsDate } from "class-validator";
 
 export class CreateSessionDto {
 
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     dateStartInsertion: Date;
 
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     dateEndInsertion: Date;
 
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     dateStartExamination: Date;
 
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     dateEndExamination: Date;
 
 }
