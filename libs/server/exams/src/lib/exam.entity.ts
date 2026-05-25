@@ -15,10 +15,10 @@ export class Exam {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'date', nullable: false })
+    @Column({ type: 'timestamptz', nullable: false })
     dateTimeStart: Date;
 
-    @Column({ type: 'date', nullable: false })
+    @Column({ type: 'timestamptz', nullable: false })
     dateTimeEnd: Date;
 
     @Column({ type: 'varchar', length: 255, nullable: false })
