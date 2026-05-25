@@ -21,20 +21,20 @@ export class ServerSubjectController {
         return this.serverCoursesService.getSubjects();
     }
 
+    @Get('by-professor/:professorId') // GET /subjects/by-professor/:professorId
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getSubjectsByProfessor(@Param('professorId', ParseIntPipe) professorId: number) {
+        return this.serverCoursesService.getSubjectsByProfessor(professorId);
+    }
+
     @Get(':id') // GET /subjects/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
     getSubjectById(@Param('id', ParseIntPipe) id: number) {
         return this.serverCoursesService.getSubjectByID(id);
-    }
-
-    @Get('professor/:professorId') // GET /subjects/professor/:professorId
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
-    getSubjectsByProfessor(@Param('professorId', ParseIntPipe) professorId: number) {
-        return this.serverCoursesService.getSubjectsByProfessor(professorId);
     }
 
     @Post("create") // POST /subjects

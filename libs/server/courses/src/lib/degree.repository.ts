@@ -23,7 +23,8 @@ export class DegreeRepository {
     
     async createDegree(dto: CreateDegreeDto): Promise<Degree> {
         const degree = this.repository.create({
-            name: dto.name
+            name: dto.name,
+            durationYears: dto.durationYears
         });
         return this.repository.save(degree);
     }
@@ -33,6 +34,7 @@ export class DegreeRepository {
         if(!degree)
             return null;
         if (dto.name !== undefined) degree.name = dto.name;
+        if (dto.durationYears !== undefined) degree.durationYears = dto.durationYears;
         return this.repository.save(degree);
     }
    

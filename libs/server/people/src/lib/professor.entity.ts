@@ -21,7 +21,9 @@ export class Professor {
     @OneToMany(() => Exam, (exam) => exam.professor)
     exams : Relation<Exam[]>;
 
-    @ManyToMany(() => Subject, (subject) => subject.professors)
+    @ManyToMany(() => Subject, (subject) => subject.professors, {
+        onDelete: "CASCADE",
+    })
     subjects: Relation<Subject[]>;
 
 }

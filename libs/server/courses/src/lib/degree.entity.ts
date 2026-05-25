@@ -10,6 +10,9 @@ export class Degree {
     @Column({type: "varchar", length: 255, nullable: false})
     name: string;
 
+    @Column({type: "int", nullable: false})
+    durationYears: number;
+
     // Aggiungere un codice identificativo per il corso di laurea, diverso dall'id autoincrementale?
 
     // One to many verso Teaching

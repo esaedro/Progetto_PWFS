@@ -21,23 +21,7 @@ export class ServerTeachingController {
         return this.serverCoursesService.getTeachings();
     }
 
-    @Get(':id') // GET /teachings/:id
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
-    getTeachingById(@Param('id', ParseIntPipe) id: number) {
-        return this.serverCoursesService.getTeachingByID(id);
-    }
-
-    @Get(':id/details') // GET /teachings/:id/details
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
-    getTeachingDetails(@Param('id', ParseIntPipe) id: number) {
-        return this.serverCoursesService.getTeachingDetails(id);
-    }
-
-    @Get('professor/:professorId') // GET /teachings/professor/:professorId
+    @Get('by-professor/:professorId') // GET /teachings/by-professor/:professorId
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -45,7 +29,7 @@ export class ServerTeachingController {
         return this.serverCoursesService.getTeachingsByProfessor(professorId);
     }
 
-    @Get('degree/:degreeId/year/:year') // GET /teachings/degree/:degreeId/year/:year
+    @Get('by-degree/:degreeId/year/:year') // GET /teachings/by-degree/:degreeId/year/:year
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
@@ -54,6 +38,22 @@ export class ServerTeachingController {
         @Param('year', ParseIntPipe) year: number
     ) {
         return this.serverCoursesService.getTeachingsByDegreeAndYear(degreeId, year);
+    }
+
+    @Get('details/:id') // GET /teachings/details/:id
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachingDetails(@Param('id', ParseIntPipe) id: number) {
+        return this.serverCoursesService.getTeachingDetails(id);
+    }
+
+    @Get(':id') // GET /teachings/:id
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachingById(@Param('id', ParseIntPipe) id: number) {
+        return this.serverCoursesService.getTeachingByID(id);
     }
 
     @Post("create") // POST /teachings

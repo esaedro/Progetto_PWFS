@@ -39,6 +39,7 @@ export class ServerDegreeController {
             create: {
                 value: {
                     name: 'Ingegneria Informatica',
+                    durationYears: 3,
                 },
             },
         },
@@ -57,6 +58,7 @@ export class ServerDegreeController {
             update: {
                 value: {
                     name: 'Ingegneria Informatica',
+                    durationYears: 3,
                 },
             },
         },
