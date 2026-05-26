@@ -53,10 +53,10 @@ export class ServerSessionsController {
         examples: {
             create: {
                 value: {
-                    dateStartInsertion: '2024-06-01T00:00:00Z',
-                    dateEndInsertion: '2024-06-30T23:59:59Z',
-                    dateStartExamination: '2024-07-01T00:00:00Z',
-                    dateEndExamination: '2024-07-31T23:59:59Z'
+                    dateStartInsertion: '2026-06-01T00:00:00Z',
+                    dateEndInsertion: '2026-06-30T23:59:59Z',
+                    dateStartExamination: '2026-07-01T00:00:00Z',
+                    dateEndExamination: '2026-07-31T23:59:59Z'
                 },
             },
         },
@@ -79,10 +79,10 @@ export class ServerSessionsController {
         examples: {
             update: {
                 value: {
-                    dateStartInsertion: '2024-06-01T00:00:00Z',
-                    dateEndInsertion: '2024-06-30T23:59:59Z',
-                    dateStartExamination: '2024-07-01T00:00:00Z',
-                    dateEndExamination: '2024-07-31T23:59:59Z'
+                    dateStartInsertion: '2026-06-01T00:00:00Z',
+                    dateEndInsertion: '2026-06-30T23:59:59Z',
+                    dateStartExamination: '2026-07-01T00:00:00Z',
+                    dateEndExamination: '2026-07-31T23:59:59Z'
                 },
             },
         },
