@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
 import { ExamType } from "./exam-type.enum";
 import { Type } from "class-transformer";
 
@@ -13,10 +13,12 @@ export class CreateExamDto {
     dateTimeEnd: Date;
 
     @IsString()
-    room: string;
+    @IsOptional()
+    room?: string;
 
     @IsString()
-    description: string;
+    @IsOptional()
+    description?: string;
 
     @IsBoolean()
     partial: boolean;

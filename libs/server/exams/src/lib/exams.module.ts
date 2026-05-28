@@ -9,6 +9,8 @@ import { Session } from './session.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExamsRepository } from './exams.repository';
 import { SessionsRepository } from './sessions.repository';
+import { ExamValidationService } from './exam-validation.service';
+import { SessionValidationService } from './session-validation.service';
 
 @Module({
     imports: [
@@ -19,7 +21,7 @@ import { SessionsRepository } from './sessions.repository';
         ServerExamsController,
         ServerSessionsController
     ],
-    providers: [ServerExamsService, ExamsRepository, SessionsRepository],
+    providers: [ServerExamsService, ExamsRepository, SessionsRepository, ExamValidationService, SessionValidationService],
     exports: [ServerExamsService],
 })
 export class ServerExamsModule { }
