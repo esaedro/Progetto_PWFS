@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Query, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ServerPeopleService } from './people.service';
 import { Professor } from './professor.entity';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreatePeopleDto } from './dto/create-people.dto';
 import { UserRole } from '@server/users';
+import { JwtAuthGuard, Roles, RolesGuard } from '@server/security';
 
 @ApiTags('People APIs')
 @Controller('People')
@@ -16,6 +17,9 @@ export class ServerPeopleController {
         return await this.serverPeopleService.findById(professor_id)
     }
 
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
     @Get('professor/:id/exam/:examid')
     async canManageOwnExam(professor_id: number, examId: number): Promise<boolean> {
         return this.serverPeopleService.canManageOwnExame(professor_id, examId);
