@@ -116,9 +116,9 @@ export class ServerExamsService {
 
     async createSession(dto: CreateSessionDto): Promise<Session> {
 
-        if (!this.checkDateIsFuture(dto.dateStartInsertion) || !this.checkDateIsFuture(dto.dateEndInsertion) || !this.checkDateIsFuture(dto.dateStartExamination) || !this.checkDateIsFuture(dto.dateEndExamination)) {
-            throw new ForbiddenException('Le date non possono essere nel passato');
-        }
+        // if (!this.checkDateIsFuture(dto.dateStartInsertion) || !this.checkDateIsFuture(dto.dateEndInsertion) || !this.checkDateIsFuture(dto.dateStartExamination) || !this.checkDateIsFuture(dto.dateEndExamination)) {
+        //     throw new ForbiddenException('Le date non possono essere nel passato');
+        // }
 
         if (this.checkDateOverlapOrInversion(dto.dateStartInsertion, dto.dateEndInsertion, dto.dateStartExamination, dto.dateEndExamination)) {
             throw new ConflictException('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');
@@ -139,9 +139,9 @@ export class ServerExamsService {
         const date3 = dto.dateStartExamination !== undefined ? dto.dateStartExamination : session.dateStartExamination;
         const date4 = dto.dateEndExamination !== undefined ? dto.dateEndExamination : session.dateEndExamination;
 
-        if (!this.checkDateIsFuture(date1) || !this.checkDateIsFuture(date2) || !this.checkDateIsFuture(date3) || !this.checkDateIsFuture(date4)) {
-            throw new ForbiddenException('Le date non possono essere nel passato');
-        }
+        // if (!this.checkDateIsFuture(date1) || !this.checkDateIsFuture(date2) || !this.checkDateIsFuture(date3) || !this.checkDateIsFuture(date4)) {
+        //     throw new ForbiddenException('Le date non possono essere nel passato');
+        // }
 
         if (this.checkDateOverlapOrInversion(date1, date2, date3, date4)) {
             throw new ConflictException('Le date di inserimento e di esaminazione si sovrappongono o sono invertite');

@@ -15,16 +15,16 @@ export class Exam {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'date', nullable: false })
+    @Column({ type: 'timestamptz', nullable: false })
     dateTimeStart: Date;
 
-    @Column({ type: 'date', nullable: false })
+    @Column({ type: 'timestamptz', nullable: false })
     dateTimeEnd: Date;
 
-    @Column({ type: 'varchar', length: 255, nullable: false })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     room: string;
 
-    @Column({ type: 'varchar', length: 1000, nullable: false })
+    @Column({ type: 'varchar', length: 1000, nullable: true })
     description: string;
 
     @Column({ type: 'boolean', nullable: false })

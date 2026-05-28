@@ -21,7 +21,7 @@ export class ServerSubjectController {
         return this.serverCoursesService.getSubjects();
     }
 
-    @Get('professor/:professorId') // GET /subjects/professor/:professorId
+    @Get('by-professor/:professorId') // GET /subjects/by-professor/:professorId
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()

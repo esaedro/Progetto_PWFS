@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn, Index } from "typeorm";
 import type { Relation } from "typeorm";
 
 import { Degree } from "./degree.entity";
@@ -9,6 +9,7 @@ import { Max, Min } from "class-validator";
 
 
 @Entity("Teachings")
+@Index("uq_teaching_degree_subject_year", ["degree", "subject", "year"], { unique: true })
 export class Teaching {
 
     //id, anno, frequenza

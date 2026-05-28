@@ -73,8 +73,10 @@ export class ServerExamsController {
         examples: {
             create: {
                 value: {
-                    dateTimeStart: '2024-07-01T09:00:00Z',
-                    dateTimeEnd: '2024-07-01T12:00:00Z',
+                    dateTimeStart: '2026-07-01T09:00:00Z',
+                    dateTimeEnd: '2026-07-01T12:00:00Z',
+                    partial: false,
+                    type: 'orale',
                     teachingId: 5,
                     sessionId: 2,
                     professorId: 3
@@ -100,8 +102,10 @@ export class ServerExamsController {
         examples: {
             update: {
                 value: {
-                    dateTimeStart: '2024-07-01T09:00:00Z',
-                    dateTimeEnd: '2024-07-01T12:00:00Z',
+                    dateTimeStart: '2026-07-01T09:00:00Z',
+                    dateTimeEnd: '2026-07-01T12:00:00Z',
+                    partial: true,
+                    type: 'scritto',
                     teachingId: 5,
                     sessionId: 2,
                     professorId: 3

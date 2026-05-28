@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException, ConflictException } from '@nestjs/common';
 import { Degree } from './degree.entity';
 import { Subject } from './subject.entity';
 import { Teaching } from './teaching.entity';
@@ -88,12 +88,15 @@ export class ServerCoursesService {
         const year = teaching.year;
         
         return { degree, subject, year };
+
+        // TODO? caricare anche i professori che insegnano la materia?
     }
     
     async getSubjectsByProfessor(professorId: number): Promise<Subject[]> {
+        await this.peopleService.findById(professorId);
         const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
         if (!subjects || subjects.length === 0)
-            throw new NotFoundException(`Non sono state trovate materie per il professore con id = $rId}`);
+            throw new NotFoundException(`Non sono state trovati insegnamenti per il professore con id = ${professorId}`);
         return subjects;
     }
 
@@ -167,6 +170,14 @@ export class ServerCoursesService {
             throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${dto.degreeId}`);
         if (!subject)
             throw new NotFoundException(`Non è stata trovata la materia con id = ${dto.subjectId}`);
+
+        const duplicate = await this.teachingRepository.findByDegreeSubjectYear(
+            dto.degreeId,
+            dto.subjectId,
+            dto.year
+        );
+        if (duplicate)
+            throw new ConflictException('Esiste gia\' un insegnamento con lo stesso corso, materia e anno');
         
         return this.teachingRepository.createTeaching(dto);
     }
@@ -192,6 +203,17 @@ export class ServerCoursesService {
                 throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${dto.degreeId}`);
             degree = foundDegree;
         }
+
+        const targetDegreeId = dto.degreeId ?? teaching.degree.id;
+        const targetSubjectId = dto.subjectId ?? teaching.subject.id;
+        const targetYear = dto.year ?? teaching.year;
+        const duplicate = await this.teachingRepository.findByDegreeSubjectYear(
+            targetDegreeId,
+            targetSubjectId,
+            targetYear
+        );
+        if (duplicate && duplicate.id !== id)
+            throw new ConflictException('Esiste gia\' un insegnamento con lo stesso corso, materia e anno');
 
         const result = await this.teachingRepository.updateTeaching(id, dto, subject, degree);
         if (!result)

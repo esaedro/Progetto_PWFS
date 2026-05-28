@@ -21,6 +21,16 @@ export class TeachingRepository {
     findByID(id: number): Promise<Teaching | null> {
         return this.repository.findOne({where: {id}});
     }
+
+    findByDegreeSubjectYear(degreeId: number, subjectId: number, year: number): Promise<Teaching | null> {
+        return this.repository.findOne({
+            where: {
+                degree: { id: degreeId },
+                subject: { id: subjectId },
+                year: year
+            }
+        });
+    }
     
     async findByDegreeAndYear(degreeId: number, year: number): Promise<Teaching[]> {
         return this.repository.find({

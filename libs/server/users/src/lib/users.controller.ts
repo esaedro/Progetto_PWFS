@@ -14,7 +14,7 @@ export class ServerUsersController {
 
     @Get() // GET /users or /users?role=value
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
     @ApiQuery({ name: 'role', required: false, enum: UserRole })
     getUsers(@Query('role', new ParseEnumPipe(UserRole, { optional: true })) role?: UserRole) {
@@ -26,11 +26,6 @@ export class ServerUsersController {
     @ApiBearerAuth()
     getMe(@CurrentUser() user: unknown) {
         return user;
-    }
-
-    @Get('interns') // GET /users/interns
-    getInternUsers() {
-        return "API non implementata";
     }
 
     @Get(':id') // GET /users/:id
@@ -60,7 +55,7 @@ export class ServerUsersController {
 
     @Patch(':id') // PATCH /users/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
     @ApiBody({
         schema: {
@@ -80,7 +75,7 @@ export class ServerUsersController {
 
     @Delete(':id') // DELETE /users/:id
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
     removeUser(@Param('id', ParseIntPipe) id: number) {
         return this.serverUsersService.removeUser(id);

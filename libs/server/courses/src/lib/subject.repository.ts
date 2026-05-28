@@ -25,7 +25,7 @@ export class SubjectRepository {
 
     findSubjectsByProfessor(professorId: number): Promise<Subject[] | null> {
         return this.repository.createQueryBuilder("subject")
-            .innerJoin("subject.professors", "professor", "professor.id = :professorId", { professorId })
+            .innerJoin("subject.professors", "professor", "professor.professor_id = :professorId", { professorId })
             .orderBy("subject.id", "ASC")
             .getMany();
     } 

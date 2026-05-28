@@ -7,7 +7,7 @@ import { UserRole } from '@server/users';
 import { JwtAuthGuard, Roles, RolesGuard } from '@server/security';
 
 @ApiTags('People APIs')
-@Controller('People')
+@Controller('people')
 export class ServerPeopleController {
     constructor(private serverPeopleService: ServerPeopleService) {}
 
