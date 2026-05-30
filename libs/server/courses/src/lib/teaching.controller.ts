@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, ParseIntPipe, Valida
 import { ApiTags, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { ServerCoursesService } from './courses.service';
 import { CreateTeachingDto } from './dto/create-teaching.dto';
-import { UpdateTeachingDto } from './dto/update-teaching-dto';
+import { UpdateTeachingDto } from './dto/update-teaching.dto';
 import { Roles, JwtAuthGuard, RolesGuard } from '@server/security';
 import { UserRole } from '@server/users';
 

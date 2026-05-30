@@ -12,7 +12,7 @@ import { UpgradeDegreeDto } from './dto/update-degree.dto';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { ServerPeopleService, Professor } from '@server/people';
 import { CreateTeachingDto } from './dto/create-teaching.dto';
-import { UpdateTeachingDto } from './dto/update-teaching-dto';
+import { UpdateTeachingDto } from './dto/update-teaching.dto';
 
 
 

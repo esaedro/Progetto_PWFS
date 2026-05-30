@@ -5,7 +5,7 @@ import { Teaching } from "./teaching.entity";
 import { Subject } from "./subject.entity";
 import { Degree } from "./degree.entity";
 import { CreateTeachingDto } from "./dto/create-teaching.dto";
-import { UpdateTeachingDto } from "./dto/update-teaching-dto";
+import { UpdateTeachingDto } from "./dto/update-teaching.dto";
 
 @Injectable()
 export class TeachingRepository {
