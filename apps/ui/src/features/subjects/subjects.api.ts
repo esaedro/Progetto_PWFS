@@ -1,0 +1,78 @@
+import { CreateSubjectDto, SubjectItem, UpdateSubjectDto } from "@server/courses";
+import { handleApiError } from "../shared/utils.api";
+
+const API_URL = 'http://localhost:3333/api/';
+
+function getAuthHeaders() {
+    const token = localStorage.getItem('access_token');
+
+    return {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` 
+    }
+}
+
+export async function fetchSubjects() {
+    const response = await fetch(`${API_URL}/subjects`, {
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
+}
+
+export async function createSubject(payload: CreateSubjectDto): Promise<SubjectItem> {
+  const response = await fetch(`${API_URL}/subjects`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  if(!response.ok) {
+    await handleApiError(response);
+  }
+  return response.json();
+}
+
+export async function deleteSubject(id: number): Promise<void> {
+  const response = await fetch(`${API_URL}/subjects/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+
+  if(!response.ok) {
+    await handleApiError(response);
+  }
+}
+
+export async function updateSubject(id: number, payload: UpdateSubjectDto): Promise<SubjectItem> {
+  const response = await fetch(`${API_URL}/subjects/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  if(!response.ok) {
+    await handleApiError(response);
+  }
+
+  return response.json();
+}
+
+export async function fetchSubjectById(id: number): Promise<SubjectItem> {
+  const response = await fetch(`${API_URL}/subjects/${id}`, {
+    headers: getAuthHeaders()
+  });
+
+  if(!response.ok) {
+    await handleApiError(response);
+  }
+
+  return response.json();
+}
+
+  // TODO? API presente nel controller ma non implementata nel client
+  // GET /subjects/by-professor/:professorId
