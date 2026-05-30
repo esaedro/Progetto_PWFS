@@ -8,113 +8,85 @@ import { IoMdArrowDropdown } from "react-icons/io";
 
 export function AppLayout() {
   const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchCurrentUser()
-      .then(setUser)
-      .catch((err) => setUser(null));
+      .then((data) => {
+        setUser(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching user data:", err);
+        setUser(null);
+        setLoading(false);
+      });
   }, []);
 
-  if (user === null) {
-    return(
-      <></>
-    )
+  if (loading) {
+    return <div className={styles.loading}>Caricamento...</div>;
   }
 
-  if (user.role === "PROFESSOR") {
+  if (!user) {
+    return <div className={styles.error}>Accesso negato. Effettua il login.</div>;
+  }
 
-    return (
-      <>
-        <nav className={styles.navbar}>
-          <div className={styles.navBrand} onClick={() => navigate('/home')}>
-            Home
-          </div>
+  const isProfessor = user.role === "PROFESSOR";
 
-          <div className={styles.navLinks}>
+  return (
+    <>
+      <nav className={styles.navbar}>
+        <div className={styles.navBrand} onClick={() => navigate('/home')}>
+          Home
+        </div>
+
+        <div className={styles.navLinks}>
+          {isProfessor ? (
             <button onClick={() => navigate('/books')}>Appelli</button>
-            
-            <div className={styles.userSection}>
-              <button
-                className={styles.userButton}
-                onClick={() => setMenuOpen((prev) => !prev)}
-              >
-                <FaUser/>
+          ) : (
+            <>
+              <button onClick={() => navigate('/books')}>Professori</button>
+              <button onClick={() => navigate('/books/new')}>Sessioni</button>
+              <button onClick={() => navigate('/authors')}>Materia</button>
+              <button onClick={() => navigate('/categories')}>Corsi di Laurea</button>
+              <button onClick={() => navigate('/categories')}>Insegnamenti</button>
+            </>
+          )}
+          {/* CONDITIONAL LINKS END HERE */}
+          
+          <div className={styles.userSection}>
+            <button
+              className={styles.userButton}
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              <FaUser/>
 
-                <span className={styles.userName}>
-                  {user?.firstName && user?.lastName
-                    ? `${user.firstName} ${user.lastName}`
-                    : user?.email ?? 'Utente'}
-                </span>
+              <span className={styles.userName}>
+                {user?.firstName && user?.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user?.email ?? 'Utente'}
+              </span>
 
-                <IoMdArrowDropdown />
-              </button>
+              <IoMdArrowDropdown />
+            </button>
 
-              {menuOpen && (
-                <div className={styles.dropdownMenu}>
-                  <button
-                    className={styles.dropdownItem}
-                    onClick={() => navigate('/logout')}
-                  >
-                    <IoIosLogOut /> Logout
-                  </button>
-                </div>
-              )}
-            </div>
+            {menuOpen && (
+              <div className={styles.dropdownMenu}>
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => navigate('/logout')}
+                >
+                  <IoIosLogOut /> Logout
+                </button>
+              </div>
+            )}
           </div>
-        </nav>
-        <Outlet />
-      </>
-    );
-  } else if (user.role === "SECRETARY") {
-    return (
-      <>
-        <nav className={styles.navbar}>
-          <div className={styles.navBrand} onClick={() => navigate('/home')}>
-            Home
-          </div>
+        </div>
+      </nav>
 
-          <div className={styles.navLinks}>
-            <button onClick={() => navigate('/books')}>Professori</button>
-            <button onClick={() => navigate('/books/new')}>Sessioni</button>
-            <button onClick={() => navigate('/authors')}>Materia</button>
-            <button onClick={() => navigate('/categories')}>Corsi di Laurea</button>
-            <button onClick={() => navigate('/categories')}>Insegnamenti</button>
-            
-            <div className={styles.userSection}>
-              <button
-                className={styles.userButton}
-                onClick={() => setMenuOpen((prev) => !prev)}
-              >
-                <FaUser/>
-
-                <span className={styles.userName}>
-                  {user?.firstName && user?.lastName
-                    ? `${user.firstName} ${user.lastName}`
-                    : user?.email ?? 'Utente'}
-                </span>
-
-                <IoMdArrowDropdown />
-              </button>
-
-              {menuOpen && (
-                <div className={styles.dropdownMenu}>
-                  <button
-                    className={styles.dropdownItem}
-                    onClick={() => navigate('/logout')}
-                  >
-                    <IoIosLogOut /> Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </nav>
-
-        <Outlet />
-      </>
-    );
-  }
+      <Outlet />
+    </>
+  );
 }
