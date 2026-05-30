@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { Degree } from './degree.entity';
 import { Subject } from './subject.entity';
 import { Teaching } from './teaching.entity';
@@ -171,6 +171,11 @@ export class ServerCoursesService {
         if (!subject)
             throw new NotFoundException(`Non è stata trovata la materia con id = ${dto.subjectId}`);
 
+        if (dto.year > degree.durationYears)
+            throw new BadRequestException(
+                `L'anno di corso deve essere compreso tra 1 e ${degree.durationYears}`
+            );
+
         const duplicate = await this.teachingRepository.findByDegreeSubjectYear(
             dto.degreeId,
             dto.subjectId,
@@ -204,9 +209,15 @@ export class ServerCoursesService {
             degree = foundDegree;
         }
 
+        const targetDegree = degree ?? teaching.degree;
+        const targetYear = dto.year ?? teaching.year;
+        if (targetYear > targetDegree.durationYears)
+            throw new BadRequestException(
+                `L'anno di corso deve essere compreso tra 1 e ${targetDegree.durationYears}`
+            );
+
         const targetDegreeId = dto.degreeId ?? teaching.degree.id;
         const targetSubjectId = dto.subjectId ?? teaching.subject.id;
-        const targetYear = dto.year ?? teaching.year;
         const duplicate = await this.teachingRepository.findByDegreeSubjectYear(
             targetDegreeId,
             targetSubjectId,
