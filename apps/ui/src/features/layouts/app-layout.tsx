@@ -18,50 +18,97 @@ export function AppLayout() {
       .catch((err) => setUser(null));
   }, []);
 
-  return (
-    <>
-      <nav className={styles.navbar}>
-        <div className={styles.navBrand} onClick={() => navigate('/books')}>
-           Library
-        </div>
+  if (user.role === "PROFESSOR") {
 
-        <div className={styles.navLinks}>
-          <button onClick={() => navigate('/books')}>Catalogo</button>
-          <button onClick={() => navigate('/books/new')}>Nuovo libro</button>
-          <button onClick={() => navigate('/authors')}>Autori</button>
-          <button onClick={() => navigate('/categories')}>Categorie</button>
-          
-          <div className={styles.userSection}>
-            <button
-              className={styles.userButton}
-              onClick={() => setMenuOpen((prev) => !prev)}
-            >
-              <FaUser/>
-
-              <span className={styles.userName}>
-                {user?.firstName && user?.lastName
-                  ? `${user.firstName} ${user.lastName}`
-                  : user?.email ?? 'Utente'}
-              </span>
-
-              <IoMdArrowDropdown />
-            </button>
-
-            {menuOpen && (
-              <div className={styles.dropdownMenu}>
-                <button
-                  className={styles.dropdownItem}
-                  onClick={() => navigate('/logout')}
-                >
-                  <IoIosLogOut /> Logout
-                </button>
-              </div>
-            )}
+    return (
+      <>
+        <nav className={styles.navbar}>
+          <div className={styles.navBrand} onClick={() => navigate('/home')}>
+            Home
           </div>
-        </div>
-      </nav>
 
-      <Outlet />
-    </>
-  );
+          <div className={styles.navLinks}>
+            <button onClick={() => navigate('/books')}>Appelli</button>
+            
+            <div className={styles.userSection}>
+              <button
+                className={styles.userButton}
+                onClick={() => setMenuOpen((prev) => !prev)}
+              >
+                <FaUser/>
+
+                <span className={styles.userName}>
+                  {user?.firstName && user?.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : user?.email ?? 'Utente'}
+                </span>
+
+                <IoMdArrowDropdown />
+              </button>
+
+              {menuOpen && (
+                <div className={styles.dropdownMenu}>
+                  <button
+                    className={styles.dropdownItem}
+                    onClick={() => navigate('/logout')}
+                  >
+                    <IoIosLogOut /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </nav>
+        <Outlet />
+      </>
+    );
+  } else {
+    return (
+      <>
+        <nav className={styles.navbar}>
+          <div className={styles.navBrand} onClick={() => navigate('/home')}>
+            Home
+          </div>
+
+          <div className={styles.navLinks}>
+            <button onClick={() => navigate('/books')}>Professori</button>
+            <button onClick={() => navigate('/books/new')}>Sessioni</button>
+            <button onClick={() => navigate('/authors')}>Materia</button>
+            <button onClick={() => navigate('/categories')}>Corsi di Laurea</button>
+            <button onClick={() => navigate('/categories')}>Insegnamenti</button>
+            
+            <div className={styles.userSection}>
+              <button
+                className={styles.userButton}
+                onClick={() => setMenuOpen((prev) => !prev)}
+              >
+                <FaUser/>
+
+                <span className={styles.userName}>
+                  {user?.firstName && user?.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : user?.email ?? 'Utente'}
+                </span>
+
+                <IoMdArrowDropdown />
+              </button>
+
+              {menuOpen && (
+                <div className={styles.dropdownMenu}>
+                  <button
+                    className={styles.dropdownItem}
+                    onClick={() => navigate('/logout')}
+                  >
+                    <IoIosLogOut /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </nav>
+
+        <Outlet />
+      </>
+    );
+  }
 }

@@ -18,8 +18,7 @@ export function LoginPage() {
 
     try {
       await login(email, password);
-      navigate('/books');
-      // TODO change route to real main page
+      navigate('/home');
     } catch (err: any) {
       setError(err.message);
     } finally {
