@@ -36,3 +36,18 @@ export async function fetchCurrentUser() {
   return response.json();
 }
 
+export async function updatePasswordFetch(newPassword: string) {
+  const token = localStorage.getItem('access_token');
+
+  const response = await fetch(`${API_URL}/users/me/password`, {
+    method: 'PATCH', 
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ password: newPassword }),});
+
+    if (!response.ok) {
+      throw new Error(`Errore HTTP ${response.status}: Impossibile aggiornare la password`);
+    }
+}

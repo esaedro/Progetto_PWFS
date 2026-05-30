@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { fetchCurrentUser } from '../auth/auth.api';
 import styles from '../css/books.module.css';
 import { IoIosLogOut } from "react-icons/io";
+import { FaKey } from 'react-icons/fa';
 import { FaUser } from "react-icons/fa";
 import { IoMdArrowDropdown } from "react-icons/io";
 
@@ -79,6 +80,12 @@ export function AppLayout() {
                   onClick={() => navigate('/logout')}
                 >
                   <IoIosLogOut /> Logout
+                </button>
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => navigate('/hangepassword')}
+                >
+                  <FaKey/> Cambia password
                 </button>
               </div>
             )}
