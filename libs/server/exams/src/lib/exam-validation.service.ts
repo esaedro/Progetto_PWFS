@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { ServerCoursesService } from '@server/courses';
 import { CreateExamDto } from './dto/create-exam.dto';
@@ -6,9 +6,12 @@ import { UpdateExamDto } from './dto/update-exam.dto';
 import { Exam } from './exam.entity';
 import { SessionsRepository } from './sessions.repository';
 import { ExamsRepository } from './exams.repository';
+import { Session } from './session.entity';
 
 @Injectable()
 export class ExamValidationService {
+    private readonly logger = new Logger(ExamValidationService.name);
+
     /**
      * Valida un esame per la creazione.
      * Raccoglie TUTTI gli errori prima di lanciarli.
@@ -21,16 +24,16 @@ export class ExamValidationService {
     ): Promise<void> {
         const errors: string[] = [];
 
-        // 1. Validazione del professore e dell'insegnamento
+        // Validazione del professore e dell'insegnamento
         await this.validateProfessorAndTeaching(dto.professorId, dto.teachingId, coursesService, errors);
 
-        // 2. Validazione della sessione
+        // Validazione della sessione
         const session = await this.validateSession(dto.sessionId, sessionsRepository, errors);
 
-        // 3. Validazione delle date dell'esame (formato e logica)
+        // Validazione delle date dell'esame (formato e logica)
         this.validateExamDates(dto.dateTimeStart, dto.dateTimeEnd, errors);
 
-        // 4. Validazione dell'esame all'interno della finestra di esaminazione della sessione
+        // Validazione dell'esame all'interno della finestra di esaminazione della sessione
         if (session) {
             this.validateExamWithinSessionWindow(dto.dateTimeStart, dto.dateTimeEnd, session, errors);
         }
@@ -40,7 +43,7 @@ export class ExamValidationService {
             throw new ForbiddenException(errors);
         }
 
-        // 5. Validazione dei conflitti con altri esami (check finale, dopo tutti gli altri controlli)
+        // Validazione dei conflitti con altri esami (check finale, dopo tutti gli altri controlli)
         await this.validateNoConflictsWithOtherExams(
             dto.sessionId,
             dto.dateTimeStart,
@@ -68,7 +71,6 @@ export class ExamValidationService {
         examsRepository: ExamsRepository
     ): Promise<void> {
         // Estrae i valori effettivi (aggiornati o attuali)
-        const professorId = exam.professor.professor_id;
         const teachingId = dto.teachingId !== undefined ? dto.teachingId : exam.teaching.id;
         const sessionId = dto.sessionId !== undefined ? dto.sessionId : exam.session.id;
         const dateTimeStart = dto.dateTimeStart !== undefined ? new Date(dto.dateTimeStart) : exam.dateTimeStart;
@@ -76,29 +78,33 @@ export class ExamValidationService {
 
         const errors: string[] = [];
 
-        // 1. Validazione dell'insegnamento (se modificato)
+        // Validazione dell'insegnamento (se modificato)
         if (dto.teachingId !== undefined) {
             try {
                 await coursesService.getTeachingByID(teachingId);
             } catch (error) {
+                this.logger.error(
+                    `Errore nel recupero dell'insegnamento con id ${teachingId}: ${error.message}`,
+                    error instanceof Error ? error.message : String(error)
+                );
                 errors.push('L\'insegnamento specificato non esiste');
             }
         }
 
-        // 2. Validazione della sessione (se modificata)
-        let session = null;
+        // Validazione della sessione (se modificata)
+        let session: Session | null = null;
         if (dto.sessionId !== undefined) {
             session = await this.validateSession(sessionId, sessionsRepository, errors);
         } else {
             session = exam.session;
         }
 
-        // 3. Validazione delle date dell'esame (se modificate)
+        // Validazione delle date dell'esame (se modificate)
         if (dto.dateTimeStart !== undefined || dto.dateTimeEnd !== undefined) {
             this.validateExamDates(dateTimeStart, dateTimeEnd, errors);
         }
 
-        // 4. Validazione dell'esame all'interno della finestra di esaminazione della sessione
+        // Validazione dell'esame all'interno della finestra di esaminazione della sessione
         if (session) {
             this.validateExamWithinSessionWindow(dateTimeStart, dateTimeEnd, session, errors);
         }
@@ -107,7 +113,7 @@ export class ExamValidationService {
             throw new ForbiddenException(errors);
         }
 
-        // 5. Validazione dei conflitti con altri esami (escludi l'esame corrente dal controllo)
+        // Validazione dei conflitti con altri esami (escludi l'esame corrente dal controllo)
         await this.validateNoConflictsWithOtherExamsForUpdate(
             sessionId,
             dateTimeStart,
@@ -146,6 +152,10 @@ export class ExamValidationService {
                 errors.push('Il professore non insegna questo insegnamento');
             }
         } catch (error) {
+            this.logger.error(
+                `Errore nel recupero degli insegnamenti del professore con id ${professorId}: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
             errors.push('Il professore non è stato trovato o non ha insegnamenti');
         }
     }
@@ -157,7 +167,7 @@ export class ExamValidationService {
         sessionId: number,
         sessionsRepository: SessionsRepository,
         errors: string[]
-    ): Promise<any | null> {
+    ): Promise<Session | null> {
         try {
             const session = await sessionsRepository.findById(sessionId);
             if (!session) {
@@ -166,6 +176,10 @@ export class ExamValidationService {
             }
             return session;
         } catch (error) {
+            this.logger.error(
+                `Errore nel recupero della sessione con id ${sessionId}: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
             errors.push(`Errore nel recupero della sessione con id ${sessionId}`);
             return null;
         }
@@ -197,6 +211,10 @@ export class ExamValidationService {
                 errors.push('La data di inizio deve essere precedente alla data di fine');
             }
         } catch (error) {
+            this.logger.error(
+                `Errore nella validazione delle date dell'esame: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
             errors.push('Errore nella validazione delle date dell\'esame');
         }
     }
@@ -207,7 +225,7 @@ export class ExamValidationService {
     private validateExamWithinSessionWindow(
         dateTimeStart: Date | string,
         dateTimeEnd: Date | string,
-        session: any,
+        session: Session,
         errors: string[]
     ): void {
         try {
@@ -215,11 +233,6 @@ export class ExamValidationService {
             const examEnd = new Date(dateTimeEnd);
             const sessionStart = new Date(session.dateStartExamination);
             const sessionEnd = new Date(session.dateEndExamination);
-
-            if (isNaN(examStart.getTime()) || isNaN(examEnd.getTime())) {
-                // Gli errori sono già stati aggiunti da validateExamDates
-                return;
-            }
 
             if (examStart < sessionStart) {
                 errors.push('La data di inizio dell\'esame è precedente alla data di inizio esaminazione della sessione');
@@ -229,6 +242,10 @@ export class ExamValidationService {
                 errors.push('La data di fine dell\'esame è successiva alla data di fine esaminazione della sessione');
             }
         } catch (error) {
+            this.logger.error(
+                `Errore nella validazione delle date dell'esame rispetto alla sessione: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
             errors.push('Errore nella validazione delle date rispetto alla sessione');
         }
     }
@@ -262,11 +279,15 @@ export class ExamValidationService {
 
             if (conflictingExams.length > 0) {
                 const conflictDetails = conflictingExams
-                    .map(e => `${e.teaching.name} (${new Date(e.dateTimeStart).toLocaleString()})`)
+                    .map(e => `${e.teaching.subject.name} (${new Date(e.dateTimeStart).toLocaleString()})`)
                     .join(', ');
                 errors.push(`Esame in conflitto con: ${conflictDetails}`);
             }
         } catch (error) {
+            this.logger.error(
+                `Errore nel controllo dei conflitti con altri esami: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
             errors.push('Errore nel controllo dei conflitti con altri esami');
         }
     }
@@ -304,11 +325,15 @@ export class ExamValidationService {
 
             if (conflictingExams.length > 0) {
                 const conflictDetails = conflictingExams
-                    .map(e => `${e.teaching.name} (${new Date(e.dateTimeStart).toLocaleString()})`)
+                    .map(e => `${e.teaching.subject.name} (${new Date(e.dateTimeStart).toLocaleString()})`)
                     .join(', ');
                 errors.push(`Esame in conflitto con: ${conflictDetails}`);
             }
         } catch (error) {
+            this.logger.error(
+                `Errore nel controllo dei conflitti con altri esami (update): ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
             errors.push('Errore nel controllo dei conflitti con altri esami');
         }
     }

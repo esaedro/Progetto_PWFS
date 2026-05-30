@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { ServerCoursesService } from '@server/courses';
 import { ExamsRepository } from './exams.repository';
@@ -11,6 +11,8 @@ import { UpdateSessionDto } from './dto/update-session.dto';
 import { Session } from './session.entity';
 import { ExamValidationService } from './exam-validation.service';
 import { SessionValidationService } from './session-validation.service';
+import { Professor } from '@server/people';
+import { UserEntity } from '@server/users';
 
 @Injectable()
 export class ServerExamsService {
@@ -27,7 +29,18 @@ export class ServerExamsService {
     /// Exam section ///
     ////////////////////
 
-    async createExam(dto: CreateExamDto): Promise<Exam> {
+    async createExam(dto: CreateExamDto, authenticatedUser: Professor | UserEntity): Promise<Exam> {
+
+        // Estrai l'ID del professore loggato
+        const authenticatedProfessorId = await this.estraiUtenteAutenticato(authenticatedUser);
+
+        // Controlla che il professorId nel DTO corrisponda al professore loggato
+        if (dto.professorId && dto.professorId !== authenticatedProfessorId) {
+            throw new ForbiddenException(
+                `Il professorId nel corpo della richiesta (${dto.professorId}) non corrisponde al professore autenticato (${authenticatedProfessorId})`
+            );
+        }
+
         await this.examValidationService.validateForCreate(
             dto,
             this.coursesService,
@@ -38,14 +51,24 @@ export class ServerExamsService {
         return this.examsRepository.create(dto);
     }
 
-    async updateExam(examId: number, dto: UpdateExamDto, professorId?: number): Promise<Exam> {
+    async updateExam(examId: number, dto: UpdateExamDto, authenticatedUser: Professor | UserEntity): Promise<Exam> {
         const exam = await this.examsRepository.findById(examId);
         if (!exam) {
             throw new NotFoundException(`Esame con id ${examId} non trovato`);
         }
 
+        // Estrai l'ID del professore loggato
+        const authenticatedProfessorId = await this.estraiUtenteAutenticato(authenticatedUser);
+
+        // Controlla che il professorId nel DTO corrisponda al professore loggato
+        if (dto.professorId && dto.professorId !== authenticatedProfessorId) {
+            throw new ForbiddenException(
+                `Il professorId nel corpo della richiesta (${dto.professorId}) non corrisponde al professore autenticato (${authenticatedProfessorId})`
+            );
+        }
+
         // Verifica che il professore loggato sia il proprietario dell'esame
-        if (professorId && exam.professor.professor_id !== professorId) {
+        if (exam.professor.professor_id !== authenticatedProfessorId) {
             throw new ForbiddenException('Non puoi aggiornare un esame di un altro professore');
         }
 
@@ -60,14 +83,17 @@ export class ServerExamsService {
         return this.examsRepository.update(exam, dto);
     }
 
-    async deleteExam(examId: number, professorId?: number): Promise<void> {
+    async deleteExam(examId: number, authenticatedUser: Professor | UserEntity): Promise<void> {
         const exam = await this.examsRepository.findById(examId);
         if (!exam) {
             throw new NotFoundException(`Esame con id ${examId} non trovato`);
         }
 
-        // Verifica che il professore loggato sia il proprietario dell'esame
-        if (professorId && exam.professor.professor_id !== professorId) {
+        // Estrai l'ID del professore loggato
+        const authenticatedProfessorId = await this.estraiUtenteAutenticato(authenticatedUser);
+
+        // Controlla che il professorId dell'esame corrisponda a quello del professore loggato
+        if (exam.professor.professor_id !== authenticatedProfessorId) {
             throw new ForbiddenException('Non puoi cancellare un esame di un altro professore');
         }
 
@@ -103,6 +129,20 @@ export class ServerExamsService {
     async findExamsByTeaching(teachingId: number): Promise<Exam[]> {
         return this.examsRepository.findbyTeaching(teachingId);
     }
+
+    async estraiUtenteAutenticato(currentUser: Professor | UserEntity): Promise<number> {
+        let authenticatedProfessorId: number;
+        // Estrai l'ID del professore loggato
+        if (!currentUser) {
+            throw new ForbiddenException('Utente non autenticato');
+        } else if (typeof currentUser === Professor.name) {
+            authenticatedProfessorId = (currentUser as Professor).professor_id;
+        } else {
+            authenticatedProfessorId = (currentUser as UserEntity).id;
+        }
+        return authenticatedProfessorId;
+    }
+
 
     ///////////////////////
     /// Session section ///

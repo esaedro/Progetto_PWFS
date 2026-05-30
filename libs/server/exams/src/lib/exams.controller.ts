@@ -1,11 +1,12 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ServerExamsService } from './exams.service';
 import { Exam } from './exam.entity';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { Roles, JwtAuthGuard, RolesGuard, CurrentUser } from '@server/security';
-import { UserRole } from '@server/users';
+import { UserEntity, UserRole } from '@server/users';
+import { Professor } from '@server/people';
 
 @ApiTags('Exams APIs')
 @Controller('exams')
@@ -86,23 +87,10 @@ export class ServerExamsController {
     })
     async create(
         @Body(ValidationPipe) dto: CreateExamDto,
-        @CurrentUser() currentUser: any
+        @CurrentUser() currentUser: Professor | UserEntity
     ): Promise<Exam> {
         try {
-            // Estrai l'ID del professore loggato
-            const authenticatedProfessorId = currentUser?.professor_id || currentUser?.id;
-
-            // Valida che il professorId nel DTO corrisponda al professore loggato
-            if (dto.professorId && dto.professorId !== authenticatedProfessorId) {
-                throw new ForbiddenException(
-                    `Il professorId nel corpo della richiesta (${dto.professorId}) non corrisponde al professore autenticato (${authenticatedProfessorId})`
-                );
-            }
-
-            return this.serverExamsService.createExam({
-                ...dto,
-                professorId: authenticatedProfessorId
-            });
+            return this.serverExamsService.createExam(dto, currentUser);
         } catch (error) {
             console.error('Errore nella creazione dell\'esame:', error);
             throw error;
@@ -132,20 +120,10 @@ export class ServerExamsController {
     async update(
         @Param('id') id: number,
         @Body(ValidationPipe) dto: UpdateExamDto,
-        @CurrentUser() currentUser: any
+        @CurrentUser() currentUser: Professor | UserEntity
     ): Promise<Exam> {
         try {
-            // Estrai l'ID del professore loggato
-            const authenticatedProfessorId = currentUser?.professor_id || currentUser?.id;
-
-            // Valida che il professorId nel DTO corrisponda al professore loggato (se fornito)
-            if (dto.professorId && dto.professorId !== authenticatedProfessorId) {
-                throw new ForbiddenException(
-                    `Il professorId nel corpo della richiesta (${dto.professorId}) non corrisponde al professore autenticato (${authenticatedProfessorId})`
-                );
-            }
-
-            return this.serverExamsService.updateExam(id, dto, authenticatedProfessorId);
+            return this.serverExamsService.updateExam(id, dto, currentUser);
         } catch (error) {
             console.error('Errore nell\'aggiornamento dell\'esame:', error);
             throw error;
@@ -158,11 +136,10 @@ export class ServerExamsController {
     @ApiBearerAuth()
     async delete(
         @Param('id') id: number,
-        @CurrentUser() currentUser: any
+        @CurrentUser() currentUser: Professor | UserEntity
     ): Promise<void> {
         try {
-            const professorId = currentUser?.professor_id || currentUser?.id;
-            return this.serverExamsService.deleteExam(id, professorId);
+            return this.serverExamsService.deleteExam(id, currentUser);
         } catch (error) {
             console.error('Errore nella cancellazione dell\'esame:', error);
             throw error;

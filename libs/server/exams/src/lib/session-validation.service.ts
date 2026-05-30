@@ -1,10 +1,12 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { Session } from './session.entity';
 
 @Injectable()
 export class SessionValidationService {
+    private readonly logger = new Logger(SessionValidationService.name);
+
     /**
      * Valida una sessione per la creazione.
      * Raccoglie TUTTI gli errori prima di lanciarli.
@@ -88,6 +90,10 @@ export class SessionValidationService {
                     errors.push(`La data di ${labels[index]} non può essere nel passato`);
                 }
             } catch (error) {
+                this.logger.error(
+                    `Errore nell'analisi della data: ${labels[index]}`,
+                    error instanceof Error ? error.message : String(error)
+                );
                 errors.push(`Errore nella validazione della data di ${labels[index]}`);
             }
         });
@@ -127,6 +133,10 @@ export class SessionValidationService {
                 errors.push('Il periodo di inserimento non può sovrapporsi con il periodo di esaminazione');
             }
         } catch (error) {
+            this.logger.error(
+                `Errore nella validazione della logica temporale delle date`,
+                error instanceof Error ? error.message : String(error)
+            );
             errors.push('Errore nella validazione della logica temporale delle date');
         }
     }
