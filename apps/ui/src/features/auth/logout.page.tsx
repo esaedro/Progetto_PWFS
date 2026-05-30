@@ -6,10 +6,8 @@ export function LogoutPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. rimuovi token
     localStorage.removeItem('access_token');
 
-    // 2. redirect
     navigate('/login', { replace: true });
   }, [navigate]);
 

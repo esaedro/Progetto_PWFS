@@ -4,6 +4,7 @@ import { LogoutPage } from '../features/auth/logout.page';
 import { ProtectedRoute } from '../features/auth/protected-route';
 import { AppLayout } from '../features/layouts/app-layout';
 import { HomePage } from '../features/home/home.page';
+import { UpdatePasswordPage } from '../features/auth/update-password';
 
 export function App() {
   return (
@@ -18,7 +19,10 @@ export function App() {
             <AppLayout /> 
           </ProtectedRoute>}>
         <Route path='/home' element={<HomePage/>}/>
+        <Route path='/changepassword' element={<UpdatePasswordPage/>}/>
       </Route>
+      
+      
 
       {/* <Route path="/home-module" element={<HomeModulePage />} />
       <Route path="/home-tailwind" element={<HomeTailwindPage />} />

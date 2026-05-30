@@ -1,10 +1,10 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from './auth.api';
+import { updatePasswordFetch } from './auth.api';
 import book_styles from '../css/books.module.css';
 
-export function LoginPage() {
-  const [email, setEmail] = useState('');
+export function UpdatePasswordPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      await updatePasswordFetch(password);
       navigate('/home');
     } catch (err: any) {
       setError(err.message);
@@ -29,22 +29,11 @@ export function LoginPage() {
   return (
     <main className={book_styles.page}>
       <div className={book_styles.card}>
-        <h1 className={book_styles.title}>Login</h1>
+        <h1 className={book_styles.title}>Cambia password</h1>
 
         <form onSubmit={handleSubmit} className={book_styles.form}>
           <div className={book_styles.field}>
-            <label>Email</label>
-            <input
-              className={book_styles.input}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Inserisci email"
-              required
-            />
-          </div>
-
-          <div className={book_styles.field}>
-            <label>Password</label>
+            <label>Nuova password</label>
             <input
               type="password"
               className={book_styles.input}
@@ -65,3 +54,4 @@ export function LoginPage() {
     </main>
   );
 }
+
