@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { Session } from './session.entity';
@@ -12,14 +12,14 @@ export class SessionValidationService {
     async validateForCreate(dto: CreateSessionDto): Promise<void> {
         const errors: string[] = [];
 
-        // 1. Validazione che le date non siano nel passato
+        // Controllo che le date non siano nel passato
         this.validateDatesNotInPast(
             [dto.dateStartInsertion, dto.dateEndInsertion, dto.dateStartExamination, dto.dateEndExamination],
             ['inizio inserimento', 'fine inserimento', 'inizio esaminazione', 'fine esaminazione'],
             errors
         );
 
-        // 2. Validazione della logica temporale e della non sovrapposizione
+        // Controllo la logica temporale e la non sovrapposizione delle date
         this.validateDateLogic(
             dto.dateStartInsertion,
             dto.dateEndInsertion,
@@ -46,14 +46,14 @@ export class SessionValidationService {
 
         const errors: string[] = [];
 
-        // 1. Validazione che le date non siano nel passato
+        // Controllo che le date non siano nel passato
         this.validateDatesNotInPast(
             [dateStartInsertion, dateEndInsertion, dateStartExamination, dateEndExamination],
             ['inizio inserimento', 'fine inserimento', 'inizio esaminazione', 'fine esaminazione'],
             errors
         );
 
-        // 2. Validazione della logica temporale e della non sovrapposizione
+        // Controllo la logica temporale e la non sovrapposizione delle date
         this.validateDateLogic(
             dateStartInsertion,
             dateEndInsertion,
@@ -97,7 +97,7 @@ export class SessionValidationService {
      * Valida la logica temporale delle date:
      * - inizio inserimento < fine inserimento
      * - inizio esaminazione < fine esaminazione
-     * - fine inserimento <= inizio esaminazione (non sovrapposizione)
+     * - fine inserimento < inizio esaminazione (non sovrapposizione)
      */
     private validateDateLogic(
         dateStartInsertion: Date | string,
@@ -112,25 +112,19 @@ export class SessionValidationService {
             const start2 = new Date(dateStartExamination);
             const end2 = new Date(dateEndExamination);
 
-            // Controlla che tutte le date siano valide
-            if (isNaN(start1.getTime()) || isNaN(end1.getTime()) || isNaN(start2.getTime()) || isNaN(end2.getTime())) {
-                // Gli errori sono già stati aggiunti da validateDatesNotInPast
-                return;
-            }
-
-            // 1. Validazione: inizio inserimento < fine inserimento
+            // Controllo se inizio inserimento < fine inserimento
             if (start1 >= end1) {
                 errors.push('La data di inizio inserimento deve essere precedente alla data di fine inserimento');
             }
 
-            // 2. Validazione: inizio esaminazione < fine esaminazione
+            // Controllo se inizio esaminazione < fine esaminazione
             if (start2 >= end2) {
                 errors.push('La data di inizio esaminazione deve essere precedente alla data di fine esaminazione');
             }
 
-            // 3. Validazione: fine inserimento <= inizio esaminazione (non sovrapposizione)
+            // Controllo se fine inserimento < inizio esaminazione
             if (end1 > start2) {
-                errors.push('La fase di inserimento non può sovrapporsi con la fase di esaminazione');
+                errors.push('Il periodo di inserimento non può sovrapporsi con il periodo di esaminazione');
             }
         } catch (error) {
             errors.push('Errore nella validazione della logica temporale delle date');
