@@ -18,6 +18,12 @@ export function AppLayout() {
       .catch((err) => setUser(null));
   }, []);
 
+  if (user === null) {
+    return(
+      <></>
+    )
+  }
+
   if (user.role === "PROFESSOR") {
 
     return (
@@ -62,7 +68,7 @@ export function AppLayout() {
         <Outlet />
       </>
     );
-  } else {
+  } else if (user.role === "SECRETARY") {
     return (
       <>
         <nav className={styles.navbar}>
