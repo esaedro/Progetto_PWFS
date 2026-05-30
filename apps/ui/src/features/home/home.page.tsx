@@ -10,6 +10,7 @@ export function HomePage() {
 
   const navigate = useNavigate();
 
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -19,7 +20,7 @@ export function HomePage() {
 
   return (
     <main className={book_styles.page}>
-        PAGINA HOME
+        PAGINA HOME aaa
     </main>
   );
 }
