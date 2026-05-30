@@ -1,7 +1,7 @@
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Teaching } from "./teaching.entity";
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { Professor } from "@server/people";
+import { Professor } from "@server/people/professor.entity";
 
 //id, nome 
 @Entity("Subjects")

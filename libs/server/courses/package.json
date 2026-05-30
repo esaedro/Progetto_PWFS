@@ -10,6 +10,21 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./teaching.entity": {
+        "types": "./src/lib/teaching.entity.ts",
+        "import": "./src/lib/teaching.entity.ts",
+        "default": "./src/lib/teaching.entity.ts"
+    },
+    "./subject.entity": {
+        "types": "./src/lib/subject.entity.ts",
+        "import": "./src/lib/subject.entity.ts",
+        "default": "./src/lib/subject.entity.ts"
+    },
+    "./degree.entity": {
+        "types": "./src/lib/degree.entity.ts",
+        "import": "./src/lib/degree.entity.ts",
+        "default": "./src/lib/degree.entity.ts"
+    },
     "./package.json": "./package.json"
   },
   "dependencies": {}

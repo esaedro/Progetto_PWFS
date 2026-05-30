@@ -5,8 +5,8 @@ import { Repository } from 'typeorm';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { Session } from './session.entity';
-import { Teaching } from '@server/courses';
-import { Professor } from '@server/people';
+import { Teaching } from '@server/courses/teaching.entity';
+import { Professor } from '@server/people/professor.entity';
 // import { CreateExamDto } from './dto/create-exam.dto';
 // import { UpdateExmaDto } from './dto/update-exam.dto';
 

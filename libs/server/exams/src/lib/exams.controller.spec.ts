@@ -4,7 +4,8 @@ import { ServerExamsController } from './exams.controller';
 import { ServerExamsService } from './exams.service';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
-import { Exam, ExamType } from './exam.entity';
+import { Exam } from './exam.entity';
+import { ExamType } from './dto/exam-type.enum';
 
 describe('ServerExamsController', () => {
     let controller: ServerExamsController;
@@ -36,7 +37,7 @@ describe('ServerExamsController', () => {
     };
 
     const mockCurrentUser = {
-        professor_id: 3,
+        id: 3,
     };
 
     beforeEach(async () => {
@@ -71,10 +72,7 @@ describe('ServerExamsController', () => {
             const result = await controller.create(mockCreateExamDto, mockCurrentUser);
 
             expect(result).toEqual(mockExam);
-            expect(examsService.createExam).toHaveBeenCalledWith({
-                ...mockCreateExamDto,
-                professorId: 3,
-            });
+            expect(examsService.createExam).toHaveBeenCalledWith(mockCreateExamDto, mockCurrentUser);
         });
 
         it('should throw ForbiddenException when professorId in DTO does not match authenticated professor', async () => {
@@ -82,12 +80,13 @@ describe('ServerExamsController', () => {
                 ...mockCreateExamDto,
                 professorId: 999, // Professore diverso
             };
+            (examsService.createExam as jest.Mock).mockRejectedValue(new ForbiddenException());
 
             await expect(controller.create(wrongProfessorDto, mockCurrentUser)).rejects.toThrow(
                 ForbiddenException
             );
 
-            expect(examsService.createExam).not.toHaveBeenCalled();
+            expect(examsService.createExam).toHaveBeenCalledWith(wrongProfessorDto, mockCurrentUser);
         });
 
         it('should create an exam when no professorId is provided in DTO (uses authenticated professor)', async () => {
@@ -107,10 +106,7 @@ describe('ServerExamsController', () => {
             const result = await controller.create(dtoWithoutProfessor, mockCurrentUser);
 
             expect(result).toEqual(mockExam);
-            expect(examsService.createExam).toHaveBeenCalledWith({
-                ...dtoWithoutProfessor,
-                professorId: 3,
-            });
+            expect(examsService.createExam).toHaveBeenCalledWith(dtoWithoutProfessor, mockCurrentUser);
         });
 
         it('should use professor_id from currentUser when id field is not available', async () => {
@@ -140,7 +136,7 @@ describe('ServerExamsController', () => {
             const result = await controller.update(1, updateDto, mockCurrentUser);
 
             expect(result).toEqual(updatedExam);
-            expect(examsService.updateExam).toHaveBeenCalledWith(1, updateDto, 3);
+            expect(examsService.updateExam).toHaveBeenCalledWith(1, updateDto, mockCurrentUser);
         });
 
         it('should throw ForbiddenException when professorId in DTO does not match authenticated professor', async () => {
@@ -148,12 +144,13 @@ describe('ServerExamsController', () => {
                 type: ExamType.SCRITTO,
                 professorId: 999, // Professore diverso
             };
+            (examsService.updateExam as jest.Mock).mockRejectedValue(new ForbiddenException());
 
             await expect(controller.update(1, wrongProfessorDto, mockCurrentUser)).rejects.toThrow(
                 ForbiddenException
             );
 
-            expect(examsService.updateExam).not.toHaveBeenCalled();
+            expect(examsService.updateExam).toHaveBeenCalledWith(1, wrongProfessorDto, mockCurrentUser);
         });
 
         it('should update an exam when no professorId is provided in DTO', async () => {
@@ -166,7 +163,7 @@ describe('ServerExamsController', () => {
             const result = await controller.update(1, updateDto, mockCurrentUser);
 
             expect(result).toEqual(updatedExam);
-            expect(examsService.updateExam).toHaveBeenCalledWith(1, updateDto, 3);
+            expect(examsService.updateExam).toHaveBeenCalledWith(1, updateDto, mockCurrentUser);
         });
     });
 
@@ -176,7 +173,7 @@ describe('ServerExamsController', () => {
 
             await controller.delete(1, mockCurrentUser);
 
-            expect(examsService.deleteExam).toHaveBeenCalledWith(1, 3);
+            expect(examsService.deleteExam).toHaveBeenCalledWith(1, mockCurrentUser);
         });
     });
 });

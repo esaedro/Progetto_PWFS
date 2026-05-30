@@ -10,6 +10,15 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./exam.entity": {
+        "types": "./src/lib/exam.entity.ts",
+        "import": "./src/lib/exam.entity.ts", 
+        "default": "./src/lib/exam.entity.ts"
+    },
+    "./session.entity": {
+        "types": "./src/lib/session.entity.ts",
+        "import": "./src/lib/session.entity.ts",
+        "default": "./src/lib/session.entity.ts" },
     "./package.json": "./package.json"
   },
   "dependencies": {}

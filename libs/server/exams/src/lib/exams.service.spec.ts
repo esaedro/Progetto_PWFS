@@ -8,7 +8,8 @@ import { SessionsRepository } from './sessions.repository';
 import { ServerCoursesService } from '@server/courses';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
-import { Exam, ExamType } from './exam.entity';
+import { Exam } from './exam.entity';
+import { ExamType } from './dto/exam-type.enum';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { Session } from './session.entity';
@@ -58,6 +59,8 @@ describe('ServerExamsService', () => {
         sessionId: 2,
         professorId: 3,
     };
+
+    const mockCurrentUser = { id: 3 };
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -120,7 +123,7 @@ describe('ServerExamsService', () => {
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(mockSession);
             (examsRepository.create as jest.Mock).mockResolvedValue(mockExam);
 
-            const result = await service.createExam(mockCreateExamDto);
+            const result = await service.createExam(mockCreateExamDto, mockCurrentUser);
 
             expect(result).toEqual(mockExam);
             expect(examsRepository.create).toHaveBeenCalledWith(mockCreateExamDto);
@@ -129,21 +132,21 @@ describe('ServerExamsService', () => {
         it('should throw ForbiddenException with all errors when multiple validations fail', async () => {
             (coursesService.getTeachingsByProfessor as jest.Mock).mockRejectedValue(new NotFoundException('Professor not found'));
 
-            await expect(service.createExam(mockCreateExamDto)).rejects.toThrow(ForbiddenException);
+            await expect(service.createExam(mockCreateExamDto, mockCurrentUser)).rejects.toThrow(ForbiddenException);
         });
 
         it('should throw ForbiddenException when professor is not teaching the subject', async () => {
             const otherTeaching = { id: 6, degree: { id: 1 }, year: 1 };
             (coursesService.getTeachingsByProfessor as jest.Mock).mockResolvedValue([otherTeaching]);
 
-            await expect(service.createExam(mockCreateExamDto)).rejects.toThrow(ForbiddenException);
+            await expect(service.createExam(mockCreateExamDto, mockCurrentUser)).rejects.toThrow(ForbiddenException);
         });
 
         it('should throw ForbiddenException when session does not exist', async () => {
             (coursesService.getTeachingsByProfessor as jest.Mock).mockResolvedValue([mockTeaching]);
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(null);
 
-            await expect(service.createExam(mockCreateExamDto)).rejects.toThrow(ForbiddenException);
+            await expect(service.createExam(mockCreateExamDto, mockCurrentUser)).rejects.toThrow(ForbiddenException);
         });
 
         it('should throw ForbiddenException when exam dates are outside session window', async () => {
@@ -155,7 +158,7 @@ describe('ServerExamsService', () => {
             (coursesService.getTeachingsByProfessor as jest.Mock).mockResolvedValue([mockTeaching]);
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(sessionOutOfRange);
 
-            await expect(service.createExam(mockCreateExamDto)).rejects.toThrow(ForbiddenException);
+            await expect(service.createExam(mockCreateExamDto, mockCurrentUser)).rejects.toThrow(ForbiddenException);
         });
 
         it('should throw ForbiddenException when start date is after end date', async () => {
@@ -167,7 +170,7 @@ describe('ServerExamsService', () => {
             (coursesService.getTeachingsByProfessor as jest.Mock).mockResolvedValue([mockTeaching]);
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(mockSession);
 
-            await expect(service.createExam(invalidDto)).rejects.toThrow(ForbiddenException);
+            await expect(service.createExam(invalidDto, mockCurrentUser)).rejects.toThrow(ForbiddenException);
         });
 
         it('should throw ConflictException when exam conflicts with existing exam', async () => {
@@ -176,7 +179,7 @@ describe('ServerExamsService', () => {
             (coursesService.getTeachingByID as jest.Mock).mockResolvedValue(mockTeaching);
             (examsRepository.findBySessionAndDegree as jest.Mock).mockResolvedValue([mockExam]);
 
-            await expect(service.createExam(mockCreateExamDto)).rejects.toThrow(ConflictException);
+            await expect(service.createExam(mockCreateExamDto, mockCurrentUser)).rejects.toThrow(ConflictException);
         });
 
         it('should create exam with optional fields undefined (room and description)', async () => {
@@ -193,7 +196,7 @@ describe('ServerExamsService', () => {
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(mockSession);
             (examsRepository.create as jest.Mock).mockResolvedValue({ ...mockExam, room: undefined, description: undefined });
 
-            const result = await service.createExam(dtoWithoutOptionalFields);
+            const result = await service.createExam(dtoWithoutOptionalFields, mockCurrentUser);
 
             expect(result).toBeDefined();
             expect(examsRepository.create).toHaveBeenCalled();
@@ -213,7 +216,7 @@ describe('ServerExamsService', () => {
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(mockSession);
             (examsRepository.update as jest.Mock).mockResolvedValue(updatedExam);
 
-            const result = await service.updateExam(1, updateDto, mockExam.professor.professor_id);
+            const result = await service.updateExam(1, updateDto, mockCurrentUser);
 
             expect(result).toEqual(updatedExam);
             expect(examsRepository.update).toHaveBeenCalled();
@@ -222,14 +225,14 @@ describe('ServerExamsService', () => {
         it('should throw NotFoundException when exam does not exist', async () => {
             (examsRepository.findById as jest.Mock).mockResolvedValue(null);
 
-            await expect(service.updateExam(999, {}, 3)).rejects.toThrow(NotFoundException);
+            await expect(service.updateExam(999, {}, mockCurrentUser)).rejects.toThrow(NotFoundException);
         });
 
         it('should throw ForbiddenException when professor is not the owner of the exam', async () => {
-            const otherProfessorId = 999;
+            const otherUser = { id: 999 };
             (examsRepository.findById as jest.Mock).mockResolvedValue(mockExam);
 
-            await expect(service.updateExam(1, {}, otherProfessorId)).rejects.toThrow(ForbiddenException);
+            await expect(service.updateExam(1, {}, otherUser)).rejects.toThrow(ForbiddenException);
         });
 
         it('should throw ForbiddenException when updated dates are invalid', async () => {
@@ -240,7 +243,7 @@ describe('ServerExamsService', () => {
 
             (examsRepository.findById as jest.Mock).mockResolvedValue(mockExam);
 
-            await expect(service.updateExam(1, updateDto, mockExam.professor.professor_id)).rejects.toThrow(ForbiddenException);
+            await expect(service.updateExam(1, updateDto, mockCurrentUser)).rejects.toThrow(ForbiddenException);
         });
 
         it('should throw ConflictException when updating creates a conflict', async () => {
@@ -260,7 +263,7 @@ describe('ServerExamsService', () => {
             (coursesService.getTeachingByID as jest.Mock).mockResolvedValue(mockTeaching);
             (examsRepository.findBySessionAndDegree as jest.Mock).mockResolvedValue([conflictingExam]);
 
-            await expect(service.updateExam(1, updateDto, mockExam.professor.professor_id)).rejects.toThrow(ConflictException);
+            await expect(service.updateExam(1, updateDto, mockCurrentUser)).rejects.toThrow(ConflictException);
         });
 
         it('should successfully update optional fields (room, description)', async () => {
@@ -279,7 +282,7 @@ describe('ServerExamsService', () => {
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(mockSession);
             (examsRepository.update as jest.Mock).mockResolvedValue(updatedExam);
 
-            const result = await service.updateExam(1, updateDto, mockExam.professor.professor_id);
+            const result = await service.updateExam(1, updateDto, mockCurrentUser);
 
             expect(result).toEqual(updatedExam);
         });
@@ -290,7 +293,7 @@ describe('ServerExamsService', () => {
             (examsRepository.findById as jest.Mock).mockResolvedValue(mockExam);
             (examsRepository.delete as jest.Mock).mockResolvedValue(undefined);
 
-            await service.deleteExam(1, mockExam.professor.professor_id);
+            await service.deleteExam(1, mockCurrentUser);
 
             expect(examsRepository.delete).toHaveBeenCalledWith(1);
         });
@@ -298,14 +301,14 @@ describe('ServerExamsService', () => {
         it('should throw NotFoundException when exam does not exist', async () => {
             (examsRepository.findById as jest.Mock).mockResolvedValue(null);
 
-            await expect(service.deleteExam(999, 3)).rejects.toThrow(NotFoundException);
+            await expect(service.deleteExam(999, mockCurrentUser)).rejects.toThrow(NotFoundException);
         });
 
         it('should throw ForbiddenException when professor is not the owner of the exam', async () => {
-            const otherProfessorId = 999;
+            const otherUser = { id: 999 };
             (examsRepository.findById as jest.Mock).mockResolvedValue(mockExam);
 
-            await expect(service.deleteExam(1, otherProfessorId)).rejects.toThrow(ForbiddenException);
+            await expect(service.deleteExam(1, otherUser)).rejects.toThrow(ForbiddenException);
         });
     });
 

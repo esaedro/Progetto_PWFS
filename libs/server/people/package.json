@@ -10,6 +10,11 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./professor.entity": {
+        "types": "./src/lib/professor.entity.ts",
+        "import": "./src/lib/professor.entity.ts",
+        "default": "./src/lib/professor.entity.ts"
+    },
     "./package.json": "./package.json"
   },
   "dependencies": {}

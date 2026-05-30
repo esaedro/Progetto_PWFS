@@ -4,9 +4,9 @@ import type { Relation } from 'typeorm';
 //import { UserEntity } from '@server/users';
 import { Session } from './session.entity';
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { Teaching } from '@server/courses';
+import { Teaching } from '@server/courses/teaching.entity';
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { Professor } from '@server/people';
+import { Professor } from '@server/people/professor.entity';
 import { ExamType } from './dto/exam-type.enum';
 
 
@@ -43,5 +43,5 @@ export class Exam {
 
     @ManyToOne(() => Session, (session) => session.exams)
     @JoinColumn({ name: 'session_id' })
-    session: Session;
+    session: Relation<Session>;
 }
