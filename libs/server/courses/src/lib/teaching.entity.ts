@@ -5,7 +5,7 @@ import { Degree } from "./degree.entity";
 import { Subject } from "./subject.entity";
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { Exam } from '@server/exams';
-import { Max, Min } from "class-validator";
+import { Min } from "class-validator";
 
 
 @Entity("Teachings")
@@ -18,8 +18,8 @@ export class Teaching {
 
     @Column({type: "int", nullable: false /*, comment: "Accettati numeri da 1 a 5" */})  // vincoli 1-5/6?
     @Min(1)
-    @Max(5)
-    year: number;
+    year: number; 
+    // Validazione max dinamica in service in base a degree.durationYears
 
     //Many to one verso Subject e Degree
     @ManyToOne(()=>Subject,(subject)=>subject.teachings,{nullable:false, eager:true,onDelete:'RESTRICT'}) //check proprietà
