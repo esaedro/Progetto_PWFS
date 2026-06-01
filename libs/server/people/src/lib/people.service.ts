@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PeopleRepository } from './people.repository';
 import { Professor } from './professor.entity';
-import { ServerUsersService } from '@server/users';
+import { ServerUsersService, UserEntity, UserRole } from '@server/users';
 import { CreatePeopleDto } from './dto/create-people.dto';
 
 @Injectable()
@@ -19,6 +19,10 @@ export class ServerPeopleService {
         }
 
         return professor
+    }
+
+    async findAll(): Promise<UserEntity[]> {
+        return await this.serverUsersService.getUsers(UserRole.PROFESSOR);
     }
 
     async canManageOwnExame(professor_id: number, examId: number): Promise<boolean>{

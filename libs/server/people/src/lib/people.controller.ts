@@ -3,7 +3,7 @@ import { ServerPeopleService } from './people.service';
 import { Professor } from './professor.entity';
 import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreatePeopleDto } from './dto/create-people.dto';
-import { UserRole } from '@server/users';
+import { UserEntity, UserRole } from '@server/users';
 import { JwtAuthGuard, Roles, RolesGuard } from '@server/security';
 
 @ApiTags('People APIs')
@@ -11,8 +11,18 @@ import { JwtAuthGuard, Roles, RolesGuard } from '@server/security';
 export class ServerPeopleController {
     constructor(private serverPeopleService: ServerPeopleService) {}
 
+    @Get()
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    async findAll(): Promise<UserEntity[]>{
+        return await this.serverPeopleService.findAll();
+    }
+
     @Get(':id')
     @ApiQuery({ name:'professor_id', required:true })
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
     async findById(@Query('professor_id') professor_id: number): Promise<Professor | null> {
         return await this.serverPeopleService.findById(professor_id)
     }
@@ -22,7 +32,7 @@ export class ServerPeopleController {
     @Roles(UserRole.PROFESSOR)
     @Get('professor/:id/exam/:examid')
     async canManageOwnExam(professor_id: number, examId: number): Promise<boolean> {
-        return this.serverPeopleService.canManageOwnExame(professor_id, examId);
+        return await this.serverPeopleService.canManageOwnExame(professor_id, examId);
     }
 
     @Post()
@@ -38,7 +48,7 @@ export class ServerPeopleController {
             required: ['name', 'email', 'role', 'password'],
         },
     })  
-    create(@Body(ValidationPipe) professor: CreatePeopleDto) {
-        return this.serverPeopleService.create(professor);
+    async create(@Body(ValidationPipe) professor: CreatePeopleDto) {
+        return await this.serverPeopleService.create(professor);
     }
 }

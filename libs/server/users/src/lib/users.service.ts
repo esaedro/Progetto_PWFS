@@ -73,4 +73,16 @@ export class ServerUsersService {
             throw new NotFoundException(`User with id ${id} not found`);
         }
     }
+
+    async updatePassword(user: UserEntity, newPassword: string) {
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        
+        const updated = await this.usersRepository.updateOne(user.id, { password: passwordHash });
+        
+        if (!updated) {
+            throw new NotFoundException(`User with id ${user.id} not found`);
+        }
+
+        return updated;
+    }
 }

@@ -83,7 +83,7 @@ export function AppLayout() {
                 </button>
                 <button
                   className={styles.dropdownItem}
-                  onClick={() => navigate('/hangepassword')}
+                  onClick={() => navigate('/changepassword')}
                 >
                   <FaKey/> Cambia password
                 </button>
