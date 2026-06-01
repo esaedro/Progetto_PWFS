@@ -20,6 +20,7 @@ export function TeachingsPage() {
         try {
             await deleteTeaching(id);
             setTeachings((t) => t.filter((te) => te.id !== id));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message);
         }
@@ -83,8 +84,8 @@ export function TeachingsPage() {
                             <tbody>
                                 {teachings.map((t) => (
                                     <tr key={t.id} className={book_styles.row}>
-                                        <td className={book_styles.titleCell}>{(t.subject as any)?.name ?? String(t.subject)}</td>
-                                        <td className={book_styles.td}>{(t.degree as any)?.name ?? String(t.degree)}</td>
+                                        <td className={book_styles.titleCell}>{t.subject}</td>
+                                        <td className={book_styles.td}>{t.degree}</td>
                                         <td className={book_styles.td}>{t.year}</td>
                                         <td className={book_styles.td}>
                                             <button className={book_styles.secondaryButton} onClick={() => navigate(`/teachings/${t.id}/edit`)}>

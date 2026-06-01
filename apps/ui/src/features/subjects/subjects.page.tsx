@@ -20,6 +20,7 @@ export function SubjectsPage() {
         try {
             await deleteSubject(id);
             setSubjects((s) => s.filter((sub) => sub.id !== id));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message);
         }
@@ -85,7 +86,7 @@ export function SubjectsPage() {
                                         <td className={book_styles.titleCell}>{sub.name}</td>
                                         <td className={book_styles.td}>
                                             {sub.professors?.length ? (
-                                                sub.professors.map((p) => (p as any)?.name ?? String(p)).join(', ')
+                                                sub.professors.map((p) => p.name).join(', ')
                                             ) : (
                                                 'N/D'
                                             )}

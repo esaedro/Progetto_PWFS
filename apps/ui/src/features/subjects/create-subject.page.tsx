@@ -3,12 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import book_styles from '../css/books.module.css';
 import { createSubject, fetchProfessors } from './subjects.api';
-
-type ProfessorListItem = {
-    id: number;
-    name: string;
-    email?: string;
-};
+import { ProfessorListItem } from '@server/people';
 
 export function CreateSubjectPage() {
     const [name, setName] = useState('');
@@ -29,7 +24,7 @@ export function CreateSubjectPage() {
 
     const filteredProfessors = professors.filter((prof) => {
         const search = professorSearch.toLowerCase();
-        const already = selectedProfessors.some((s) => s.id === prof.id);
+        const already = selectedProfessors.some((s) => s.professor_id === prof.professor_id);
         return !already && (prof.name.toLowerCase().includes(search) || (prof.email || '').toLowerCase().includes(search));
     });
 
@@ -48,10 +43,11 @@ export function CreateSubjectPage() {
         try {
             await createSubject({
                 name,
-                professorIds: selectedProfessors.map((p) => p.id),
+                professorIds: selectedProfessors.map((p) => p.professor_id),
             });
 
             navigate('/subjects');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -88,7 +84,7 @@ export function CreateSubjectPage() {
                         <div className={book_styles.autocompleteList}>
                             {filteredProfessors.slice(0, 8).map((prof) => (
                                 <button
-                                    key={prof.id}
+                                    key={prof.professor_id}
                                     type="button"
                                     className={book_styles.secondaryButton}
                                     onClick={() => {
@@ -107,12 +103,12 @@ export function CreateSubjectPage() {
                             <label>Professori selezionati</label>
                             <div>
                                 {selectedProfessors.map((p) => (
-                                    <div key={p.id} className={book_styles.row}>
+                                    <div key={p.professor_id} className={book_styles.row}>
                                         <span className={book_styles.titleCell}>{p.name}</span>
                                         <button
                                             type="button"
                                             className={book_styles.dangerButton}
-                                            onClick={() => setSelectedProfessors((current) => current.filter((item) => item.id !== p.id))}
+                                            onClick={() => setSelectedProfessors((current) => current.filter((item) => item.professor_id !== p.professor_id))}
                                         >
                                             Rimuovi
                                         </button>

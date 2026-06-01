@@ -20,6 +20,7 @@ export function DegreesPage() {
         try {
             await deleteDegree(id);
             setDegrees((d) => d.filter((deg) => deg.id !== id));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message);
         }
