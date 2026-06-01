@@ -1,16 +1,37 @@
+import { handleApiError } from '../shared/utils.api';
+
 const API_URL = 'http://localhost:3333/api';
+
+function getAuthHeaders() {
+    const token = localStorage.getItem('access_token');
+
+    return {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+    };
+}
 
 export async function fetchSessions() {
     const response = await fetch(`${API_URL}/sessions`, {
         method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: getAuthHeaders()
     });
 
     if (!response.ok) {
-        throw new Error('Failed to fetch sessions');
+        await handleApiError(response);
+    }
+
+    return response.json();
+}
+
+export async function fetchSessionById(sessionId) {
+    const response = await fetch(`${API_URL}/sessions/${sessionId}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
     }
 
     return response.json();
@@ -19,15 +40,12 @@ export async function fetchSessions() {
 export async function createSession(sessionData) {
     const response = await fetch(`${API_URL}/sessions/create`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(sessionData)
     });
 
     if (!response.ok) {
-        throw new Error('Failed to create session');
+        await handleApiError(response);
     }
 
     return response.json();
@@ -35,16 +53,13 @@ export async function createSession(sessionData) {
 
 export async function updateSession(sessionId, sessionData) {
     const response = await fetch(`${API_URL}/sessions/update/${sessionId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        method: 'PATCH',
+        headers: getAuthHeaders(),
         body: JSON.stringify(sessionData)
     });
 
     if (!response.ok) {
-        throw new Error('Failed to update session');
+        await handleApiError(response);
     }
 
     return response.json();
@@ -53,14 +68,11 @@ export async function updateSession(sessionId, sessionData) {
 export async function deleteSession(sessionId) {
     const response = await fetch(`${API_URL}/sessions/delete/${sessionId}`, {
         method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: getAuthHeaders()
     });
 
     if (!response.ok) {
-        throw new Error('Failed to delete session');
+        await handleApiError(response);
     }
 
     return response.json();
