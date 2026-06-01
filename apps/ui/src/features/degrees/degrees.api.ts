@@ -1,7 +1,7 @@
 import { CreateDegreeDto, DegreeItem, UpgradeDegreeDto } from "@server/courses";
 import { handleApiError } from "../shared/utils.api";
 
-const API_URL = 'http://localhost:3333/api/';
+const API_URL = 'http://localhost:3333/api';
 
 function getAuthHeaders() {
     const token = localStorage.getItem('access_token');

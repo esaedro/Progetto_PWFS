@@ -1,7 +1,7 @@
 import { CreateTeachingDto, TeachingItem, UpdateTeachingDto } from "@server/courses";
 import { handleApiError } from "../shared/utils.api";
 
-const API_URL = 'http://localhost:3333/api/';
+const API_URL = 'http://localhost:3333/api';
 
 function getAuthHeaders() {
     const token = localStorage.getItem('access_token');
@@ -72,6 +72,30 @@ export async function fetchTeachingById(id: number): Promise<TeachingItem> {
   }
 
   return response.json();
+}
+
+export async function fetchSubjects() {
+    const response = await fetch(`${API_URL}/subjects`, {
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
+}
+
+export async function fetchDegrees() {
+  const response = await fetch(`${API_URL}/degrees`, {
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
 }
 
 
