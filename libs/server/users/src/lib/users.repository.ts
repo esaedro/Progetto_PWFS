@@ -47,7 +47,7 @@ export class UsersRepository {
         if (dto.name !== undefined) user.name = dto.name;
         if (dto.email !== undefined) user.email = dto.email;
         if (dto.role !== undefined) user.role = dto.role;
-
+        if (dto.password !== undefined) user.passwordHash = dto.password;
         return this.repository.save(user);
     }
 

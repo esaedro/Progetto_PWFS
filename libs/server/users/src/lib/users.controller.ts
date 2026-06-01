@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './dto/user-role.enum';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from '@server/security';
+import { UserEntity } from './user.entity';
 
 @ApiTags('Users APIs')
 @Controller('users')
@@ -79,5 +80,22 @@ export class ServerUsersController {
     @ApiBearerAuth()
     removeUser(@Param('id', ParseIntPipe) id: number) {
         return this.serverUsersService.removeUser(id);
+    }
+
+    @Patch('me/password')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                password: { type: 'string', example: 'Password123!' },
+            },
+            required: ['password'],
+        },
+    })
+    updatePassword(@CurrentUser() user: UserEntity, @Body(ValidationPipe) body: { password: string }) {
+        return this.serverUsersService.updatePassword(user, body.password); 
     }
 }
