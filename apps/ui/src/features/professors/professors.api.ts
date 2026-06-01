@@ -1,7 +1,7 @@
-import { CreateDegreeDto, DegreeItem, UpgradeDegreeDto } from "@server/courses";
 import { handleApiError } from "../shared/utils.api";
 import { UserListItem } from "@server/users";
 import { ProfessorListItem } from "@server/people";
+import { CreatePeopleDto } from "@server/people";
 
 const API_URL = 'http://localhost:3333/api/';
 
@@ -14,9 +14,8 @@ function getAuthHeaders() {
     }
 }
 
-// TODO API
 export async function fetchProfessors() {
-  const response = await fetch(`${API_URL}/people`, {
+  const response = await fetch(`${API_URL}people`, {
         headers: getAuthHeaders()
     });
 
@@ -27,8 +26,8 @@ export async function fetchProfessors() {
     return response.json();
 }
 
-export async function createProfessor(payload: CreateDegreeDto): Promise<UserListItem> {
-  const response = await fetch(`${API_URL}/people`, {
+export async function createProfessor(payload: CreatePeopleDto): Promise<UserListItem> {
+  const response = await fetch(`${API_URL}people`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)
@@ -41,7 +40,7 @@ export async function createProfessor(payload: CreateDegreeDto): Promise<UserLis
 }
 
 export async function ou(id: number): Promise<ProfessorListItem> {
-  const response = await fetch(`${API_URL}/degrees/${id}`, {
+  const response = await fetch(`${API_URL}degrees/${id}`, {
     headers: getAuthHeaders()
   });
 

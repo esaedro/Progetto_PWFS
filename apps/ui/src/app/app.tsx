@@ -20,6 +20,7 @@ import { EditSessionPage } from '../features/sessions/edit-session.page';
 import { ExamsPage } from '../features/exams/exams.page';
 import { CreateExamPage } from '../features/exams/create-exam.page';
 import { EditExamPage } from '../features/exams/edit-exam.page';
+import { ProfessorsPage } from '../features/professors/professors.page';
 
 export function App() {
     return (
@@ -56,6 +57,9 @@ export function App() {
                 <Route path='/exams/new' element={<CreateExamPage />} />
                 <Route path='/exams/:id/edit' element={<EditExamPage />} />
 
+                <Route path='/professors' element={<ProfessorsPage />} />
+                {/* <Route path='/professors/new' element={<CreateExamPage />} /> */}
+                {/* <Route path='/professors/:id/edit' element={<EditExamPage />} /> */}
             </Route>
 
 

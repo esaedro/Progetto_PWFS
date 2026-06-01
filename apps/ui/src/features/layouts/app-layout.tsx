@@ -48,11 +48,11 @@ export function AppLayout() {
             <button onClick={() => navigate('/books')}>Appelli</button>
           ) : (
             <>
-              <button onClick={() => navigate('/books')}>Professori</button>
-              <button onClick={() => navigate('/books/new')}>Sessioni</button>
-              <button onClick={() => navigate('/authors')}>Materia</button>
-              <button onClick={() => navigate('/categories')}>Corsi di Laurea</button>
-              <button onClick={() => navigate('/categories')}>Insegnamenti</button>
+              <button onClick={() => navigate('/professors')}>Professori</button>
+              <button onClick={() => navigate('/sessions')}>Sessioni</button>
+              <button onClick={() => navigate('/subjects')}>Materia</button>
+              <button onClick={() => navigate('/degrees')}>Corsi di Laurea</button>
+              <button onClick={() => navigate('/teachings')}>Insegnamenti</button>
             </>
           )}
           {/* CONDITIONAL LINKS END HERE */}

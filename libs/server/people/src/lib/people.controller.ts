@@ -14,7 +14,7 @@ export class ServerPeopleController {
     @Get()
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     async findAll(): Promise<UserEntity[]>{
         return await this.serverPeopleService.findAll();
     }
