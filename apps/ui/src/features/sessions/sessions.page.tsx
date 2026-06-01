@@ -162,17 +162,17 @@ export function SessionsPage() {
 
                     <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-600">
                         <div className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                            <span className="h-3 w-3 rounded-full bg-emerald-500" />
                             Inserimento
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-amber-500" />
+                            <span className="h-3 w-3 rounded-full bg-amber-500" />
                             Esaminazione
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-violet-500" />
+                        {/*<div className="flex items-center gap-2">
+                            <span className="h-3 w-3 rounded-full bg-violet-500" />
                             Periodi sovrapposti
-                        </div>
+                        </div>*/}
                     </div>
 
                     <div className="mt-6 grid grid-cols-7 text-xs font-semibold text-slate-500">
@@ -211,10 +211,10 @@ export function SessionsPage() {
                                         }`}
                                 >
                                     <span className="font-medium">{day.getDate()}</span>
-                                    <div className="flex items-center gap-1">
+                                    {/*<div className="flex items-center gap-1">
                                         {inInsertion && <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />}
                                         {inExamination && <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />}
-                                    </div>
+                                    </div>*/}
                                 </div>
                             );
                         })}
