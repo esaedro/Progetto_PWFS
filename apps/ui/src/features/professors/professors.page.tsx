@@ -35,7 +35,7 @@ export function ProfessorsPage() {
     return (
       <main className={book_styles.page}>
         <div className={book_styles.card}>
-          <p className={book_styles.message}>Caricamento libri...</p>
+          <p className={book_styles.message}>Caricamento professor...</p>
         </div>
       </main>
     );
@@ -81,8 +81,8 @@ export function ProfessorsPage() {
               <tbody>
                 {professors.map((professor) => (
                   <tr key={professor.professor_id} className={book_styles.row}>
-                    <td className={book_styles.titleCell}>{professor.user.name}</td>
-                    <td className={book_styles.td}>{professor.user.email}</td>
+                    <td className={book_styles.titleCell}>{professor.name}</td>
+                    <td className={book_styles.td}>{professor.email}</td>
                     <td className={book_styles.td}>
                       <button 
                         className={book_styles.secondaryButton}
@@ -97,7 +97,7 @@ export function ProfessorsPage() {
 
                         Elimina
                       </button>
-                    </td>
+                    </td> 
                   </tr>
                 ))}
               </tbody>
