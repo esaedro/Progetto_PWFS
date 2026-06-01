@@ -17,7 +17,7 @@ import { EditTeachingPage } from '../features/teachings/edit-teaching.page';
 import { SessionsPage } from '../features/sessions/sessions.page';
 import { CreateSessionPage } from '../features/sessions/create-session.page';
 import { EditSessionPage } from '../features/sessions/edit-session.page';
-import { ExamsPage } from '../features/sessions/exams.page';
+import { ExamsPage } from '../features/exams/exams.page';
 import { CreateExamPage } from '../features/exams/create-exam.page';
 import { EditExamPage } from '../features/exams/edit-exam.page';
 
