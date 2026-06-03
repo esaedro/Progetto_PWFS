@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TeachingItem } from '@server/courses'; 
 import { fetchTeachings, deleteTeaching } from './teachings.api';
+import { fetchCurrentUser } from '../auth/auth.api';
 import book_styles from '../css/books.module.css';
+import { UserListItem } from '@server/users';
 
 export function TeachingsPage() {
 
     const [teachings, setTeachings] = useState<TeachingItem[]>([]);
+    const [user, setUser] = useState<UserListItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -20,18 +23,20 @@ export function TeachingsPage() {
         try {
             await deleteTeaching(id);
             setTeachings((t) => t.filter((te) => te.id !== id));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message);
         }
     }
 
     useEffect(() => {
-        fetchTeachings()
-        .then(setTeachings)
-        .catch((err) => setError(err.message))
-        .finally(() => setLoading(false));
-    }, []);
+    Promise.all([fetchTeachings(), fetchCurrentUser()])
+      .then(([teachingData, userData]) => {
+        setTeachings(teachingData);
+        setUser(userData);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
     if (loading) {
         return (
@@ -53,18 +58,24 @@ export function TeachingsPage() {
         );
     }
 
+    const canManageTeachings = user?.role === 'SECRETARY';
+
     return (
         <main className={book_styles.page}>
             <section className={`${book_styles.card} ${book_styles.cardLarge}`}>
                 <header className={book_styles.headerRow}>
                     <div>
                         <h1 className={book_styles.title}>Elenco insegnamenti</h1>
+                        <p className={book_styles.subtitle}>Elenco degli insegnamenti tenuti dall'Università.</p>
                     </div>
-                    <div>
-                        <button className={book_styles.secondaryButton} onClick={() => navigate('/teachings/new')}>
-                            Nuovo insegnamento
-                        </button>
-                    </div>
+
+                    {canManageTeachings && (    
+                        <div>
+                            <button className={book_styles.secondaryButton} onClick={() => navigate('/teachings/new')}>
+                                Nuovo insegnamento
+                            </button>
+                        </div>
+                    )}
                 </header>
 
                 {teachings.length === 0 ? (
@@ -77,16 +88,18 @@ export function TeachingsPage() {
                                     <th className={book_styles.th}>Materia</th>
                                     <th className={book_styles.th}>Corso di laurea</th>
                                     <th className={book_styles.th}>Anno</th>
-                                    <th className={book_styles.th}>Azioni</th>
+                                    {canManageTeachings && <th className={book_styles.th}>Azioni</th>}
                                 </tr>
                             </thead>
 
                             <tbody>
                                 {teachings.map((t) => (
                                     <tr key={t.id} className={book_styles.row}>
-                                        <td className={book_styles.titleCell}>{t.subject}</td>
-                                        <td className={book_styles.td}>{t.degree}</td>
+                                        <td className={book_styles.titleCell}>{t.subject.name}</td>
+                                        <td className={book_styles.td}>{t.degree.name}</td>
                                         <td className={book_styles.td}>{t.year}</td>
+
+                                        {canManageTeachings && (
                                         <td className={book_styles.td}>
                                             <button className={book_styles.secondaryButton} onClick={() => navigate(`/teachings/${t.id}/edit`)}>
                                                 Modifica
@@ -95,6 +108,7 @@ export function TeachingsPage() {
                                                 Elimina
                                             </button>
                                         </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>

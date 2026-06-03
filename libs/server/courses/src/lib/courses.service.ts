@@ -10,6 +10,7 @@ import { DegreeItem } from './interfaces/degree-item.interface';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
 import { SubjectItem } from './interfaces/subject-item.interface';
+import { UserRole } from '@server/users';
 import { CreateDegreeDto } from './dto/create-degree.dto';
 import { UpgradeDegreeDto } from './dto/update-degree.dto';
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -112,29 +113,29 @@ export class ServerCoursesService {
             id: s.id,
             name: s.name,
             professors: (s.professors || []).map((p) => ({
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                id: (p as any).professor_id ?? (p as any).id,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                professor_id: (p as any).professor_id ?? (p as any).id,
                 name: (p as any).user?.name ?? (p as any).name ?? '',
+                email: (p as any).user?.email ?? (p as any).email ?? '',
+                role: (p as any).user?.role ?? (p as any).role ?? (UserRole as any).PROFESSOR,
             })),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             teachings: (s.teachings || []).map((t) => ({ id: t.id, degree: (t.degree as any)?.name ?? String((t.degree as any)), year: t.year })),
         };
     }
 
     // Helper: map a Teaching entity to TeachingItem DTO (formatted for frontend)
     private mapTeaching(t: Teaching): TeachingItem {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const subjectName = (t.subject as any)?.name ?? String((t.subject as any) ?? '');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const degreeName = (t.degree as any)?.name ?? String((t.degree as any) ?? '');
-
         return {
             id: t.id,
-            subject: subjectName,
-            degree: degreeName,
+            subject: {
+                id: t.subject.id,
+                name: t.subject.name,
+            },
+            degree: {
+                id: t.degree.id,
+                name: t.degree.name,
+            },
             year: t.year,
-        };
+        } as TeachingItem;
     }
 
     // Helper: map a Degree entity to DegreeItem DTO (format teachings with subject names)
@@ -145,7 +146,6 @@ export class ServerCoursesService {
             duration: (d.durationYears ?? d.durationYears) as number,
             teachings: (d.teachings || []).map((t) => ({
                 id: t.id,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 subject: (t.subject as any)?.name ?? String((t.subject as any) ?? ''),
                 year: t.year,
             })),

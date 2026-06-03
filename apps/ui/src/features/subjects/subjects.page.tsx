@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubjectItem } from '@server/courses'; 
 import { fetchSubjects, deleteSubject } from './subjects.api';
+import { fetchCurrentUser } from '../auth/auth.api';
 import book_styles from '../css/books.module.css';
+import { UserListItem } from '@server/users';
 
 export function SubjectsPage() {
 
     const [subjects, setSubjects] = useState<SubjectItem[]>([]);
+    const [user, setUser] = useState<UserListItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -20,18 +23,20 @@ export function SubjectsPage() {
         try {
             await deleteSubject(id);
             setSubjects((s) => s.filter((sub) => sub.id !== id));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message);
         }
     }
 
     useEffect(() => {
-        fetchSubjects()
-        .then(setSubjects)
-        .catch((err) => setError(err.message))
-        .finally(() => setLoading(false));
-    }, []);
+        Promise.all([fetchSubjects(), fetchCurrentUser()])
+          .then(([subjectsData, userData]) => {
+            setSubjects(subjectsData);
+            setUser(userData);
+          })
+          .catch((err) => setError(err.message))
+          .finally(() => setLoading(false));
+      }, []);
 
     if (loading) {
         return (
@@ -53,6 +58,8 @@ export function SubjectsPage() {
         );
     }
 
+    const canManageSubjects = user?.role === 'SECRETARY';
+
     return (
         <main className={book_styles.page}>
             <section className={`${book_styles.card} ${book_styles.cardLarge}`}>
@@ -61,11 +68,14 @@ export function SubjectsPage() {
                         <h1 className={book_styles.title}>Elenco materie</h1>
                         <p className={book_styles.subtitle}>Elenco delle materie e dei relativi professori.</p>
                     </div>
-                    <div>
-                        <button className={book_styles.secondaryButton} onClick={() => navigate('/subjects/new')}>
-                            Nuova materia
-                        </button>
-                    </div>
+                    
+                    {canManageSubjects && (
+                        <div>
+                            <button className={book_styles.secondaryButton} onClick={() => navigate('/subjects/new')}>
+                                Nuova materia
+                            </button>
+                        </div>
+                    )}
                 </header>
 
                 {subjects.length === 0 ? (
@@ -77,7 +87,7 @@ export function SubjectsPage() {
                                 <tr>
                                     <th className={book_styles.th}>Nome</th>
                                     <th className={book_styles.th}>Professori</th>
-                                    <th className={book_styles.th}>Azioni</th>
+                                    {canManageSubjects && <th className={book_styles.th}>Azioni</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -91,6 +101,7 @@ export function SubjectsPage() {
                                                 'N/D'
                                             )}
                                         </td>
+                                        {canManageSubjects && (
                                         <td className={book_styles.td}>
                                             <button className={book_styles.secondaryButton} onClick={() => navigate(`/subjects/${sub.id}/edit`)}>
                                                 Modifica
@@ -99,6 +110,7 @@ export function SubjectsPage() {
                                                 Elimina
                                             </button>
                                         </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>

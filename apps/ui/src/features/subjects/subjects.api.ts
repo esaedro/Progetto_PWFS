@@ -26,7 +26,7 @@ export async function fetchSubjects() {
 }
 
 export async function createSubject(payload: CreateSubjectDto): Promise<SubjectItem> {
-  const response = await fetch(`${API_URL}/subjects`, {
+  const response = await fetch(`${API_URL}/subjects/create`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)
@@ -39,7 +39,7 @@ export async function createSubject(payload: CreateSubjectDto): Promise<SubjectI
 }
 
 export async function deleteSubject(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/subjects/${id}`, {
+  const response = await fetch(`${API_URL}/subjects/delete/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
   });
@@ -50,7 +50,7 @@ export async function deleteSubject(id: number): Promise<void> {
 }
 
 export async function updateSubject(id: number, payload: UpdateSubjectDto): Promise<SubjectItem> {
-  const response = await fetch(`${API_URL}/subjects/${id}`, {
+  const response = await fetch(`${API_URL}/subjects/update/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)

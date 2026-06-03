@@ -25,7 +25,7 @@ export async function fetchTeachings() {
 }
 
 export async function createTeaching(payload: CreateTeachingDto): Promise<TeachingItem> {
-  const response = await fetch(`${API_URL}/teachings`, {
+  const response = await fetch(`${API_URL}/teachings/create`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)
@@ -38,7 +38,7 @@ export async function createTeaching(payload: CreateTeachingDto): Promise<Teachi
 }
 
 export async function deleteTeaching(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/teachings/${id}`, {
+  const response = await fetch(`${API_URL}/teachings/delete/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
   });
@@ -49,7 +49,7 @@ export async function deleteTeaching(id: number): Promise<void> {
 }
 
 export async function updateTeaching(id: number, payload: UpdateTeachingDto): Promise<TeachingItem> {
-  const response = await fetch(`${API_URL}/teachings/${id}`, {
+  const response = await fetch(`${API_URL}/teachings/update/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)
