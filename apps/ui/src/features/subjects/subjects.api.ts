@@ -32,9 +32,10 @@ export async function createSubject(payload: CreateSubjectDto): Promise<SubjectI
     body: JSON.stringify(payload)
   });
 
-  if(!response.ok) {
+  if (!response.ok) {
     await handleApiError(response);
   }
+
   return response.json();
 }
 
@@ -77,14 +78,22 @@ export async function fetchSubjectById(id: number): Promise<SubjectItem> {
 
 export async function fetchProfessors(): Promise<ProfessorListItem[]> {
   const response = await fetch(`${API_URL}/people`, {
-        headers: getAuthHeaders()
-    });
+    headers: getAuthHeaders(),
+  });
 
-    if (!response.ok) {
-        await handleApiError(response);
-    }
+  if (!response.ok) {
+    await handleApiError(response);
+  }
 
-    return response.json();
+  const data = await response.json();
+
+  // mappiamo id -> professor_id
+  return data.map((p: any) => ({
+    professor_id: p.professor_id ?? p.id, // necessario perché viene restituito id, ma le pagina usano professor_id
+    name: p.name,
+    email: p.email,
+    role: p.role,
+  })) as ProfessorListItem[];
 }
 
   // TODO? API presente nel controller ma non implementata nel client

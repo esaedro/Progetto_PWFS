@@ -28,31 +28,32 @@ export function CreateSubjectPage() {
         return !already && (prof.name.toLowerCase().includes(search) || (prof.email || '').toLowerCase().includes(search));
     });
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
+async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
-        setError(null);
-        setLoading(true);
+    setError(null);
+    setLoading(true);
 
-        if (selectedProfessors.length === 0) {
-            setError('Seleziona almeno un professore');
-            setLoading(false);
-            return;
-        }
-
-        try {
-            await createSubject({
-                name,
-                professorIds: selectedProfessors.map((p) => p.professor_id),
-            });
-
-            navigate('/subjects');
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+    if (selectedProfessors.length === 0) {
+        setError('Seleziona almeno un professore');
+        setLoading(false);
+        return;
     }
+
+    const payload = {
+        name,
+        professorIds: selectedProfessors.map((p) => Number(p.professor_id)),
+    };
+
+    try {
+        await createSubject(payload);
+        navigate('/subjects');
+    } catch (err: any) {
+        setError(err.message);
+    } finally {
+        setLoading(false);
+    }
+}
 
     return (
         <main className={book_styles.page}>

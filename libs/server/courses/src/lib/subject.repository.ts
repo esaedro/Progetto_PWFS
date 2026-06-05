@@ -34,7 +34,7 @@ export class SubjectRepository {
     async createSubject(dto: CreateSubjectDto, professors: Professor[]): Promise<Subject> {
         const subject = this.repository.create({
             name: dto.name,
-            professors
+            professors: professors
         });
         return this.repository.save(subject);
     }
