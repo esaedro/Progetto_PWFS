@@ -115,8 +115,8 @@ export function SessionsPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-                <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+                <section className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[720px]">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <h2 className="text-lg font-semibold text-slate-900">Calendario sessioni</h2>
@@ -221,7 +221,7 @@ export function SessionsPage() {
                     </div>
                 </section>
 
-                <aside className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[720px]">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-slate-900">Sessioni programmate</h2>
                         <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
@@ -229,7 +229,7 @@ export function SessionsPage() {
                         </span>
                     </div>
 
-                    <div className="mt-4 space-y-3">
+                    <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
                         {loading && <p className="text-sm text-slate-500">Caricamento sessioni...</p>}
                         {error && (
                             <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">

@@ -33,6 +33,31 @@ function toPayload(form: SessionForm) {
     };
 }
 
+function validateForm(form: SessionForm): string | null {
+    if (!form.dateStartInsertion || !form.dateEndInsertion || !form.dateStartExamination || !form.dateEndExamination) {
+        return 'Compila tutte le date richieste.';
+    }
+
+    const startInsertion = new Date(form.dateStartInsertion);
+    const endInsertion = new Date(form.dateEndInsertion);
+    const startExamination = new Date(form.dateStartExamination);
+    const endExamination = new Date(form.dateEndExamination);
+
+    if (Number.isNaN(startInsertion.getTime()) || Number.isNaN(endInsertion.getTime()) || Number.isNaN(startExamination.getTime()) || Number.isNaN(endExamination.getTime())) {
+        return 'Le date inserite non sono valide.';
+    }
+
+    if (startInsertion > endInsertion) {
+        return 'La data di inizio inserimento deve essere precedente alla data di fine inserimento.';
+    }
+
+    if (startExamination > endExamination) {
+        return 'La data di inizio esaminazione deve essere precedente alla data di fine esaminazione.';
+    }
+
+    return null;
+}
+
 export function EditSessionPage() {
     const { id } = useParams();
     const [form, setForm] = useState<SessionForm>(emptyForm);
@@ -91,6 +116,12 @@ export function EditSessionPage() {
         event.preventDefault();
         if (!id) {
             setError('Sessione non valida');
+            return;
+        }
+
+        const validationError = validateForm(form);
+        if (validationError) {
+            setError(validationError);
             return;
         }
 
