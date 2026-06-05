@@ -37,6 +37,19 @@ export async function fetchSessionById(sessionId) {
     return response.json();
 }
 
+export async function findSessionByDate(date) {
+    const response = await fetch(`${API_URL}/sessions/find-by-date/${date}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
+}
+
 export async function createSession(sessionData) {
     const response = await fetch(`${API_URL}/sessions/create`, {
         method: 'POST',

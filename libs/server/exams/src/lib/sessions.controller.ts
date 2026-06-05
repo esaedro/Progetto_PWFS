@@ -108,4 +108,12 @@ export class ServerSessionsController {
             throw error;
         }
     }
+
+    @Get('find-by-date/:date')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    async findByDate(@Body('date') date: Date) {
+        return this.serverExamsService.findSessionByDate(date);
+    }
 }

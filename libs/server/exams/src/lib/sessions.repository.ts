@@ -67,4 +67,19 @@ export class SessionsRepository {
             }
         });
     }
+
+    async findByDate(date: Date): Promise<Session | null> {
+        return this.repository.findOne({
+            where: [
+                {
+                    dateStartInsertion: LessThanOrEqual(date),
+                    dateEndInsertion: MoreThanOrEqual(date)
+                },
+                {
+                    dateStartExamination: LessThanOrEqual(date),
+                    dateEndExamination: MoreThanOrEqual(date)
+                }
+            ]
+        });
+    }
 }

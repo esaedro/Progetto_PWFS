@@ -189,4 +189,8 @@ export class ServerExamsService {
     async findSessionByCurrentExaminationWindow(): Promise<Session | null> {
         return this.sessionsRepository.findCurrentExaminationWindow();
     }
+
+    async findSessionByDate(date: Date): Promise<Session | null> {
+        return this.sessionsRepository.findByDate(date);
+    }
 }
