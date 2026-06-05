@@ -5,8 +5,12 @@ import { Teaching } from './teaching.entity';
 import { SubjectRepository } from './subject.repository';
 import { DegreeRepository } from './degree.repository';
 import { TeachingRepository } from './teaching.repository';
+import { TeachingItem } from './interfaces/teaching-item.interface';
+import { DegreeItem } from './interfaces/degree-item.interface';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
+import { SubjectItem } from './interfaces/subject-item.interface';
+import { UserRole } from '@server/users';
 import { CreateDegreeDto } from './dto/create-degree.dto';
 import { UpgradeDegreeDto } from './dto/update-degree.dto';
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -29,56 +33,57 @@ export class ServerCoursesService {
     ) {}
 
 
-    async getDegrees(): Promise<Degree[]> {
+    async getDegrees(): Promise<DegreeItem[]> {
         const degrees = await this.degreeRepository.findAll();
         if (!degrees || degrees.length === 0) 
             throw new NotFoundException('Non sono stati trovati corsi di laurea');
-        return degrees;
+        return (degrees || []).map((d) => this.mapDegree(d));
     }
 
-    async getSubjects(): Promise<Subject[]> {
+    async getSubjects(): Promise<SubjectItem[]> {
         const subjects = await this.subjectRepository.findAll();
-        if (!subjects || subjects.length === 0) 
+        if (!subjects || subjects.length === 0)
             throw new NotFoundException('Non sono state trovate materie');
-        return subjects;
+        return (subjects || []).map((s) => this.mapSubject(s));
     }
+    
 
-    async getTeachings(): Promise<Teaching[]> {
+    async getTeachings(): Promise<TeachingItem[]> {
         const teachings = await this.teachingRepository.findAll();
         if (!teachings || teachings.length === 0) 
             throw new NotFoundException('Non sono stati trovati insegnamenti');
-        return teachings;
+        return (teachings || []).map((t) => this.mapTeaching(t));
     }
 
-    async getDegreeByID(degreeID: number): Promise<Degree> {
+    async getDegreeByID(degreeID: number): Promise<DegreeItem> {
         const degree = await this.degreeRepository.findByID(degreeID);
         if (!degree) 
             throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${degreeID}`);
-        return degree;
+        return this.mapDegree(degree);
     }
 
-    async getSubjectByID(subjectID: number): Promise<Subject> {
+    async getSubjectByID(subjectID: number): Promise<SubjectItem> {
         const subject = await this.subjectRepository.findByID(subjectID);
-        if (!subject) 
+        if (!subject)
             throw new NotFoundException(`Non è stata trovata la materia con id = ${subjectID}`);
-        return subject;
+        return this.mapSubject(subject);
     }
 
-    async getTeachingByID(teachingID: number): Promise<Teaching> {
+    async getTeachingByID(teachingID: number): Promise<TeachingItem> {
         const teaching = await this.teachingRepository.findByID(teachingID);
         if (!teaching) 
             throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${teachingID}`);
-        return teaching;
+        return this.mapTeaching(teaching);
     }
 
-    async getTeachingsByDegreeAndYear(degreeId: number, year: number): Promise<Teaching[]> {
+    async getTeachingsByDegreeAndYear(degreeId: number, year: number): Promise<TeachingItem[]> {
         const teachings = await this.teachingRepository.findByDegreeAndYear(degreeId, year);
         if (!teachings || teachings.length === 0) 
             throw new NotFoundException(`Non sono stati trovati insegnamenti per il corso di laurea con id = ${degreeId} e anno = ${year}`);
-        return teachings;
+        return (teachings || []).map((t) => this.mapTeaching(t));
     }
     
-    async getTeachingDetails(teachingId: number): Promise<{ degree: Degree; subject: Subject; year: number }> {
+/*     async getTeachingDetails(teachingId: number): Promise<{ degree: Degree; subject: Subject; year: number }> {
         const teaching = await this.teachingRepository.findByID(teachingId);
         if (!teaching) 
             throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${teachingId}`);
@@ -90,23 +95,70 @@ export class ServerCoursesService {
         return { degree, subject, year };
 
         // TODO? caricare anche i professori che insegnano la materia?
-    }
+    } */
     
-    async getSubjectsByProfessor(professorId: number): Promise<Subject[]> {
+    async getSubjectsByProfessor(professorId: number): Promise<SubjectItem[]> {
         await this.peopleService.findById(professorId);
+        
         const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
         if (!subjects || subjects.length === 0)
-            throw new NotFoundException(`Non sono state trovati insegnamenti per il professore con id = ${professorId}`);
-        return subjects;
+            throw new NotFoundException(`Non sono state trovate insegnamenti per il professore con id = ${professorId}`);
+        
+        return (subjects || []).map((s) => this.mapSubject(s));
+    }
+
+    // Helper: map a single Subject entity to SubjectItem DTO
+    private mapSubject(s: Subject): SubjectItem {
+        return {
+            id: s.id,
+            name: s.name,
+            professors: (s.professors || []).map((p) => ({
+                professor_id: (p as any).professor_id ?? (p as any).id,
+                name: (p as any).user?.name ?? (p as any).name ?? '',
+                email: (p as any).user?.email ?? (p as any).email ?? '',
+                role: (p as any).user?.role ?? (p as any).role ?? (UserRole as any).PROFESSOR,
+            })),
+            teachings: (s.teachings || []).map((t) => ({ id: t.id, degree: (t.degree as any)?.name ?? String((t.degree as any)), year: t.year })),
+        };
+    }
+
+    // Helper: map a Teaching entity to TeachingItem DTO (formatted for frontend)
+    private mapTeaching(t: Teaching): TeachingItem {
+        return {
+            id: t.id,
+            subject: {
+                id: t.subject.id,
+                name: t.subject.name,
+            },
+            degree: {
+                id: t.degree.id,
+                name: t.degree.name,
+            },
+            year: t.year,
+        } as TeachingItem;
+    }
+
+    // Helper: map a Degree entity to DegreeItem DTO (format teachings with subject names)
+    private mapDegree(d: Degree): DegreeItem {
+        return {
+            id: d.id,
+            name: d.name,
+            duration: (d.durationYears ?? d.durationYears) as number,
+            teachings: (d.teachings || []).map((t) => ({
+                id: t.id,
+                subject: (t.subject as any)?.name ?? String((t.subject as any) ?? ''),
+                year: t.year,
+            })),
+        };
     }
 
     //da usare se il docente deve scegliere tra i propri insegnamenti
-    async getTeachingsByProfessor(professorId: number): Promise<Teaching[]> {
+    async getTeachingsByProfessor(professorId: number): Promise<TeachingItem[]> {
         const subjects = this.getSubjectsByProfessor(professorId);
-        const teachings: Teaching[] = [];
+        const teachings: TeachingItem[] = [];
         for (const subject of await subjects) {
             const subjectTeachings = await this.teachingRepository.findTeachingsBySubject(subject.id);
-            teachings.push(...subjectTeachings);
+            teachings.push(...(subjectTeachings || []).map((t) => this.mapTeaching(t)));
         }
         if (teachings.length === 0)
             throw new NotFoundException(`Non sono stati trovati insegnamenti per il professore con id = ${professorId}`);
@@ -142,11 +194,12 @@ export class ServerCoursesService {
             throw new NotFoundException(`Non è stata trovata la materia con id = ${id}`);
     }
 
-    async createDegree(dto: CreateDegreeDto): Promise<Degree> {
-        return this.degreeRepository.createDegree(dto);
+    async createDegree(dto: CreateDegreeDto): Promise<DegreeItem> {
+        const degree = await this.degreeRepository.createDegree(dto);
+        return this.mapDegree(degree);
     }
 
-    async updateDegree(id: number, dto: UpgradeDegreeDto): Promise<Degree> {
+    async updateDegree(id: number, dto: UpgradeDegreeDto): Promise<DegreeItem> {
         const degree = await this.degreeRepository.findByID(id);
         if (!degree) 
             throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${id}`);
@@ -154,7 +207,7 @@ export class ServerCoursesService {
         const result = await this.degreeRepository.updateDegree(id, dto);
         if (!result)
             throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${id}`);
-        return result;
+        return this.mapDegree(result);
     }
 
     async deleteDegree(id: number): Promise<void> {
@@ -163,7 +216,7 @@ export class ServerCoursesService {
             throw new NotFoundException(`Non è stato trovato il corso di laurea con id = ${id}`);
     }
 
-    async createTeaching(dto: CreateTeachingDto): Promise<Teaching> {
+    async createTeaching(dto: CreateTeachingDto): Promise<TeachingItem> {
         const degree = await this.degreeRepository.findByID(dto.degreeId);
         const subject = await this.subjectRepository.findByID(dto.subjectId);
         if (!degree)
@@ -184,10 +237,11 @@ export class ServerCoursesService {
         if (duplicate)
             throw new ConflictException('Esiste gia\' un insegnamento con lo stesso corso, materia e anno');
         
-        return this.teachingRepository.createTeaching(dto);
+        const teaching = await this.teachingRepository.createTeaching(dto);
+        return this.mapTeaching(teaching);
     }
 
-    async updateTeaching(id: number, dto: UpdateTeachingDto): Promise<Teaching> {
+    async updateTeaching(id: number, dto: UpdateTeachingDto): Promise<TeachingItem> {
         const teaching = await this.teachingRepository.findByID(id);
         if (!teaching) 
             throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${id}`);
@@ -229,7 +283,7 @@ export class ServerCoursesService {
         const result = await this.teachingRepository.updateTeaching(id, dto, subject, degree);
         if (!result)
             throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${id}`);
-        return result;
+        return this.mapTeaching(result);
     }
 
     async deleteTeaching(id: number): Promise<void> {

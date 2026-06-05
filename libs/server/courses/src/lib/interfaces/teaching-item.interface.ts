@@ -1,7 +1,13 @@
 export interface TeachingItem {
     id: number;
-    subject: string;
-    degree: string;
+    subject: {
+        id: number;
+        name: string;
+    };
+    degree: {
+        id: number;
+        name: string;
+    };
     year: number;
 // exams? 
 }

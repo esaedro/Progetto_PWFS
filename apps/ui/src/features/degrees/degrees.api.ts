@@ -1,7 +1,7 @@
 import { CreateDegreeDto, DegreeItem, UpgradeDegreeDto } from "@server/courses";
 import { handleApiError } from "../shared/utils.api";
 
-const API_URL = 'http://localhost:3333/api/';
+const API_URL = 'http://localhost:3333/api';
 
 function getAuthHeaders() {
     const token = localStorage.getItem('access_token');
@@ -25,7 +25,7 @@ export async function fetchDegrees() {
 }
 
 export async function createDegree(payload: CreateDegreeDto): Promise<DegreeItem> {
-  const response = await fetch(`${API_URL}/degrees`, {
+  const response = await fetch(`${API_URL}/degrees/create`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)
@@ -38,7 +38,7 @@ export async function createDegree(payload: CreateDegreeDto): Promise<DegreeItem
 }
 
 export async function deleteDegree(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/degrees/${id}`, {
+  const response = await fetch(`${API_URL}/degrees/delete/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
   });
@@ -49,7 +49,7 @@ export async function deleteDegree(id: number): Promise<void> {
 }
 
 export async function updateDegree(id: number, payload: UpgradeDegreeDto): Promise<DegreeItem> {
-  const response = await fetch(`${API_URL}/degrees/${id}`, {
+  const response = await fetch(`${API_URL}/degrees/update/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)

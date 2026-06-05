@@ -1,7 +1,7 @@
 import { CreateTeachingDto, TeachingItem, UpdateTeachingDto } from "@server/courses";
 import { handleApiError } from "../shared/utils.api";
 
-const API_URL = 'http://localhost:3333/api/';
+const API_URL = 'http://localhost:3333/api';
 
 function getAuthHeaders() {
     const token = localStorage.getItem('access_token');
@@ -25,7 +25,7 @@ export async function fetchTeachings() {
 }
 
 export async function createTeaching(payload: CreateTeachingDto): Promise<TeachingItem> {
-  const response = await fetch(`${API_URL}/teachings`, {
+  const response = await fetch(`${API_URL}/teachings/create`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)
@@ -38,7 +38,7 @@ export async function createTeaching(payload: CreateTeachingDto): Promise<Teachi
 }
 
 export async function deleteTeaching(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/teachings/${id}`, {
+  const response = await fetch(`${API_URL}/teachings/delete/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
   });
@@ -49,7 +49,7 @@ export async function deleteTeaching(id: number): Promise<void> {
 }
 
 export async function updateTeaching(id: number, payload: UpdateTeachingDto): Promise<TeachingItem> {
-  const response = await fetch(`${API_URL}/teachings/${id}`, {
+  const response = await fetch(`${API_URL}/teachings/update/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify(payload)
@@ -72,6 +72,30 @@ export async function fetchTeachingById(id: number): Promise<TeachingItem> {
   }
 
   return response.json();
+}
+
+export async function fetchSubjects() {
+    const response = await fetch(`${API_URL}/subjects`, {
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
+}
+
+export async function fetchDegrees() {
+  const response = await fetch(`${API_URL}/degrees`, {
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
 }
 
 

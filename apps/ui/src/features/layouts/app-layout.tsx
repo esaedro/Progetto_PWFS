@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { fetchCurrentUser } from '../auth/auth.api';
 import styles from '../css/books.module.css';
-import { IoIosLogOut } from "react-icons/io";
-import { FaKey } from 'react-icons/fa';
-import { FaUser } from "react-icons/fa";
-import { IoMdArrowDropdown } from "react-icons/io";
+import { IoIosLogOut } from 'react-icons/io';
+import { FaKey, FaUser } from 'react-icons/fa';
+import { IoMdArrowDropdown } from 'react-icons/io';
+import { UserListItem } from '@server/users';
+
 
 export function AppLayout() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<UserListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -20,7 +21,7 @@ export function AppLayout() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error fetching user data:", err);
+        console.error('Error fetching user data:', err);
         setUser(null);
         setLoading(false);
       });
@@ -34,7 +35,8 @@ export function AppLayout() {
     return <div className={styles.error}>Accesso negato. Effettua il login.</div>;
   }
 
-  const isProfessor = user.role === "PROFESSOR";
+  const isProfessor = user.role === 'PROFESSOR';
+  const isSecretary = user.role === 'SECRETARY';
 
   return (
     <>
@@ -44,30 +46,33 @@ export function AppLayout() {
         </div>
 
         <div className={styles.navLinks}>
-          {isProfessor ? (
-            <button onClick={() => navigate('/books')}>Appelli</button>
-          ) : (
+          {(isProfessor || isSecretary) && (
             <>
-              <button onClick={() => navigate('/professors')}>Professori</button>
-              <button onClick={() => navigate('/sessions')}>Sessioni</button>
-              <button onClick={() => navigate('/subjects')}>Materia</button>
+              <button onClick={() => navigate('/subjects')}>Materie</button>
               <button onClick={() => navigate('/degrees')}>Corsi di Laurea</button>
               <button onClick={() => navigate('/teachings')}>Insegnamenti</button>
+              <button onClick={() => navigate('/sessions')}>Sessioni</button>
+              <button onClick={() => navigate('/exams')}>Appelli</button>
             </>
           )}
-          {/* CONDITIONAL LINKS END HERE */}
-          
+
+          {isSecretary && (
+            <>
+              <button onClick={() => navigate('/professors')}>Professori</button>
+            </>
+          )}
+
           <div className={styles.userSection}>
             <button
               className={styles.userButton}
               onClick={() => setMenuOpen((prev) => !prev)}
             >
-              <FaUser/>
+              <FaUser />
 
               <span className={styles.userName}>
-                {user?.firstName && user?.lastName
-                  ? `${user.firstName} ${user.lastName}`
-                  : user?.email ?? 'Utente'}
+                {user.name
+                  ? `${user.name}`
+                  : user.email ?? 'Utente'}
               </span>
 
               <IoMdArrowDropdown />
@@ -85,7 +90,7 @@ export function AppLayout() {
                   className={styles.dropdownItem}
                   onClick={() => navigate('/changepassword')}
                 >
-                  <FaKey/> Cambia password
+                  <FaKey /> Cambia password
                 </button>
               </div>
             )}

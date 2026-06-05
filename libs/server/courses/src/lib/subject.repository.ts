@@ -16,16 +16,17 @@ export class SubjectRepository {
 
 
     findAll(): Promise<Subject[]> {
-        return this.repository.find({order: {id: "ASC"}}); // ordinamento per id crescente
+        return this.repository.find({relations: ['professors'], order: {id: "ASC"}}); // includi professori
     }
 
     findByID(id: number): Promise<Subject | null> {
-        return this.repository.findOne({where: {id}});
+        return this.repository.findOne({where: {id}, relations: ['professors']});
     }
 
     findSubjectsByProfessor(professorId: number): Promise<Subject[] | null> {
         return this.repository.createQueryBuilder("subject")
-            .innerJoin("subject.professors", "professor", "professor.professor_id = :professorId", { professorId })
+            .leftJoinAndSelect('subject.professors', 'professor')
+            .where('professor.professor_id = :professorId', { professorId })
             .orderBy("subject.id", "ASC")
             .getMany();
     } 
@@ -33,7 +34,7 @@ export class SubjectRepository {
     async createSubject(dto: CreateSubjectDto, professors: Professor[]): Promise<Subject> {
         const subject = this.repository.create({
             name: dto.name,
-            professors
+            professors: professors
         });
         return this.repository.save(subject);
     }

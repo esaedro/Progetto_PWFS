@@ -1,6 +1,5 @@
 import { IsString, IsNotEmpty, MinLength, MaxLength, IsInt, IsArray, ArrayMinSize } from "class-validator";
 
-
 export class CreateSubjectDto {
 
     @IsString()
