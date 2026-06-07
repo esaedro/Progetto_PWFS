@@ -113,7 +113,7 @@ export class ServerSessionsController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
-    async findByDate(@Body('date') date: Date) {
+    async findByDate(@Param("date") date: Date) {
         return this.serverExamsService.findSessionByDate(date);
     }
 }

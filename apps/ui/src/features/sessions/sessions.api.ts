@@ -47,7 +47,7 @@ export async function findSessionByDate(date) {
         await handleApiError(response);
     }
 
-    return response.json();
+    return response.json().catch(() => null);
 }
 
 export async function createSession(sessionData) {

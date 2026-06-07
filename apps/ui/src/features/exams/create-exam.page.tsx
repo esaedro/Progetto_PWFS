@@ -75,10 +75,12 @@ export function CreateExamPage() {
             .catch((err) => setError(err.message));
 
         if (form.date) {
-            findSessionByDate(new Date(form.date))
+            findSessionByDate(new Date(form.date).toISOString())
                 .then((session) => {
                     if (session) {
                         setSelectedSession(session.id.toString());
+                    } else {
+                        setSelectedSession(null);
                     }
                 })
                 .catch((err) => setError(err.message));
