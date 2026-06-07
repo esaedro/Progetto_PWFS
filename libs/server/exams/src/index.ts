@@ -3,3 +3,7 @@ export * from './lib/exams.service';
 export * from './lib/exams.module';
 export * from './lib/exam.entity';
 export * from './lib/session.entity';
+export * from './lib/interfaces/exam-item.interface';
+export * from './lib/interfaces/session-item.interface';
+export * from './lib/dto/create-exam.dto';
+export * from './lib/dto/update-exam.dto';

@@ -1,4 +1,5 @@
 import { handleApiError } from '../shared/utils.api';
+import { ExamItem, CreateExamDto, UpdateExamDto } from '@server/exams';
 
 const API_URL = 'http://localhost:3333/api';
 
@@ -37,7 +38,7 @@ export async function fetchExamsByProfessor(professorId) {
     return response.json();
 }
 
-export async function createExam(examData) {
+export async function createExam(examData: CreateExamDto): Promise<ExamItem> {
     const response = await fetch(`${API_URL}/exams/create`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -51,7 +52,7 @@ export async function createExam(examData) {
     return response.json();
 }
 
-export async function updateExam(examId, examData) {
+export async function updateExam(examId: number, examData: UpdateExamDto): Promise<ExamItem> {
     const response = await fetch(`${API_URL}/exams/update/${examId}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
