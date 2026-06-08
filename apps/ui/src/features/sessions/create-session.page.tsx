@@ -7,6 +7,7 @@ type SessionForm = {
     dateEndInsertion: string;
     dateStartExamination: string;
     dateEndExamination: string;
+    holidays: string[];
 };
 
 const initialForm: SessionForm = {
@@ -14,14 +15,16 @@ const initialForm: SessionForm = {
     dateEndInsertion: '',
     dateStartExamination: '',
     dateEndExamination: '',
+    holidays: [],
 };
 
 function toPayload(form: SessionForm) {
     return {
-        dateStartInsertion: new Date(form.dateStartInsertion).toISOString(),
-        dateEndInsertion: new Date(form.dateEndInsertion).toISOString(),
-        dateStartExamination: new Date(form.dateStartExamination).toISOString(),
-        dateEndExamination: new Date(form.dateEndExamination).toISOString(),
+        dateStartInsertion: new Date(form.dateStartInsertion),
+        dateEndInsertion: new Date(form.dateEndInsertion),
+        dateStartExamination: new Date(form.dateStartExamination),
+        dateEndExamination: new Date(form.dateEndExamination),
+        holidays: form.holidays.length > 0 ? form.holidays : undefined,
     };
 }
 
@@ -54,6 +57,7 @@ export function CreateSessionPage() {
     const [form, setForm] = useState<SessionForm>(initialForm);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [newHoliday, setNewHoliday] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +65,23 @@ export function CreateSessionPage() {
         setForm((prev) => ({
             ...prev,
             [name]: value,
+        }));
+    };
+
+    const addHoliday = () => {
+        if (!newHoliday) return;
+        if (form.holidays.includes(newHoliday)) return;
+        setForm((prev) => ({
+            ...prev,
+            holidays: [...prev.holidays, newHoliday].sort(),
+        }));
+        setNewHoliday('');
+    };
+
+    const removeHoliday = (date: string) => {
+        setForm((prev) => ({
+            ...prev,
+            holidays: prev.holidays.filter((d) => d !== date),
         }));
     };
 
@@ -156,6 +177,56 @@ export function CreateSessionPage() {
                                 className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
                             />
                         </label>
+                    </div>
+
+                    {/* Giorni festivi */}
+                    <div className="rounded-xl border border-slate-200 p-4">
+                        <h3 className="text-sm font-semibold text-slate-900">Giorni festivi</h3>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                            Aggiungi i giorni in cui non è possibile fissare appelli (es. festività nazionali).
+                            Sabato e domenica sono già esclusi automaticamente.
+                        </p>
+
+                        <div className="mt-3 flex items-center gap-2">
+                            <input
+                                type="date"
+                                value={newHoliday}
+                                onChange={(e) => setNewHoliday(e.target.value)}
+                                className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={addHoliday}
+                                disabled={!newHoliday}
+                                className="rounded-lg bg-slate-800 px-3 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            >
+                                Aggiungi
+                            </button>
+                        </div>
+
+                        {form.holidays.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {form.holidays.map((date) => (
+                                    <span
+                                        key={date}
+                                        className="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700 ring-1 ring-red-200"
+                                    >
+                                        {new Date(date + 'T12:00:00').toLocaleDateString('it-IT', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        })}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeHoliday(date)}
+                                            className="ml-1 text-red-500 hover:text-red-700"
+                                        >
+                                            ✕
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {error && (

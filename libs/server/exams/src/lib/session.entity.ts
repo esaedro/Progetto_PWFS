@@ -19,6 +19,9 @@ export class Session {
     @Column({ type: 'date', nullable: false })
     dateEndInsertion: Date;
 
+    @Column({ type: 'json', nullable: true })
+    holidays: string[];
+
     @OneToMany(() => Exam, (exam) => exam.session)
     exams: Exam[];
 
