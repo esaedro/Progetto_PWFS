@@ -100,6 +100,18 @@ export async function fetchDegrees() {
 
 
 // TODO? API presenti nel controller non implementate nel client
-// GET /teachings/by-professor/:professorId
+//GET /teachings/by-professor/:professorId
+export async function fetchTeachingsByProfessor(professorId: number) {
+    const response = await fetch(`${API_URL}/teachings/by-professor/${professorId}`, {
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+  
+  return response.json();
+}
+
 // GET /teachings/by-degree/:degreeId/year/:year
 
