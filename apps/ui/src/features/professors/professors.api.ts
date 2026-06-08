@@ -1,6 +1,6 @@
 import { handleApiError } from "../shared/utils.api";
-import { UserListItem } from "@server/users";
-import { ProfessorListItem } from "@server/people";
+import { UpdateUserDto, UserListItem } from "@server/users";
+import { ProfessorListItem, ProfessorUserListItem } from "@server/people";
 import { CreatePeopleDto } from "@server/people";
 
 const API_URL = 'http://localhost:3333/api/';
@@ -12,6 +12,19 @@ function getAuthHeaders() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}` 
     }
+}
+
+export async function fetchProfessorById(id: number): Promise<ProfessorUserListItem> {
+    const response = await fetch(`${API_URL}people/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
 }
 
 export async function fetchProfessors() {
@@ -54,19 +67,32 @@ export async function getProfessorFromDegree(id: number): Promise<ProfessorListI
 
 export async function deleteProfessor(id: number): Promise<boolean> {
   try {
-      const token = localStorage.getItem('token'); 
-
-      const response = await fetch(`/users/${id}`, {
+      const response = await fetch(`${API_URL}users/${id}`, {
           method: 'DELETE',
-          headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-          }
-      });
+          headers: getAuthHeaders()
+        });
       return response.ok; 
   } catch (error) {
       console.error(`Failed to delete professor with ID ${id}:`, error);
       return false;
   } 
+}
+
+export async function updateProfessor(id: number, payload: UpdateUserDto): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_URL}users/${id}`, {
+      method: 'PATCH',
+      headers: {
+        ...getAuthHeaders(), // Spreads authorization tokens
+        'Content-Type': 'application/json', // 👈 ADD THIS LINE
+      },
+      body: JSON.stringify(payload),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error(`Failed to update professor with ID ${id}:`, error);
+    return false;
+  }
 }
 

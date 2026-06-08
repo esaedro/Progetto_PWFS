@@ -113,7 +113,7 @@ export class ServerCoursesService {
             id: s.id,
             name: s.name,
             professors: (s.professors || []).map((p) => ({
-                professor_id: (p as any).professor_id ?? (p as any).id,
+                id: (p as any).professor_id ?? (p as any).id,
                 name: (p as any).user?.name ?? (p as any).name ?? '',
                 email: (p as any).user?.email ?? (p as any).email ?? '',
                 role: (p as any).user?.role ?? (p as any).role ?? (UserRole as any).PROFESSOR,

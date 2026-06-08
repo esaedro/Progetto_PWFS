@@ -75,9 +75,9 @@ export class ServerUsersController {
     }
 
     @Delete(':id') // DELETE /users/:id
+    @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
     removeUser(@Param('id', ParseIntPipe) id: number) {
         return this.serverUsersService.removeUser(id);
     }
