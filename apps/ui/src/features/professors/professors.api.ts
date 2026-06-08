@@ -39,7 +39,7 @@ export async function createProfessor(payload: CreatePeopleDto): Promise<UserLis
   return response.json();
 }
 
-export async function ou(id: number): Promise<ProfessorListItem> {
+export async function getProfessorFromDegree(id: number): Promise<ProfessorListItem> {
   const response = await fetch(`${API_URL}degrees/${id}`, {
     headers: getAuthHeaders()
   });
@@ -50,5 +50,23 @@ export async function ou(id: number): Promise<ProfessorListItem> {
 
   return response.json();
 
+}
+
+export async function deleteProfessor(id: number): Promise<boolean> {
+  try {
+      const token = localStorage.getItem('token'); 
+
+      const response = await fetch(`/users/${id}`, {
+          method: 'DELETE',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          }
+      });
+      return response.ok; 
+  } catch (error) {
+      console.error(`Failed to delete professor with ID ${id}:`, error);
+      return false;
+  } 
 }
 

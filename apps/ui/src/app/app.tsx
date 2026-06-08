@@ -58,8 +58,8 @@ export function App() {
                 <Route path='/exams/:id/edit' element={<EditExamPage />} />
 
                 <Route path='/professors' element={<ProfessorsPage />} />
-                {/* <Route path='/professors/new' element={<CreateExamPage />} /> */}
-                {/* <Route path='/professors/:id/edit' element={<EditExamPage />} /> */}
+                <Route path='/professors/new' element={<CreateExamPage />} /> 
+                <Route path='/professors/:id/edit' element={<EditExamPage />} /> 
             </Route>
 
 
