@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaPencil } from "react-icons/fa6";
+import { fetchProfessorById, updateProfessor} from './professors.api';
 
 enum UserRole {
-    PROFESSOR = 'PROFESSOR',
-    SECRETARY = 'SECRETARY'
+  PROFESSOR = 'PROFESSOR',
+  SECRETARY = 'SECRETARY'
 }
 
 export function EditProfessorPage() {
@@ -25,44 +26,48 @@ export function EditProfessorPage() {
     setError(null);
     setLoading(true);
 
-    // Mocking the fetch execution until you wire up your api file methods
-    // fetchProfessorById(Number(id))
-    Promise.resolve({
-      id: Number(id),
-      name: 'Mario Rossi',
-      email: 'mario.rossi@universita.it',
-      role: UserRole.PROFESSOR
-    })
+    fetchProfessorById(Number(id))
       .then((professor) => {
-        setName(professor.name);
-        setEmail(professor.email);
-        setRole(professor.role);
+        if (!professor) {
+          throw new Error('Professore non trovato.');
+        }
+        setName(professor.user.name ?? '');
+        setEmail(professor.user.email ?? '');
+        setRole(professor.user.role ?? UserRole.PROFESSOR);
       })
-      .catch((err) => setError(err.message || 'Errore nel caricamento dei dati.'))
+      .catch((err) => {
+        console.error("Error fetching professor data:", err);
+        setError(err.message || 'Errore nel caricamento dei dati.');
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!id) return;
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        if (!id) return;
 
-    setError(null);
-    setSaving(true);
+        setError(null);
+        setSaving(true);
 
-    try {
-      // Setup payload structure matching backend user schemas
-      const payload = { name, email, role };
-      
-      console.log(`Updating professor ${id} with:`, payload);
-      // await updateProfessor(Number(id), payload);
+        try {
+            const payload = { name, email, role };
+            console.log(`Updating professor ${id} with:`, payload);
+            
+            const success = await updateProfessor(Number(id), payload);
 
-      navigate('/professors');
-    } catch (err: any) {
-      setError(err.message || 'Errore durante il salvataggio.');
-    } finally {
-      setSaving(false);
+            if (success) {
+                navigate('/professors');
+            } else {
+                throw new Error('Il server non ha salvato le modifiche. Controlla i dati immessi.');
+            }
+
+        } catch (err: any) {
+            console.error("Errore durante il salvataggio:", err);
+            setError(err.message || 'Errore durante il salvataggio.');
+        } finally {
+            setSaving(false);
+        }
     }
-  }
 
   if (loading) {
     return (

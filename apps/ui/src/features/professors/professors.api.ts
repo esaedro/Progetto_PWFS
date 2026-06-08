@@ -1,6 +1,6 @@
 import { handleApiError } from "../shared/utils.api";
 import { UpdateUserDto, UserListItem } from "@server/users";
-import { ProfessorListItem } from "@server/people";
+import { ProfessorListItem, ProfessorUserListItem } from "@server/people";
 import { CreatePeopleDto } from "@server/people";
 
 const API_URL = 'http://localhost:3333/api/';
@@ -12,6 +12,19 @@ function getAuthHeaders() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}` 
     }
+}
+
+export async function fetchProfessorById(id: number): Promise<ProfessorUserListItem> {
+    const response = await fetch(`${API_URL}people/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
 }
 
 export async function fetchProfessors() {
@@ -69,7 +82,10 @@ export async function updateProfessor(id: number, payload: UpdateUserDto): Promi
   try {
     const response = await fetch(`${API_URL}users/${id}`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
+      headers: {
+        ...getAuthHeaders(), // Spreads authorization tokens
+        'Content-Type': 'application/json', // 👈 ADD THIS LINE
+      },
       body: JSON.stringify(payload),
     });
 
