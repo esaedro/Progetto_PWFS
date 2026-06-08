@@ -23,6 +23,7 @@ import { EditExamPage } from '../features/exams/edit-exam.page';
 import { ProfessorsPage } from '../features/professors/professors.page';
 import { CreateProfessorPage } from '../features/professors/create-professors';
 import { EditProfessorPage } from '../features/professors/edit-professors';
+import { DegreeDetailPage } from '../features/degrees/degree-detail.page';
 
 export function App() {
     return (
@@ -42,6 +43,7 @@ export function App() {
                 <Route path='/degrees' element={<DegreesPage />} />
                 <Route path='/degrees/new' element={<CreateDegreePage />} />
                 <Route path='/degrees/:id/edit' element={<EditDegreePage />} />
+                <Route path='/degrees/:id' element={<DegreeDetailPage />} />
 
                 <Route path='/subjects' element={<SubjectsPage />} />
                 <Route path='/subjects/new' element={<CreateSubjectPage />} />

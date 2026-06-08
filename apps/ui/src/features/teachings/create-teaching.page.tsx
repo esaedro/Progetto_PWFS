@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import book_styles from '../css/books.module.css';
-import { createTeaching, fetchSubjects, fetchDegrees } from './teachings.api';
+import { createTeaching } from './teachings.api';
+import { fetchSubjects } from '../subjects/subjects.api';
+import { fetchDegrees } from '../degrees/degrees.api';
 import { SubjectItem, DegreeItem } from '@server/courses';
 
 export function CreateTeachingPage() {

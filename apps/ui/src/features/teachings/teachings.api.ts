@@ -74,34 +74,9 @@ export async function fetchTeachingById(id: number): Promise<TeachingItem> {
   return response.json();
 }
 
-export async function fetchSubjects() {
-    const response = await fetch(`${API_URL}/subjects`, {
-        headers: getAuthHeaders()
-    });
-
-    if (!response.ok) {
-        await handleApiError(response);
-    }
-
-    return response.json();
-}
-
-export async function fetchDegrees() {
-  const response = await fetch(`${API_URL}/degrees`, {
-        headers: getAuthHeaders()
-    });
-
-    if (!response.ok) {
-        await handleApiError(response);
-    }
-
-    return response.json();
-}
-
-
 // TODO? API presenti nel controller non implementate nel client
 //GET /teachings/by-professor/:professorId
-export async function fetchTeachingsByProfessor(professorId: number) {
+export async function fetchTeachingsByProfessor(professorId: number): Promise<TeachingItem[]> {
     const response = await fetch(`${API_URL}/teachings/by-professor/${professorId}`, {
         headers: getAuthHeaders()
     });
@@ -114,4 +89,14 @@ export async function fetchTeachingsByProfessor(professorId: number) {
 }
 
 // GET /teachings/by-degree/:degreeId/year/:year
+export async function fetchTeachingsByDegreeAndYear(degreeId: number, year: number): Promise<TeachingItem[]> {
+    const response = await fetch(`${API_URL}/teachings/by-degree/${degreeId}/year/${year}`, {
+        headers: getAuthHeaders()
+    });
 
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+  return response.json();
+}
