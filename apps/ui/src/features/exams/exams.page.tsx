@@ -301,10 +301,10 @@ export function ExamsPage() {
                                 ? 'bg-violet-100 border-violet-200 text-violet-900'
                                 : inInsertion
                                     ? 'bg-emerald-100 border-emerald-200 text-emerald-900'
-                                    : inExamination
-                                        ? 'bg-amber-100 border-amber-200 text-amber-900'
-                                        : isGreyedUnavailable
-                                            ? 'bg-slate-100 border-slate-300 text-slate-500'
+                                    : isGreyedUnavailable
+                                        ? 'bg-slate-100 border-slate-300 text-slate-500'
+                                        : inExamination
+                                            ? 'bg-amber-100 border-amber-200 text-amber-900'
                                             : isCurrent
                                                 ? 'bg-white border-slate-200 text-slate-900'
                                                 : 'bg-slate-50 border-slate-200 text-slate-400';
