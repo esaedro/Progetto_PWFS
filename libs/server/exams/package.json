@@ -1,25 +1,31 @@
 {
-  "name": "@server/exams",
-  "version": "0.0.1",
-  "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+    "name": "@server/exams",
+    "version": "0.0.1",
+    "private": true,
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "import": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./exam.entity": {
+            "types": "./src/lib/exam.entity.ts",
+            "import": "./src/lib/exam.entity.ts",
+            "default": "./src/lib/exam.entity.ts"
+        },
+        "./session.entity": {
+            "types": "./src/lib/session.entity.ts",
+            "import": "./src/lib/session.entity.ts",
+            "default": "./src/lib/session.entity.ts"
+        },
+        "./exam-type": {
+            "types": "./src/lib/dto/exam-type.enum.ts",
+            "import": "./src/lib/dto/exam-type.enum.ts",
+            "default": "./src/lib/dto/exam-type.enum.ts"
+        },
+        "./package.json": "./package.json"
     },
-    "./exam.entity": {
-        "types": "./src/lib/exam.entity.ts",
-        "import": "./src/lib/exam.entity.ts", 
-        "default": "./src/lib/exam.entity.ts"
-    },
-    "./session.entity": {
-        "types": "./src/lib/session.entity.ts",
-        "import": "./src/lib/session.entity.ts",
-        "default": "./src/lib/session.entity.ts" },
-    "./package.json": "./package.json"
-  },
-  "dependencies": {}
+    "dependencies": {}
 }

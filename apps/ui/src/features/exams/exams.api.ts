@@ -1,5 +1,5 @@
 import { handleApiError } from '../shared/utils.api';
-import { ExamItem, CreateExamDto, UpdateExamDto } from '@server/exams';
+import type { ExamItem, CreateExamDto, UpdateExamDto } from '@server/exams';
 
 const API_URL = 'http://localhost:3333/api';
 
@@ -12,7 +12,7 @@ function getAuthHeaders() {
     };
 }
 
-export async function fetchExams() {
+export async function fetchExams(): Promise<ExamItem[]> {
     const response = await fetch(`${API_URL}/exams`, {
         method: 'GET',
         headers: getAuthHeaders()
@@ -25,8 +25,21 @@ export async function fetchExams() {
     return response.json();
 }
 
-export async function fetchExamsByProfessor(professorId) {
+export async function fetchExamsByProfessor(professorId: number): Promise<ExamItem[]> {
     const response = await fetch(`${API_URL}/exams/professor/${professorId}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    return response.json();
+}
+
+export async function fetchExamById(id: number): Promise<ExamItem> {
+    const response = await fetch(`${API_URL}/exams/${id}`, {
         method: 'GET',
         headers: getAuthHeaders()
     });
@@ -66,7 +79,7 @@ export async function updateExam(examId: number, examData: UpdateExamDto): Promi
     return response.json();
 }
 
-export async function deleteExam(examId) {
+export async function deleteExam(examId: number): Promise<void> {
     const response = await fetch(`${API_URL}/exams/delete/${examId}`, {
         method: 'DELETE',
         headers: getAuthHeaders()

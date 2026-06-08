@@ -38,6 +38,9 @@
       "path": "../../libs/server/people/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/server/exams/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/server/users/tsconfig.lib.json"
     },
     {

@@ -1,4 +1,5 @@
 import { handleApiError } from '../shared/utils.api';
+import { SessionItem, CreateSessionDto, UpdateSessionDto } from '@server/exams';
 
 const API_URL = 'http://localhost:3333/api';
 
@@ -11,7 +12,7 @@ function getAuthHeaders() {
     };
 }
 
-export async function fetchSessions() {
+export async function fetchSessions(): Promise<SessionItem[]> {
     const response = await fetch(`${API_URL}/sessions`, {
         method: 'GET',
         headers: getAuthHeaders()
@@ -24,7 +25,7 @@ export async function fetchSessions() {
     return response.json();
 }
 
-export async function fetchSessionById(sessionId) {
+export async function fetchSessionById(sessionId: number): Promise<SessionItem> {
     const response = await fetch(`${API_URL}/sessions/${sessionId}`, {
         method: 'GET',
         headers: getAuthHeaders()
@@ -37,8 +38,9 @@ export async function fetchSessionById(sessionId) {
     return response.json();
 }
 
-export async function findSessionByDate(date) {
-    const response = await fetch(`${API_URL}/sessions/find-by-date/${date}`, {
+export async function findSessionByDate(date: Date): Promise<SessionItem | null> {
+    const dateString = date.toISOString()
+    const response = await fetch(`${API_URL}/sessions/find-by-date/${dateString}`, {
         method: 'GET',
         headers: getAuthHeaders()
     });
@@ -50,7 +52,7 @@ export async function findSessionByDate(date) {
     return response.json().catch(() => null);
 }
 
-export async function createSession(sessionData) {
+export async function createSession(sessionData: CreateSessionDto): Promise<SessionItem> {
     const response = await fetch(`${API_URL}/sessions/create`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -64,7 +66,7 @@ export async function createSession(sessionData) {
     return response.json();
 }
 
-export async function updateSession(sessionId, sessionData) {
+export async function updateSession(sessionId: number, sessionData: UpdateSessionDto): Promise<SessionItem> {
     const response = await fetch(`${API_URL}/sessions/update/${sessionId}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
@@ -78,7 +80,7 @@ export async function updateSession(sessionId, sessionData) {
     return response.json();
 }
 
-export async function deleteSession(sessionId) {
+export async function deleteSession(sessionId: number): Promise<void> {
     const response = await fetch(`${API_URL}/sessions/delete/${sessionId}`, {
         method: 'DELETE',
         headers: getAuthHeaders()

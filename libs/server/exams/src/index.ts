@@ -7,3 +7,6 @@ export * from './lib/interfaces/exam-item.interface';
 export * from './lib/interfaces/session-item.interface';
 export * from './lib/dto/create-exam.dto';
 export * from './lib/dto/update-exam.dto';
+export * from './lib/dto/exam-type.enum';
+export * from './lib/dto/create-session.dto';
+export * from './lib/dto/update-session.dto';
