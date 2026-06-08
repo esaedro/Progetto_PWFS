@@ -337,4 +337,66 @@ export class ExamValidationService {
             errors.push('Errore nel controllo dei conflitti con altri esami');
         }
     }
+
+    //////////////////////////////////////////////////////////////
+    /// Metodo pubblico per il controllo conflitti (API) ///
+    //////////////////////////////////////////////////////////////
+
+    /**
+     * Controlla se esistono conflitti con altri esami e restituisce i dettagli.
+     * Usato dall\'endpoint GET /exams/check-conflicts per mostrare avvisi nel frontend.
+     */
+    async checkConflicts(
+        sessionId: number,
+        dateTimeStart: Date,
+        dateTimeEnd: Date,
+        teachingId: number,
+        coursesService: ServerCoursesService,
+        examsRepository: ExamsRepository,
+        examId?: number
+    ): Promise<string[]> {
+        const conflicts: string[] = [];
+
+        try {
+            const teaching = await coursesService.getTeachingByID(teachingId);
+            if (!teaching) return conflicts;
+
+            const degreeId = teaching.degree.id;
+            const degreeYear = teaching.year;
+
+            const exams = await examsRepository.findBySessionAndDegree(
+                sessionId,
+                degreeId,
+                degreeYear
+            );
+
+            const newStart = dateTimeStart.getTime();
+            const newEnd = dateTimeEnd.getTime();
+
+            for (const exam of exams) {
+                // Esclude l'esame corrente (in caso di modifica)
+                if (examId && exam.id === examId) continue;
+
+                const examStart = new Date(exam.dateTimeStart).getTime();
+                const examEnd = new Date(exam.dateTimeEnd).getTime();
+
+                if (examStart < newEnd && examEnd > newStart) {
+                    const examDate = new Date(exam.dateTimeStart);
+                    const timeStr = examDate.toLocaleTimeString('it-IT', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    const subjectName = exam.teaching?.subject?.name ?? `Appello #${exam.id}`;
+                    conflicts.push(`${subjectName} (${timeStr})`);
+                }
+            }
+        } catch (error) {
+            this.logger.error(
+                `Errore nel controllo conflitti: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
+        }
+
+        return conflicts;
+    }
 }

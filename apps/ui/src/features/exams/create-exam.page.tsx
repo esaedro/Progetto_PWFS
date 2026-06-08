@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createExam } from './exams.api';
+import { createExam, checkExamConflicts } from './exams.api';
 import { useNavigate } from 'react-router-dom';
 import { fetchTeachings } from '../teachings/teachings.api';
 import { findSessionByDate } from '../sessions/sessions.api';
@@ -74,6 +74,7 @@ export function CreateExamPage() {
     const [teachings, setTeachings] = useState<TeachingItem[]>([]);
     const [selectedSession, setSelectedSession] = useState<number | null>(null);
     const [professorId, setProfessorId] = useState<number | null>(null);
+    const [conflicts, setConflicts] = useState<string[]>([]);
 
     const navigate = useNavigate();
 
@@ -104,6 +105,40 @@ export function CreateExamPage() {
                 .catch((err) => setError(err.message));
         }
     }, [form.date]);
+
+    // Controllo conflitti quando data, ora, corso o sessione cambiano
+    useEffect(() => {
+        if (!selectedSession || !form.teachingId || !form.date || !form.startTime || !form.endTime) {
+            setConflicts([]);
+            return;
+        }
+
+        const dateTimeStart = new Date(`${form.date}T${form.startTime}:00`);
+        const dateTimeEnd = new Date(`${form.date}T${form.endTime}:00`);
+
+        if (dateTimeStart >= dateTimeEnd) {
+            setConflicts([]);
+            return;
+        }
+
+        let active = true;
+
+        const timer = setTimeout(() => {
+            checkExamConflicts(
+                selectedSession,
+                dateTimeStart,
+                dateTimeEnd,
+                Number(form.teachingId)
+            )
+                .then((result) => { if (active) setConflicts(result); })
+                .catch(() => { if (active) setConflicts([]); });
+        }, 400);
+
+        return () => {
+            active = false;
+            clearTimeout(timer);
+        };
+    }, [form.date, form.startTime, form.endTime, form.teachingId, selectedSession]);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -258,6 +293,19 @@ export function CreateExamPage() {
                                 </span>
                             )}
                         </div>
+
+                        {/* Avviso conflitti */}
+                        {conflicts.length > 0 && (
+                            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                                <p className="text-xs font-medium text-red-700">
+                                    <span role="img" aria-label="Attenzione">⚠️</span> Conflitto di orario rilevato
+                                </p>
+                                <p className="mt-1 text-xs text-red-600">
+                                    L&apos;orario scelto si sovrappone con:{' '}
+                                    {conflicts.join(', ')}.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Dettagli esame */}
@@ -356,7 +404,7 @@ export function CreateExamPage() {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || isSessionMissing}
+                            disabled={loading || isSessionMissing || conflicts.length > 0}
                             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
                         >
                             {loading ? 'Salvataggio...' : 'Crea appello'}

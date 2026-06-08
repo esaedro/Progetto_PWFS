@@ -130,6 +130,24 @@ export class ServerExamsService {
         return this.examsRepository.findbyTeaching(teachingId);
     }
 
+    async checkConflicts(
+        sessionId: number,
+        dateTimeStart: Date,
+        dateTimeEnd: Date,
+        teachingId: number,
+        examId?: number
+    ): Promise<string[]> {
+        return this.examValidationService.checkConflicts(
+            sessionId,
+            dateTimeStart,
+            dateTimeEnd,
+            teachingId,
+            this.coursesService,
+            this.examsRepository,
+            examId
+        );
+    }
+
     async estraiUtenteAutenticato(currentUser: Professor | UserEntity): Promise<number> {
         let authenticatedProfessorId: number;
         // Estrai l'ID del professore loggato

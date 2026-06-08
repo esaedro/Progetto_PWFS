@@ -51,6 +51,27 @@ export async function fetchExamById(id: number): Promise<ExamItem> {
     return response.json();
 }
 
+export async function checkExamConflicts(
+    sessionId: number,
+    dateTimeStart: Date,
+    dateTimeEnd: Date,
+    teachingId: number,
+    examId?: number
+): Promise<string[]> {
+    const response = await fetch(`${API_URL}/exams/check-conflicts`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ sessionId, dateTimeStart, dateTimeEnd, teachingId, examId })
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+    const data = await response.json();
+    return data.conflicts;
+}
+
 export async function createExam(examData: CreateExamDto): Promise<ExamItem> {
     const response = await fetch(`${API_URL}/exams/create`, {
         method: 'POST',

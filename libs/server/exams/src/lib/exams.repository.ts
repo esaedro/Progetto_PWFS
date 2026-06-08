@@ -60,7 +60,7 @@ export class ExamsRepository {
                     year: degreeYear
                 }
             },
-            relations: ['teaching']
+            relations: ['teaching', 'teaching.subject']
         });
     }
 

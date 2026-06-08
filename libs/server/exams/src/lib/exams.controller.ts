@@ -4,6 +4,7 @@ import { Exam } from './exam.entity';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { CheckConflictsDto } from './dto/check-conflicts.dto';
 import { Roles, JwtAuthGuard, RolesGuard, CurrentUser } from '@server/security';
 import { UserEntity, UserRole } from '@server/users';
 import { Professor } from '@server/people';
@@ -55,6 +56,23 @@ export class ServerExamsController {
     @ApiBearerAuth()
     async findAll(): Promise<Exam[]> {
         return this.serverExamsService.findAllExams();
+    }
+
+    @Post('check-conflicts')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR)
+    @ApiBearerAuth()
+    async checkConflicts(
+        @Body(ValidationPipe) dto: CheckConflictsDto
+    ): Promise<{ conflicts: string[] }> {
+        const conflicts = await this.serverExamsService.checkConflicts(
+            dto.sessionId,
+            dto.dateTimeStart,
+            dto.dateTimeEnd,
+            dto.teachingId,
+            dto.examId
+        );
+        return { conflicts };
     }
 
     @Get(':id')

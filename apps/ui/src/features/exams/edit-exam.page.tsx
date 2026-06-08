@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchExamById, updateExam } from './exams.api';
+import { fetchExamById, updateExam, checkExamConflicts } from './exams.api';
 import { fetchTeachings } from '../teachings/teachings.api';
 import { findSessionByDate } from '../sessions/sessions.api';
 import { fetchCurrentUser } from '../auth/auth.api';
@@ -78,6 +78,7 @@ export function EditExamPage() {
     const [teachings, setTeachings] = useState<TeachingItem[]>([]);
     const [selectedSession, setSelectedSession] = useState<number | null>(null);
     const [professorId, setProfessorId] = useState<number | null>(null);
+    const [conflicts, setConflicts] = useState<string[]>([]);
 
     // Carica i dati iniziali
     useEffect(() => {
@@ -129,6 +130,41 @@ export function EditExamPage() {
                 .catch((err) => setError(err.message));
         }
     }, [form?.date]);
+
+    // Controllo conflitti quando data, ora, corso o sessione cambiano
+    useEffect(() => {
+        if (!selectedSession || !form?.teachingId || !form.date || !form.startTime || !form.endTime) {
+            setConflicts([]);
+            return;
+        }
+
+        const dateTimeStart = new Date(`${form.date}T${form.startTime}:00`);
+        const dateTimeEnd = new Date(`${form.date}T${form.endTime}:00`);
+
+        if (dateTimeStart >= dateTimeEnd) {
+            setConflicts([]);
+            return;
+        }
+
+        let active = true;
+
+        const timer = setTimeout(() => {
+            checkExamConflicts(
+                selectedSession,
+                dateTimeStart,
+                dateTimeEnd,
+                Number(form.teachingId),
+                Number(id)
+            )
+                .then((result) => { if (active) setConflicts(result); })
+                .catch(() => { if (active) setConflicts([]); });
+        }, 400);
+
+        return () => {
+            active = false;
+            clearTimeout(timer);
+        };
+    }, [form?.date, form?.startTime, form?.endTime, form?.teachingId, selectedSession, id]);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -301,6 +337,19 @@ export function EditExamPage() {
                                 </span>
                             )}
                         </div>
+
+                        {/* Avviso conflitti */}
+                        {conflicts.length > 0 && (
+                            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                                <p className="text-xs font-medium text-red-700">
+                                    <span role="img" aria-label="Attenzione">⚠️</span> Conflitto di orario rilevato
+                                </p>
+                                <p className="mt-1 text-xs text-red-600">
+                                    L&apos;orario scelto si sovrappone con:{' '}
+                                    {conflicts.join(', ')}.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Dettagli esame */}
@@ -399,7 +448,7 @@ export function EditExamPage() {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || isSessionMissing}
+                            disabled={loading || isSessionMissing || conflicts.length > 0}
                             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
                         >
                             {loading ? 'Salvataggio...' : 'Salva modifiche'}
