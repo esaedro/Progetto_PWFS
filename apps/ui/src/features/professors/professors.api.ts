@@ -1,6 +1,6 @@
 import { handleApiError } from "../shared/utils.api";
 import { UpdateUserDto, UserListItem } from "@server/users";
-import { ProfessorListItem, ProfessorUserListItem } from "@server/people";
+import { ProfessorListItem } from "@server/people";
 import { CreatePeopleDto } from "@server/people";
 
 const API_URL = 'http://localhost:3333/api/';
@@ -14,8 +14,8 @@ function getAuthHeaders() {
     }
 }
 
-export async function fetchProfessorById(id: number): Promise<ProfessorUserListItem> {
-    const response = await fetch(`${API_URL}people/${id}`, {
+export async function fetchProfessorById(id: number): Promise<UserListItem> {
+    const response = await fetch(`${API_URL}users/${id}`, {
         method: 'GET',
         headers: getAuthHeaders()
     });
