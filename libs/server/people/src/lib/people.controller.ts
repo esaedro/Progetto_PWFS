@@ -21,16 +21,17 @@ export class ServerPeopleController {
 
     @Get(':id')
     @ApiQuery({ name:'professor_id', required:true })
+    @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     async findById(@Query('professor_id') professor_id: number): Promise<Professor | null> {
         return await this.serverPeopleService.findById(professor_id)
     }
 
+    @Get('professor/:id/exam/:examid')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
-    @Get('professor/:id/exam/:examid')
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     async canManageOwnExam(professor_id: number, examId: number): Promise<boolean> {
         return await this.serverPeopleService.canManageOwnExame(professor_id, examId);
     }
@@ -48,6 +49,9 @@ export class ServerPeopleController {
             required: ['name', 'email', 'role', 'password'],
         },
     })  
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     async create(@Body(ValidationPipe) professor: CreatePeopleDto) {
         return await this.serverPeopleService.create(professor);
     }

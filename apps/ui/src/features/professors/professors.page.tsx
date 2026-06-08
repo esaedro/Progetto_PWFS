@@ -11,7 +11,7 @@ export function ProfessorsPage() {
   const navigate = useNavigate();
 
   async function handleDelete(id: number) {
-    const confirmed = window.confirm('Vuoi davvero cancellare questo libro?');
+    const confirmed = window.confirm('Vuoi davvero eliminare questo professore?');
 
     if(!confirmed)
       return;
@@ -35,7 +35,7 @@ export function ProfessorsPage() {
     return (
       <main className={book_styles.page}>
         <div className={book_styles.card}>
-          <p className={book_styles.message}>Caricamento professor...</p>
+          <p className={book_styles.message}>Caricamento professori...</p>
         </div>
       </main>
     );
