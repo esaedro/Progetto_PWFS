@@ -24,6 +24,7 @@ import { ProfessorsPage } from '../features/professors/professors.page';
 import { CreateProfessorPage } from '../features/professors/create-professors';
 import { EditProfessorPage } from '../features/professors/edit-professors';
 import { DegreeDetailPage } from '../features/degrees/degree-detail.page';
+import { EditStudyPlanPage } from '../features/degrees/edit-study-plan.page';
 
 export function App() {
     return (
@@ -44,6 +45,7 @@ export function App() {
                 <Route path='/degrees/new' element={<CreateDegreePage />} />
                 <Route path='/degrees/:id/edit' element={<EditDegreePage />} />
                 <Route path='/degrees/:id' element={<DegreeDetailPage />} />
+                <Route path='/degrees/:id/study-plan' element={<EditStudyPlanPage />} />
 
                 <Route path='/subjects' element={<SubjectsPage />} />
                 <Route path='/subjects/new' element={<CreateSubjectPage />} />

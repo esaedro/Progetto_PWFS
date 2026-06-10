@@ -114,14 +114,14 @@ export function SubjectsPage() {
                                                 <div className="flex items-center gap-2">
                                                     <button
                                                         type="button"
-                                                        className="rounded-lg border border-slate-200 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                                                        className="rounded-lg border border-slate-300 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-300"
                                                         onClick={() => navigate(`/subjects/${sub.id}/edit`)}
                                                     >
                                                         Modifica
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        className="rounded-lg border border-red-200 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
+                                                        className="rounded-lg border border-red-300 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-100"
                                                         onClick={() => handleDelete(sub.id)}
                                                     >
                                                         Elimina

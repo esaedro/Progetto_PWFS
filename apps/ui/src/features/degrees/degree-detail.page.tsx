@@ -87,6 +87,13 @@ export function DegreeDetailPage() {
                     >
                         Indietro
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => navigate(`/degrees/${id}/study-plan`)}
+                        className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                    >
+                        Modifica piano di studi
+                    </button>
                 </div>
 
                 {/* Piano di studi per anno */}
