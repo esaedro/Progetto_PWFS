@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchExamById, updateExam, checkExamConflicts } from './exams.api';
-import { fetchTeachings } from '../teachings/teachings.api';
+import { fetchTeachingsByProfessor } from '../teachings/teachings.api';
 import { findSessionByDate } from '../sessions/sessions.api';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { TeachingItem } from '@server/courses';
+import type { SessionItem } from '@server/exams';
 import { ExamType } from '@server/exams/exam-type';
 import type { UpdateExamDto } from '@server/exams';
 
@@ -12,6 +13,9 @@ const EXAM_TYPE_OPTIONS = Object.values(ExamType).map((value) => ({
     value,
     label: value.charAt(0).toUpperCase() + value.slice(1),
 }));
+
+const HOURS = Array.from({ length: 13 }, (_, i) => String(i + 8).padStart(2, '0'));
+const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
 
 type ExamForm = {
     teachingId: number;
@@ -77,6 +81,9 @@ export function EditExamPage() {
 
     const [teachings, setTeachings] = useState<TeachingItem[]>([]);
     const [selectedSession, setSelectedSession] = useState<number | null>(null);
+    const [sessionInsertionStart, setSessionInsertionStart] = useState<string | null>(null);
+    const [sessionInsertionEnd, setSessionInsertionEnd] = useState<string | null>(null);
+    const [sessionHolidays, setSessionHolidays] = useState<string[]>([]);
     const [professorId, setProfessorId] = useState<number | null>(null);
     const [conflicts, setConflicts] = useState<string[]>([]);
 
@@ -84,14 +91,16 @@ export function EditExamPage() {
     useEffect(() => {
         if (!id) return;
 
-        Promise.all([
-            fetchExamById(Number(id)),
-            fetchTeachings(),
-            fetchCurrentUser(),
-        ])
-            .then(([exam, teachingsData, user]) => {
-                setTeachings(teachingsData);
+        fetchCurrentUser()
+            .then((user) => {
                 setProfessorId(user.id);
+                return Promise.all([
+                    fetchExamById(Number(id)),
+                    fetchTeachingsByProfessor(user.id),
+                ]);
+            })
+            .then(([exam, teachingsData]) => {
+                setTeachings(teachingsData);
 
                 if (!exam) {
                     setError('Esame non trovato.');
@@ -124,8 +133,18 @@ export function EditExamPage() {
     useEffect(() => {
         if (form?.date) {
             findSessionByDate(new Date(form.date))
-                .then((session) => {
-                    setSelectedSession(session ? session.id : null);
+                .then((session: SessionItem | null) => {
+                    if (session) {
+                        setSelectedSession(session.id);
+                        setSessionInsertionStart(session.dateStartInsertion as unknown as string);
+                        setSessionInsertionEnd(session.dateEndInsertion as unknown as string);
+                        setSessionHolidays(session.holidays ?? []);
+                    } else {
+                        setSelectedSession(null);
+                        setSessionInsertionStart(null);
+                        setSessionInsertionEnd(null);
+                        setSessionHolidays([]);
+                    }
                 })
                 .catch((err) => setError(err.message));
         }
@@ -157,7 +176,10 @@ export function EditExamPage() {
                 Number(id)
             )
                 .then((result) => { if (active) setConflicts(result); })
-                .catch(() => { if (active) setConflicts([]); });
+                .catch((err) => {
+                    console.error('Errore controllo conflitti:', err);
+                    if (active) setConflicts([]);
+                });
         }, 400);
 
         return () => {
@@ -187,6 +209,18 @@ export function EditExamPage() {
     };
 
     const isSessionMissing = !!form?.date && !selectedSession;
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const isBeforeInsertionWindow = !!sessionInsertionStart && todayStr < sessionInsertionStart.slice(0, 10);
+    const isAfterInsertionWindow = !!sessionInsertionEnd && todayStr > sessionInsertionEnd.slice(0, 10);
+    const isOutsideInsertionWindow = isBeforeInsertionWindow || isAfterInsertionWindow;
+
+    const selectedDate = form?.date ? new Date(form.date + 'T12:00:00') : null;
+    const selectedDayOfWeek = selectedDate?.getDay();
+    const isWeekend = selectedDayOfWeek === 0 || selectedDayOfWeek === 6;
+    const isHoliday = !!form?.date && sessionHolidays.includes(form.date);
+    const isUnavailableDate = isWeekend || isHoliday;
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -288,25 +322,75 @@ export function EditExamPage() {
                             </label>
                             <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
                                 Ora inizio
-                                <input
-                                    type="time"
-                                    name="startTime"
-                                    value={form.startTime}
-                                    onChange={handleChange}
-                                    required
-                                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
-                                />
+                                <div className="flex items-center gap-1">
+                                    <select
+                                        value={form.startTime?.split(':')[0] ?? ''}
+                                        onChange={(e) => {
+                                            const h = e.target.value;
+                                            const m = form.startTime?.split(':')[1] ?? '00';
+                                            setForm((prev) => prev ? { ...prev, startTime: `${h}:${m}` } : prev);
+                                        }}
+                                        required
+                                        className="rounded-lg border border-slate-200 px-2 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
+                                    >
+                                        <option value="" disabled>Ora</option>
+                                        {HOURS.map((h) => (
+                                            <option key={h} value={h}>{h}</option>
+                                        ))}
+                                    </select>
+                                    <span className="text-sm font-medium text-slate-400">:</span>
+                                    <select
+                                        value={form.startTime?.split(':')[1] ?? ''}
+                                        onChange={(e) => {
+                                            const m = e.target.value;
+                                            const h = form.startTime?.split(':')[0] ?? '09';
+                                            setForm((prev) => prev ? { ...prev, startTime: `${h}:${m}` } : prev);
+                                        }}
+                                        required
+                                        className="rounded-lg border border-slate-200 px-2 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
+                                    >
+                                        <option value="" disabled>Min</option>
+                                        {MINUTES.map((m) => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </label>
                             <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
                                 Ora fine
-                                <input
-                                    type="time"
-                                    name="endTime"
-                                    value={form.endTime}
-                                    onChange={handleChange}
-                                    required
-                                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
-                                />
+                                <div className="flex items-center gap-1">
+                                    <select
+                                        value={form.endTime?.split(':')[0] ?? ''}
+                                        onChange={(e) => {
+                                            const h = e.target.value;
+                                            const m = form.endTime?.split(':')[1] ?? '00';
+                                            setForm((prev) => prev ? { ...prev, endTime: `${h}:${m}` } : prev);
+                                        }}
+                                        required
+                                        className="rounded-lg border border-slate-200 px-2 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
+                                    >
+                                        <option value="" disabled>Ora</option>
+                                        {HOURS.map((h) => (
+                                            <option key={h} value={h}>{h}</option>
+                                        ))}
+                                    </select>
+                                    <span className="text-sm font-medium text-slate-400">:</span>
+                                    <select
+                                        value={form.endTime?.split(':')[1] ?? ''}
+                                        onChange={(e) => {
+                                            const m = e.target.value;
+                                            const h = form.endTime?.split(':')[0] ?? '10';
+                                            setForm((prev) => prev ? { ...prev, endTime: `${h}:${m}` } : prev);
+                                        }}
+                                        required
+                                        className="rounded-lg border border-slate-200 px-2 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
+                                    >
+                                        <option value="" disabled>Min</option>
+                                        {MINUTES.map((m) => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </label>
                         </div>
 
@@ -337,6 +421,35 @@ export function EditExamPage() {
                                 </span>
                             )}
                         </div>
+
+                        {/* Avviso weekend o festivo */}
+                        {form.date && isUnavailableDate && (
+                            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                                <p className="text-xs font-medium text-red-700">
+                                    <span role="img" aria-label="Attenzione">🚫</span>{' '}
+                                    {isWeekend
+                                        ? 'Non è possibile fissare appelli di sabato o domenica.'
+                                        : 'Il giorno selezionato è un giorno festivo.'}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Avviso finestra inserimento */}
+                        {form.date && selectedSession && isOutsideInsertionWindow && (
+                            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                                <p className="text-xs font-medium text-amber-700">
+                                    <span role="img" aria-label="Calendario">📅</span>{' '}
+                                    {isBeforeInsertionWindow
+                                        ? `La finestra di inserimento per questa sessione non è ancora iniziata.`
+                                        : `La finestra di inserimento per questa sessione è terminata.`}
+                                </p>
+                                <p className="mt-1 text-xs text-amber-600">
+                                    {isBeforeInsertionWindow
+                                        ? `Inizierà il ${new Date(sessionInsertionStart ?? '').toLocaleDateString('it-IT')}.`
+                                        : `È terminata il ${new Date(sessionInsertionEnd ?? '').toLocaleDateString('it-IT')}.`}
+                                </p>
+                            </div>
+                        )}
 
                         {/* Avviso conflitti */}
                         {conflicts.length > 0 && (
@@ -448,7 +561,7 @@ export function EditExamPage() {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || isSessionMissing || conflicts.length > 0}
+                            disabled={loading || isSessionMissing || conflicts.length > 0 || isOutsideInsertionWindow || isUnavailableDate}
                             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
                         >
                             {loading ? 'Salvataggio...' : 'Salva modifiche'}

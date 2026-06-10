@@ -3,31 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { fetchSessions } from '../sessions/sessions.api';
 import { fetchExams, fetchExamsByProfessor } from './exams.api';
-
-type SessionItem = {
-    id: number;
-    dateStartExamination: string | Date;
-    dateEndExamination: string | Date;
-    dateStartInsertion: string | Date;
-    dateEndInsertion: string | Date;
-};
-
-type ExamItem = {
-    id: number;
-    dateTimeStart: string | Date;
-    dateTimeEnd: string | Date;
-    room?: string | null;
-    description?: string | null;
-    partial?: boolean;
-    type?: string;
-};
-
-type UserItem = {
-    id: number;
-    name?: string;
-    email?: string;
-    role?: string;
-};
+import { UserListItem } from '@server/users';
+import { ExamItem, SessionItem } from '@server/exams';
 
 const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
@@ -74,7 +51,7 @@ export function ExamsPage() {
     const [sessions, setSessions] = useState<SessionItem[]>([]);
     const [allExams, setAllExams] = useState<ExamItem[]>([]);
     const [professorExams, setProfessorExams] = useState<ExamItem[]>([]);
-    const [currentUser, setCurrentUser] = useState<UserItem | null>(null);
+    const [currentUser, setCurrentUser] = useState<UserListItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(() => new Date());
@@ -167,6 +144,12 @@ export function ExamsPage() {
     const myExamIds = useMemo(() => {
         return new Set(professorExams.map((exam) => exam.id));
     }, [professorExams]);
+
+    const allHolidays = useMemo(() => {
+        const holidays = new Set<string>();
+        sessions.forEach((s) => (s.holidays ?? []).forEach((h) => holidays.add(h)));
+        return holidays;
+    }, [sessions]);
 
     const filteredExams = useMemo(() => {
         const base = showOnlyMine ? professorExams : allExams;
@@ -300,42 +283,69 @@ export function ExamsPage() {
                             );
                             const isCurrent = day.getMonth() === currentMonth.getMonth();
                             const isToday = isSameDay(day, new Date());
-                            const dayKey = toDateKey(day);
+                            const dayOfWeek = day.getDay();
+                            const dateStr = toDateKey(day);
+                            const dayKey = dateStr;
                             const examCount = examCountByDay.get(dayKey) ?? 0;
                             const myExamCount = mineCountByDay.get(dayKey) ?? 0;
                             const isSelected = selectedDateKey === dayKey;
+                            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                            const isHoliday = allHolidays.has(dateStr);
+                            const isUnavailable = isWeekend || isHoliday;
+
+                            // I giorni non disponibili (sabato, domenica, festivi) hanno sfondo scuro
+                            // SOLO se non sono nel periodo di inserimento
+                            const isGreyedUnavailable = isUnavailable && !inInsertion;
 
                             const toneClass = inInsertion && inExamination
                                 ? 'bg-violet-100 border-violet-200 text-violet-900'
                                 : inInsertion
                                     ? 'bg-emerald-100 border-emerald-200 text-emerald-900'
-                                    : inExamination
-                                        ? 'bg-amber-100 border-amber-200 text-amber-900'
-                                        : isCurrent
-                                            ? 'bg-white border-slate-200 text-slate-900'
-                                            : 'bg-slate-50 border-slate-200 text-slate-400';
+                                    : isGreyedUnavailable
+                                        ? 'bg-slate-100 border-slate-300 text-slate-500'
+                                        : inExamination
+                                            ? 'bg-amber-100 border-amber-200 text-amber-900'
+                                            : isCurrent
+                                                ? 'bg-white border-slate-200 text-slate-900'
+                                                : 'bg-slate-50 border-slate-200 text-slate-400';
 
                             return (
                                 <button
                                     type="button"
                                     key={day.toISOString()}
-                                    onClick={() => setSelectedDateKey(dayKey)}
+                                    onClick={() =>
+                                        setSelectedDateKey((prev) => prev === dayKey ? null : dayKey)
+                                    }
                                     className={`flex h-20 flex-col justify-between rounded-xl border p-2 text-left text-sm transition ${toneClass} ${isToday ? 'ring-2 ring-sky-400 ring-offset-1 ring-offset-slate-50' : ''
                                         } ${isSelected ? 'ring-2 ring-slate-900 ring-offset-1 ring-offset-slate-50' : ''}`}
                                 >
                                     <div className="flex items-start justify-between">
                                         <span className="font-medium">{day.getDate()}</span>
-                                        {examCount > 0 && (
-                                            <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-                                                {examCount}
+                                        <div className="flex items-center gap-1">
+                                            {examCount > 0 && (
+                                                <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                                    {examCount}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-end justify-between">
+                                        <div className="flex items-center gap-1">
+                                            {examCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />}
+                                            {myExamCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
+                                        </div>
+                                        {inExamination && !isUnavailable && (
+                                            <span
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/exams/new?date=${toDateKey(day)}`);
+                                                }}
+                                                className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-400"
+                                                title="Crea appello in questa data"
+                                            >
+                                                +
                                             </span>
                                         )}
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        {/*{inInsertion && <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />}
-                                        {inExamination && <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />}*/}
-                                        {examCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />}
-                                        {myExamCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
                                     </div>
                                 </button>
                             );
@@ -367,13 +377,9 @@ export function ExamsPage() {
                     {selectedDateLabel && (
                         <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
                             Appelli del <span className="font-semibold text-slate-800">{selectedDateLabel}</span>
-                            <button
-                                type="button"
-                                onClick={() => setSelectedDateKey(null)}
-                                className="ml-2 text-xs text-slate-500 hover:text-slate-700"
-                            >
-                                (reset)
-                            </button>
+                            <span className="ml-2 text-xs text-slate-400">
+                                (clicca di nuovo sulla data per rimuovere il filtro)
+                            </span>
                         </div>
                     )}
 
@@ -395,12 +401,19 @@ export function ExamsPage() {
                                     className="rounded-xl border border-slate-200 p-4"
                                 >
                                     <div className="flex items-center justify-between gap-2 text-sm font-semibold text-slate-900">
-                                        Appello #{exam.id}
-                                        {!showOnlyMine && myExamIds.has(exam.id) && (
-                                            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
-                                                Mio
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <span className="truncate">
+                                                {exam.teaching?.subject?.name ?? `Appello #${exam.id}`}
                                             </span>
-                                        )}
+                                            <span className="shrink-0 text-[10px] font-normal text-slate-500">
+                                                Anno {exam.teaching?.year}
+                                            </span>
+                                            {!showOnlyMine && myExamIds.has(exam.id) && (
+                                                <span className="shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                                                    Mio
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="mt-2 space-y-1 text-xs text-slate-600">
                                         <div>

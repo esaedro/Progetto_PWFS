@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FaPencil } from "react-icons/fa6";
 import { fetchProfessorById, updateProfessor} from './professors.api';
 
@@ -8,9 +8,11 @@ enum UserRole {
   SECRETARY = 'SECRETARY'
 }
 
+
 export function EditProfessorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); 
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,27 +22,31 @@ export function EditProfessorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+    useEffect(() => {
     if (!id) return;
 
     setError(null);
     setLoading(true);
-
+    setName('');      
+    setEmail(''); 
+    setRole(UserRole.PROFESSOR); 
+    console.log(id)
     fetchProfessorById(Number(id))
-      .then((professor) => {
+        .then((professor) => {
         if (!professor) {
-          throw new Error('Professore non trovato.');
+            throw new Error('Professore non trovato.');
         }
-        setName(professor.user.name ?? '');
-        setEmail(professor.user.email ?? '');
-        setRole(professor.user.role ?? UserRole.PROFESSOR);
-      })
-      .catch((err) => {
+        console.log(professor)
+        setName(professor.name ?? '');
+        setEmail(professor.email ?? '');
+        setRole(professor.role ?? UserRole.PROFESSOR);
+        })
+        .catch((err) => {
         console.error("Error fetching professor data:", err);
         setError(err.message || 'Errore nel caricamento dei dati.');
-      })
-      .finally(() => setLoading(false));
-  }, [id]);
+        })
+        .finally(() => setLoading(false));
+    }, [id]); 
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -80,7 +86,7 @@ export function EditProfessorPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 flex items-start justify-center">
+    <main key={location.key} className="min-h-screen bg-slate-50 p-6 flex items-start justify-center">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mt-8">
         
         {/* Header Block */}

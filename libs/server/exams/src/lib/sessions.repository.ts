@@ -24,7 +24,8 @@ export class SessionsRepository {
             dateStartInsertion: dto.dateStartInsertion,
             dateEndInsertion: dto.dateEndInsertion,
             dateStartExamination: dto.dateStartExamination,
-            dateEndExamination: dto.dateEndExamination
+            dateEndExamination: dto.dateEndExamination,
+            holidays: dto.holidays
         })
 
         return this.repository.save(session);
@@ -39,6 +40,7 @@ export class SessionsRepository {
         if (dto.dateEndInsertion !== undefined) session.dateEndInsertion = dto.dateEndInsertion;
         if (dto.dateStartExamination !== undefined) session.dateStartExamination = dto.dateStartExamination;
         if (dto.dateEndExamination !== undefined) session.dateEndExamination = dto.dateEndExamination;
+        if (dto.holidays !== undefined) session.holidays = dto.holidays;
 
         return this.repository.save(session);
     }

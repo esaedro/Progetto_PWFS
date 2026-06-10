@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsDate } from "class-validator";
+import { IsArray, IsDate, IsOptional, IsString } from "class-validator";
 
 export class CreateSessionDto {
 
@@ -18,5 +18,10 @@ export class CreateSessionDto {
     @Type(() => Date)
     @IsDate()
     dateEndExamination: Date;
+
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    holidays?: string[];
 
 }

@@ -33,9 +33,19 @@ export class ExamValidationService {
         // Validazione delle date dell'esame (formato e logica)
         this.validateExamDates(dto.dateTimeStart, dto.dateTimeEnd, errors);
 
+        // Validazione della data odierna all'interno della finestra di inserimento
+        if (session) {
+            this.validateWithinInsertionWindow(session, errors);
+        }
+
         // Validazione dell'esame all'interno della finestra di esaminazione della sessione
         if (session) {
             this.validateExamWithinSessionWindow(dto.dateTimeStart, dto.dateTimeEnd, session, errors);
+        }
+
+        // Validazione weekend e festivi
+        if (session) {
+            this.validateExamNotOnWeekendOrHoliday(dto.dateTimeStart, dto.dateTimeEnd, session, errors);
         }
 
         // Se ci sono errori, lancia un'eccezione con tutti gli errori
@@ -104,9 +114,19 @@ export class ExamValidationService {
             this.validateExamDates(dateTimeStart, dateTimeEnd, errors);
         }
 
+        // Validazione della data odierna all'interno della finestra di inserimento
+        if (session) {
+            this.validateWithinInsertionWindow(session, errors);
+        }
+
         // Validazione dell'esame all'interno della finestra di esaminazione della sessione
         if (session) {
             this.validateExamWithinSessionWindow(dateTimeStart, dateTimeEnd, session, errors);
+        }
+
+        // Validazione weekend e festivi
+        if (session) {
+            this.validateExamNotOnWeekendOrHoliday(dateTimeStart, dateTimeEnd, session, errors);
         }
 
         if (errors.length > 0) {
@@ -247,6 +267,83 @@ export class ExamValidationService {
                 error instanceof Error ? error.message : String(error)
             );
             errors.push('Errore nella validazione delle date rispetto alla sessione');
+        }
+    }
+
+    /**
+     * Valida che l'esame non cada di sabato, domenica o in un giorno festivo della sessione.
+     */
+    private validateExamNotOnWeekendOrHoliday(
+        dateTimeStart: Date | string,
+        dateTimeEnd: Date | string,
+        session: Session,
+        errors: string[]
+    ): void {
+        try {
+            const start = new Date(dateTimeStart);
+            const end = new Date(dateTimeEnd);
+
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
+
+            // Controlla ogni giorno dell'intervallo
+            const current = new Date(start);
+            current.setHours(0, 0, 0, 0);
+            const endDay = new Date(end);
+            endDay.setHours(0, 0, 0, 0);
+
+            while (current <= endDay) {
+                const dayOfWeek = current.getDay(); // 0 = Domenica, 6 = Sabato
+                const dateStr = current.toISOString().split('T')[0];
+
+                if (dayOfWeek === 0) {
+                    errors.push(`La data ${dateStr} è di domenica, non è possibile fissare appelli`);
+                } else if (dayOfWeek === 6) {
+                    errors.push(`La data ${dateStr} è di sabato, non è possibile fissare appelli`);
+                } else if (session.holidays?.includes(dateStr)) {
+                    errors.push(`La data ${dateStr} è un giorno festivo, non è possibile fissare appelli`);
+                }
+
+                current.setDate(current.getDate() + 1);
+            }
+        } catch (error) {
+            this.logger.error(
+                `Errore nella validazione weekend/festivi: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
+            errors.push('Errore nella validazione weekend/festivi');
+        }
+    }
+
+    /**
+     * Valida che la data odierna sia all'interno della finestra di inserimento della sessione.
+     */
+    private validateWithinInsertionWindow(
+        session: Session,
+        errors: string[]
+    ): void {
+        try {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const insertStart = new Date(session.dateStartInsertion);
+            const insertEnd = new Date(session.dateEndInsertion);
+
+            if (today < insertStart) {
+                errors.push(
+                    `La finestra di inserimento per questa sessione inizierà il ${insertStart.toLocaleDateString('it-IT')}`
+                );
+            }
+
+            if (today > insertEnd) {
+                errors.push(
+                    `La finestra di inserimento per questa sessione è terminata il ${insertEnd.toLocaleDateString('it-IT')}`
+                );
+            }
+        } catch (error) {
+            this.logger.error(
+                `Errore nella validazione della finestra di inserimento: ${error.message}`,
+                error instanceof Error ? error.message : String(error)
+            );
+            errors.push('Errore nella validazione della finestra di inserimento');
         }
     }
 

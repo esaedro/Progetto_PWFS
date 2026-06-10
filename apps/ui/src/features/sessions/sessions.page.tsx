@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchSessions } from './sessions.api';
-
-type SessionItem = {
-    id: number;
-    dateStartExamination: string | Date;
-    dateEndExamination: string | Date;
-    dateStartInsertion: string | Date;
-    dateEndInsertion: string | Date;
-};
+import { SessionItem } from "@server/exams";
 
 const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
@@ -42,6 +35,7 @@ function formatDate(value: string | Date): string {
 
 export function SessionsPage() {
     const [sessions, setSessions] = useState<SessionItem[]>([]);
+    const [allHolidays, setAllHolidays] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(() => new Date());
@@ -54,6 +48,11 @@ export function SessionsPage() {
             .then((data) => {
                 if (active) {
                     setSessions(Array.isArray(data) ? data : []);
+                    const holidays = new Set<string>();
+                    (Array.isArray(data) ? data : []).forEach((s) =>
+                        (s.holidays ?? []).forEach((h) => holidays.add(h))
+                    );
+                    setAllHolidays(holidays);
                 }
             })
             .catch((err) => {
@@ -193,16 +192,24 @@ export function SessionsPage() {
                             );
                             const isCurrent = day.getMonth() === currentMonth.getMonth();
                             const isToday = isSameDay(day, new Date());
+                            const dayOfWeek = day.getDay();
+                            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                            const dateStr = day.toISOString().split('T')[0];
+                            const isHoliday = allHolidays.has(dateStr);
+                            const isUnavailable = isWeekend || isHoliday;
+                            const isGreyedUnavailable = isUnavailable && !inInsertion;
 
                             const toneClass = inInsertion && inExamination
                                 ? 'bg-violet-100 border-violet-200 text-violet-900'
                                 : inInsertion
                                     ? 'bg-emerald-100 border-emerald-200 text-emerald-900'
-                                    : inExamination
-                                        ? 'bg-amber-100 border-amber-200 text-amber-900'
-                                        : isCurrent
-                                            ? 'bg-white border-slate-200 text-slate-900'
-                                            : 'bg-slate-50 border-slate-200 text-slate-400';
+                                    : isGreyedUnavailable
+                                        ? 'bg-slate-100 border-slate-300 text-slate-500'
+                                        : inExamination
+                                            ? 'bg-amber-100 border-amber-200 text-amber-900'
+                                            : isCurrent
+                                                ? 'bg-white border-slate-200 text-slate-900'
+                                                : 'bg-slate-50 border-slate-200 text-slate-400';
 
                             return (
                                 <div
@@ -211,10 +218,6 @@ export function SessionsPage() {
                                         }`}
                                 >
                                     <span className="font-medium">{day.getDate()}</span>
-                                    {/*<div className="flex items-center gap-1">
-                                        {inInsertion && <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />}
-                                        {inExamination && <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />}
-                                    </div>*/}
                                 </div>
                             );
                         })}

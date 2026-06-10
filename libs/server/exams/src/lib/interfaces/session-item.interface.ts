@@ -4,4 +4,5 @@ export interface SessionItem {
     dateEndInsertion: Date,
     dateStartExamination: Date,
     dateEndExamination: Date,
+    holidays?: string[],
 }

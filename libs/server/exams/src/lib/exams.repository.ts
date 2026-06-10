@@ -21,7 +21,7 @@ export class ExamsRepository {
     }
 
     findAll(): Promise<Exam[]> {
-        return this.repository.find();
+        return this.repository.find({ relations: ['teaching', 'teaching.subject'] });
     }
 
     findBySession(session: Session): Promise<Exam[] | null> {
@@ -44,7 +44,10 @@ export class ExamsRepository {
     }
 
     findByProfessor(professorId: number): Promise<Exam[]> {
-        return this.repository.find({ where: { professor: { professor_id: professorId } } });
+        return this.repository.find({
+            where: { professor: { professor_id: professorId } },
+            relations: ['teaching', 'teaching.subject']
+        });
     }
 
     findbyTeaching(teachingId: number): Promise<Exam[]> {
