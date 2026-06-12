@@ -50,14 +50,14 @@ export function AppLayout() {
             <>
               <button onClick={() => navigate('/subjects')}>Materie</button>
               <button onClick={() => navigate('/degrees')}>Corsi di Laurea</button>
-              <button onClick={() => navigate('/teachings')}>Insegnamenti</button>
-              <button onClick={() => navigate('/sessions')}>Sessioni</button>
               <button onClick={() => navigate('/exams')}>Appelli</button>
             </>
           )}
 
           {isSecretary && (
             <>
+              <button onClick={() => navigate('/teachings')}>Insegnamenti</button>
+              <button onClick={() => navigate('/sessions')}>Sessioni</button>
               <button onClick={() => navigate('/professors')}>Professori</button>
             </>
           )}

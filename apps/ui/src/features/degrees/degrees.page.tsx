@@ -112,16 +112,17 @@ export function DegreesPage() {
                     <td className="py-3 pr-4 text-base font-medium text-slate-900">{deg.name}</td>
                     <td className="py-3 pr-4 text-base text-slate-600">{deg.duration}</td>
 
-                    {canManageDegrees && (
                       <td className="py-3">
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            className="rounded-lg border border-slate-400 px-4 py-2 text-base font-medium text-slate-900 hover:bg-slate-300"
+                            className="rounded-lg border border-slate-400 px-4 py-1 text-base font-medium text-slate-900 hover:bg-slate-300"
                             onClick={() => navigate(`/degrees/${deg.id}`)}
                           >
                             Dettagli
                           </button>
+
+                          {canManageDegrees && (
                           <button
                             type="button"
                             className="rounded-lg border border-slate-300 px-3 py-1 text-sm font-medium text-slate-400 hover:bg-slate-300"
@@ -129,7 +130,9 @@ export function DegreesPage() {
                           >
                             Modifica
                           </button>
+                          )}
 
+                          {canManageDegrees && (
                           <button
                             type="button"
                             className="rounded-lg border border-red-300 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-100"
@@ -137,9 +140,10 @@ export function DegreesPage() {
                           >
                             Elimina
                           </button>
+                          )}
                         </div>
                       </td>
-                    )}
+                    
                   </tr>
                 ))}
               </tbody>

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchDegreeById } from './degrees.api';
 import { fetchTeachingsByDegreeAndYear } from '../teachings/teachings.api';
+import { fetchCurrentUser } from '../auth/auth.api';
 import { DegreeItem } from '@server/courses';
 import { TeachingItem } from '@server/courses';
+import { UserListItem } from '@server/users';
 
 type YearPlan = {
     year: number;
@@ -16,6 +18,7 @@ export function DegreeDetailPage() {
 
     const [degree, setDegree] = useState<DegreeItem | null>(null);
     const [yearPlans, setYearPlans] = useState<YearPlan[]>([]);
+    const [user, setUser] = useState<UserListItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -42,9 +45,15 @@ export function DegreeDetailPage() {
 
                 setYearPlans(results);
             })
+
+            fetchCurrentUser()
+            .then((userData) => setUser(userData))
+
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
     }, [id]);
+
+    const canManageDegrees = user?.role === 'SECRETARY';
 
     if (loading) {
         return (
@@ -83,10 +92,11 @@ export function DegreeDetailPage() {
                     <button
                         type="button"
                         onClick={() => navigate('/degrees')}
-                        className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-base text-slate-800 hover:bg-slate-300"
                     >
-                        Indietro
+                        ← Indietro
                     </button>
+                    {canManageDegrees && (
                     <button
                         type="button"
                         onClick={() => navigate(`/degrees/${id}/study-plan`)}
@@ -94,6 +104,7 @@ export function DegreeDetailPage() {
                     >
                         Modifica piano di studi
                     </button>
+                    )}
                 </div>
 
                 {/* Piano di studi per anno */}
