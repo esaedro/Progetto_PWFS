@@ -33,7 +33,7 @@ export class ServerPeopleController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     async canManageOwnExam(professor_id: number, examId: number): Promise<boolean> {
-        return await this.serverPeopleService.canManageOwnExame(professor_id, examId);
+        return await this.serverPeopleService.canManageOwnExam(professor_id, examId);
     }
 
     @Post()

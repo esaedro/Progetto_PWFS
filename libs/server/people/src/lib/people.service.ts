@@ -25,7 +25,7 @@ export class ServerPeopleService {
         return await this.serverUsersService.getUsers(UserRole.PROFESSOR);
     }
 
-    async canManageOwnExame(professor_id: number, examId: number): Promise<boolean>{
+    async canManageOwnExam(professor_id: number, examId: number): Promise<boolean>{
         return await this.peopleRepository.canManageOwnExam(professor_id, examId);
     }
 

@@ -52,7 +52,7 @@ export class ServerExamsController {
 
     @Get()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY) 
     @ApiBearerAuth()
     async findAll(): Promise<Exam[]> {
         return this.serverExamsService.findAllExams();
@@ -77,7 +77,7 @@ export class ServerExamsController {
 
     @Get(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
     async findById(@Param('id') id: number): Promise<Exam | null> {
         return this.serverExamsService.findExamById(id);

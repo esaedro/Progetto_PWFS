@@ -92,7 +92,7 @@ export function DegreeDetailPage() {
                     <button
                         type="button"
                         onClick={() => navigate('/degrees')}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-base text-slate-800 hover:bg-slate-300"
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 hover:bg-slate-300"
                     >
                         ← Indietro
                     </button>
@@ -100,7 +100,7 @@ export function DegreeDetailPage() {
                     <button
                         type="button"
                         onClick={() => navigate(`/degrees/${id}/study-plan`)}
-                        className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-base text-white hover:bg-slate-600"
                     >
                         Modifica piano di studi
                     </button>
