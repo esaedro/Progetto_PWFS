@@ -21,6 +21,15 @@ export class ServerTeachingController {
         return this.serverCoursesService.getTeachings();
     }
 
+    @Get('by-subject/:subjectId') // GET /teachings/by-subject/:subjectId
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
+    @ApiBearerAuth()
+    getTeachingsBySubject(@Param('subjectId', ParseIntPipe) subjectId: number) {
+        return this.serverCoursesService.getTeachingsBySubject(subjectId);
+    }
+
+
     @Get('by-professor/:professorId') // GET /teachings/by-professor/:professorId
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)

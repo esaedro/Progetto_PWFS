@@ -44,6 +44,7 @@ export function App() {
                 <Route path='/changepassword' element={<UpdatePasswordPage />} />
 
                 <Route path='/degrees' element={<DegreesPage />} />
+                <Route path='/degrees/:id' element={<DegreeDetailPage />} />
                 <Route path='/subjects' element={<SubjectsPage />} />
                 <Route path='/sessions' element={<SessionsPage />} />
                 <Route path='/exams' element={<ExamsPage />} />
@@ -59,8 +60,7 @@ export function App() {
                 <Route path='/sessions/:id/edit' element={<EditSessionPage />} />
             
                 <Route path='/degrees/new' element={<CreateDegreePage />} />
-                <Route path='/degrees/:id/edit' element={<EditDegreePage />} />
-                <Route path='/degrees/:id' element={<DegreeDetailPage />} />
+                <Route path='/degrees/:id/edit' element={<EditDegreePage />} />                
                 <Route path='/degrees/:id/study-plan' element={<EditStudyPlanPage />} />
 
                 <Route path='/subjects/new' element={<CreateSubjectPage />} />

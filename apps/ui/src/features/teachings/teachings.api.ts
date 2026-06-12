@@ -100,3 +100,16 @@ export async function fetchTeachingsByDegreeAndYear(degreeId: number, year: numb
 
   return response.json();
 }
+
+// GET /teachings/by-subject/:subjectId
+export async function fetchTeachingsBySubject(subjectId: number): Promise<TeachingItem[]> {
+    const response = await fetch(`${API_URL}/teachings/by-subject/${subjectId}`, {
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+        await handleApiError(response);
+    }
+
+  return response.json();
+}

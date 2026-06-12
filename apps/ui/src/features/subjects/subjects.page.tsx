@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SubjectItem } from '@server/courses';
+import { SubjectItem, TeachingItem } from '@server/courses';
 import { fetchSubjects, deleteSubject } from './subjects.api';
+import { fetchTeachingsBySubject } from '../teachings/teachings.api';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { UserListItem } from '@server/users';
+import { IoMdArrowDropdown } from 'react-icons/io';
 
 export function SubjectsPage() {
     const [subjects, setSubjects] = useState<SubjectItem[]>([]);
@@ -11,11 +13,14 @@ export function SubjectsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [teachingsMap, setTeachingsMap] = useState<Record<number, TeachingItem[]>>({});
+    const [loadingMap, setLoadingMap] = useState<Record<number, boolean>>({});
+    const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+
     const navigate = useNavigate();
 
     async function handleDelete(id: number) {
         const confirmed = window.confirm('Vuoi davvero cancellare questa materia?');
-
         if (!confirmed) return;
 
         try {
@@ -23,6 +28,30 @@ export function SubjectsPage() {
             setSubjects((s) => s.filter((sub) => sub.id !== id));
         } catch (err: any) {
             setError(err.message);
+        }
+    }
+
+    async function toggleExpand(subjectId: number) {
+        setExpandedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(subjectId)) {
+                next.delete(subjectId);
+            } else {
+                next.add(subjectId);
+            }
+            return next;
+        });
+
+        if (!teachingsMap[subjectId] && !loadingMap[subjectId]) {
+            setLoadingMap((prev) => ({ ...prev, [subjectId]: true }));
+            try {
+                const teachings = await fetchTeachingsBySubject(subjectId);
+                setTeachingsMap((prev) => ({ ...prev, [subjectId]: teachings }));
+            } catch {
+                setTeachingsMap((prev) => ({ ...prev, [subjectId]: [] }));
+            } finally {
+                setLoadingMap((prev) => ({ ...prev, [subjectId]: false }));
+            }
         }
     }
 
@@ -39,7 +68,7 @@ export function SubjectsPage() {
     if (loading) {
         return (
             <main className="min-h-screen bg-slate-50 p-6">
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <p className="text-sm text-slate-500">Caricamento materie...</p>
                 </div>
             </main>
@@ -66,13 +95,14 @@ export function SubjectsPage() {
                 <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-semibold text-slate-900">Elenco materie</h1>
-                        <p className="text-sm text-slate-600">Elenco delle materie e dei relativi professori.</p>
+                        <p className="text-sm text-slate-600">
+                            Elenco delle materie e dei relativi professori.
+                        </p>
                     </div>
-
                     {canManageSubjects && (
                         <button
                             type="button"
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-bold text-white hover:bg-slate-700"
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
                             onClick={() => navigate('/subjects/new')}
                         >
                             Nuova materia
@@ -94,43 +124,112 @@ export function SubjectsPage() {
                                         Professori
                                     </th>
                                     {canManageSubjects && (
-                                        <th className="py-3 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                        <th className="py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                             Azioni
                                         </th>
                                     )}
+                                    <th className="py-3 pr-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        {/* Icona */}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {subjects.map((sub) => (
-                                    <tr key={sub.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                        <td className="py-3 pr-4 text-base font-medium text-slate-900">{sub.name}</td>
-                                        <td className="py-3 pr-4 text-base text-slate-600">
-                                            {sub.professors?.length
-                                                ? sub.professors.map((p) => p.name).join(', ')
-                                                : 'N/D'}
-                                        </td>
-                                        {canManageSubjects && (
-                                            <td className="py-3">
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        className="rounded-lg border border-slate-300 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-300"
-                                                        onClick={() => navigate(`/subjects/${sub.id}/edit`)}
+                                {subjects.map((sub) => {
+                                    const isExpanded = expandedIds.has(sub.id);
+                                    const teachings = teachingsMap[sub.id];
+                                    const isLoadingTeachings = loadingMap[sub.id];
+
+                                    return (
+                                        <>
+                                            {/* Riga principale: tutta cliccabile (tranne Azioni) */}
+                                            <tr
+                                                key={sub.id}
+                                                className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                                                onClick={() => toggleExpand(sub.id)}
+                                            >
+                                                <td className="py-3 pr-4 text-base font-medium text-slate-900">
+                                                    {sub.name}
+                                                </td>
+                                                <td className="py-3 pr-4 text-base text-slate-600">
+                                                    {sub.professors?.length
+                                                        ? sub.professors.map((p) => p.name).join(', ')
+                                                        : 'N/D'}
+                                                </td>
+
+                                                {canManageSubjects && (
+                                                    <td
+                                                        className="py-3"
+                                                        onClick={(e) => e.stopPropagation()}
                                                     >
-                                                        Modifica
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="rounded-lg border border-red-300 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-100"
-                                                        onClick={() => handleDelete(sub.id)}
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                className="rounded-lg border border-slate-200 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-300"
+                                                                onClick={() => navigate(`/subjects/${sub.id}/edit`)}
+                                                            >
+                                                                Modifica
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="rounded-lg border border-red-200 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-80"
+                                                                onClick={() => handleDelete(sub.id)}
+                                                            >
+                                                                Elimina
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                )}
+
+                                                <td className="py-3 pr-2 text-right">
+                                                    <IoMdArrowDropdown
+                                                        className={`ml-auto h-5 w-5 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                                    />
+                                                </td>
+                                            </tr>
+
+                                            {/* Riga di dettaglio subito sotto */}
+                                            {isExpanded && (
+                                                <tr className="border-b border-slate-100">
+                                                    <td
+                                                        colSpan={canManageSubjects ? 4 : 3}
+                                                        className="pb-3 pl-6 pr-4"
                                                     >
-                                                        Elimina
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))}
+                                                        <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                                                            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                                                Corsi di laurea
+                                                            </p>
+                                                            {isLoadingTeachings ? (
+                                                                <p className="text-xs text-slate-500">
+                                                                    Caricamento...
+                                                                </p>
+                                                            ) : !teachings || teachings.length === 0 ? (
+                                                                <p className="text-xs text-slate-500">
+                                                                    La materia attualmente non è erogata in nessun corso di laurea.
+                                                                </p>
+                                                            ) : (
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {teachings.map((t) => (
+                                                                        <button
+                                                                            key={t.id}
+                                                                            type="button"
+                                                                            onClick={() => navigate(`/degrees/${t.degree.id}`)}
+                                                                            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300"
+                                                                        >
+                                                                            {t.degree.name}
+                                                                            <span className="text-slate-400">
+                                                                                · Anno {t.year}
+                                                                            </span>
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

@@ -152,18 +152,26 @@ export class ServerCoursesService {
         };
     }
 
+    // Senza throw in getTeachingsBySubject, restituisce solo lista vuota. OK perchè usata da getTeachingsByProfessor e per le visualizzazioni front-end
+    async getTeachingsBySubject(subjectId: number): Promise<TeachingItem[]> {
+        const subjectTeachings = await this.teachingRepository.findTeachingsBySubject(subjectId);
+        return (subjectTeachings || []).map((t) => this.mapTeaching(t));
+    }
+
     //da usare se il docente deve scegliere tra i propri insegnamenti
     async getTeachingsByProfessor(professorId: number): Promise<TeachingItem[]> {
         const subjects = this.getSubjectsByProfessor(professorId);
         const teachings: TeachingItem[] = [];
         for (const subject of await subjects) {
-            const subjectTeachings = await this.teachingRepository.findTeachingsBySubject(subject.id);
-            teachings.push(...(subjectTeachings || []).map((t) => this.mapTeaching(t)));
+            const subjectTeachings = await this.getTeachingsBySubject(subject.id);
+            teachings.push(...(subjectTeachings || []));
         }
         if (teachings.length === 0)
             throw new NotFoundException(`Non sono stati trovati insegnamenti per il professore con id = ${professorId}`);
         return teachings;
     }
+
+
 
     async createSubject(dto: CreateSubjectDto): Promise<Subject> {
         const professors = await this.peopleService.getProfessorsByIds(dto.professorIds);
