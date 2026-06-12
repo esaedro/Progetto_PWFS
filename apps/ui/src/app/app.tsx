@@ -33,21 +33,36 @@ export function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/logout" element={<LogoutPage />} />
 
-            <Route
+            <Route 
                 element={
                     <ProtectedRoute>
                         <AppLayout />
-                    </ProtectedRoute>}>
+                    </ProtectedRoute>
+                }>
+                
                 <Route path='/home' element={<HomePage />} />
                 <Route path='/changepassword' element={<UpdatePasswordPage />} />
 
                 <Route path='/degrees' element={<DegreesPage />} />
+                <Route path='/subjects' element={<SubjectsPage />} />
+                <Route path='/sessions' element={<SessionsPage />} />
+                <Route path='/exams' element={<ExamsPage />} />
+
+            </Route>
+            <Route 
+                element={
+                    <ProtectedRoute allowedRoles={['SECRETARY']}>
+                        <AppLayout/>
+                    </ProtectedRoute>}>
+
+                <Route path='/sessions/new' element={<CreateSessionPage />} />
+                <Route path='/sessions/:id/edit' element={<EditSessionPage />} />
+            
                 <Route path='/degrees/new' element={<CreateDegreePage />} />
                 <Route path='/degrees/:id/edit' element={<EditDegreePage />} />
                 <Route path='/degrees/:id' element={<DegreeDetailPage />} />
                 <Route path='/degrees/:id/study-plan' element={<EditStudyPlanPage />} />
 
-                <Route path='/subjects' element={<SubjectsPage />} />
                 <Route path='/subjects/new' element={<CreateSubjectPage />} />
                 <Route path='/subjects/:id/edit' element={<EditSubjectPage />} />
 
@@ -55,24 +70,22 @@ export function App() {
                 <Route path='/teachings/new' element={<CreateTeachingPage />} />
                 <Route path='/teachings/:id/edit' element={<EditTeachingPage />} />
 
-                <Route path='/sessions' element={<SessionsPage />} />
-                <Route path='/sessions/new' element={<CreateSessionPage />} />
-                <Route path='/sessions/:id/edit' element={<EditSessionPage />} />
-
-                <Route path='/exams' element={<ExamsPage />} />
-                <Route path='/exams/new' element={<CreateExamPage />} />
-                <Route path='/exams/:id/edit' element={<EditExamPage />} />
-
                 <Route path='/professors' element={<ProfessorsPage />} />
                 <Route path='/professors/new' element={<CreateProfessorPage />} /> 
                 <Route path='/professors/:id/edit' element={<EditProfessorPage />} /> 
+
             </Route>
 
-
-
-            {/* <Route path="/home-module" element={<HomeModulePage />} />
-      <Route path="/home-tailwind" element={<HomeTailwindPage />} />
-      <Route path="/home-bootstrap" element={<HomeBootstrapPage />} /> */}
+            <Route 
+                element={
+                    <ProtectedRoute allowedRoles={['PROFESSOR']}>
+                        <AppLayout/>
+                    </ProtectedRoute>}>
+            
+                <Route path='/exams/new' element={<CreateExamPage />} />
+                <Route path='/exams/:id/edit' element={<EditExamPage />} />
+            </Route>
+            
         </Routes>
     );
 }
