@@ -110,5 +110,5 @@ export async function deleteExam(examId: number): Promise<void> {
         await handleApiError(response);
     }
 
-    return response.json();
+    return undefined;
 }

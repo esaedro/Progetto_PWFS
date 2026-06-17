@@ -90,5 +90,5 @@ export async function deleteSession(sessionId: number): Promise<void> {
         await handleApiError(response);
     }
 
-    return response.json();
+    return undefined;
 }

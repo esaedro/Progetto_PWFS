@@ -281,6 +281,9 @@ export function EditExamPage() {
     const isHoliday = !!form?.date && sessionHolidays.includes(form.date);
     const isUnavailableDate = isWeekend || isHoliday;
 
+    const isOutsideExaminationWindow = !!form?.date && !!sessionExamStart && !!sessionExamEnd &&
+        (form.date < sessionExamStart.slice(0, 10) || form.date > sessionExamEnd.slice(0, 10));
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!form) return;
@@ -495,8 +498,23 @@ export function EditExamPage() {
                             </div>
                         )}
 
-                        {/* Avviso finestra inserimento */}
-                        {form.date && selectedSession && isOutsideInsertionWindow && (
+                        {/* Avviso data fuori esaminazione (prioritario) */}
+                        {form.date && selectedSession && isOutsideExaminationWindow && (
+                            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                                <p className="text-xs font-medium text-amber-700">
+                                    <span role="img" aria-label="Calendario">📅</span>{' '}
+                                    La data selezionata non ricade nel periodo di esaminazione della sessione.
+                                </p>
+                                <p className="mt-1 text-xs text-amber-600">
+                                    Il periodo di esaminazione è dal{' '}
+                                    {new Date(sessionExamStart + 'T12:00:00').toLocaleDateString('it-IT')} al{' '}
+                                    {new Date(sessionExamEnd + 'T12:00:00').toLocaleDateString('it-IT')}.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Avviso finestra inserimento (solo se la data è dentro l'esaminazione) */}
+                        {form.date && selectedSession && !isOutsideExaminationWindow && isOutsideInsertionWindow && (
                             <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
                                 <p className="text-xs font-medium text-amber-700">
                                     <span role="img" aria-label="Calendario">📅</span>{' '}
@@ -516,10 +534,10 @@ export function EditExamPage() {
                         {conflicts.length > 0 && (
                             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
                                 <p className="text-xs font-medium text-red-700">
-                                    <span role="img" aria-label="Attenzione">⚠️</span> Conflitto di orario rilevato
+                                    <span role="img" aria-label="Attenzione">⚠️</span> Conflitto di esami rilevato
                                 </p>
                                 <p className="mt-1 text-xs text-red-600">
-                                    L&apos;orario scelto si sovrappone con:{' '}
+                                    L&apos;esame si sovrappone con:{' '}
                                     {conflicts.join(', ')}.
                                 </p>
                             </div>
@@ -654,7 +672,7 @@ export function EditExamPage() {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || isSessionMissing || conflicts.length > 0 || isOutsideInsertionWindow || isUnavailableDate}
+                            disabled={loading || isSessionMissing || conflicts.length > 0 || isOutsideInsertionWindow || isUnavailableDate || isOutsideExaminationWindow}
                             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
                         >
                             {loading ? 'Salvataggio...' : 'Salva modifiche'}

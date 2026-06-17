@@ -19,7 +19,7 @@ export class ExamsRepository {
     findById(id: number): Promise<Exam | null> {
         return this.repository.findOne({
             where: { id },
-            relations: ['teaching', 'teaching.subject']
+            relations: ['teaching', 'teaching.subject', 'professor', 'professor.user']
         });
     }
 

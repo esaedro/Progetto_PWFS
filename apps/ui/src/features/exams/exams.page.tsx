@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { fetchSessions } from '../sessions/sessions.api';
-import { fetchExams, fetchExamsByProfessor } from './exams.api';
+import { fetchExams, fetchExamsByProfessor, deleteExam } from './exams.api';
 import { UserListItem } from '@server/users';
 import { ExamItem, SessionItem } from '@server/exams';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
@@ -58,7 +59,25 @@ export function ExamsPage() {
     const [showOnlyMine, setShowOnlyMine] = useState(true);
     const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
     const navigate = useNavigate();
+
+    const handleDeleteExam = async () => {
+        if (deleteTarget === null) return;
+        try {
+            await deleteExam(deleteTarget);
+            setDeleteTarget(null);
+            const [examsData, professorData] = await Promise.all([
+                fetchExams(),
+                currentUser?.role === 'PROFESSOR' ? fetchExamsByProfessor(currentUser.id) : Promise.resolve([]),
+            ]);
+            setAllExams(Array.isArray(examsData) ? examsData : []);
+            setProfessorExams(Array.isArray(professorData) ? professorData : []);
+        } catch (err) {
+            setDeleteTarget(null);
+            setError(err instanceof Error ? err.message : 'Errore durante l\'eliminazione');
+        }
+    };
 
     useEffect(() => {
         let active = true;
@@ -212,7 +231,7 @@ export function ExamsPage() {
             </div>
 
             <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-                <section className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[720px]">
+                <section className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[740px]">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <h2 className="text-lg font-semibold text-slate-900">Calendario appelli</h2>
@@ -332,8 +351,8 @@ export function ExamsPage() {
                                     onClick={() =>
                                         setSelectedDateKey((prev) => prev === dayKey ? null : dayKey)
                                     }
-                                    className={`flex h-20 flex-col justify-between rounded-xl border p-2 text-left text-sm transition ${toneClass} ${isToday ? 'ring-2 ring-sky-400 ring-offset-1 ring-offset-slate-50' : ''
-                                        } ${isSelected ? 'ring-2 ring-slate-900 ring-offset-1 ring-offset-slate-50' : ''}`}
+                                    className={`flex flex-col justify-between rounded-xl border p-2 text-left text-sm transition ${toneClass} ${isToday ? 'ring-2 ring-sky-400 ring-offset-1 ring-offset-slate-50' : ''
+                                        } ${isSelected ? 'ring-2 ring-slate-900 ring-offset-1 ring-offset-slate-50' : ''} h-[86px]`}
                                 >
                                     <div className="flex items-start justify-between">
                                         <span className="font-medium">{day.getDate()}</span>
@@ -369,7 +388,7 @@ export function ExamsPage() {
                     </div>
                 </section>
 
-                <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[720px]">
+                <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[740px]">
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <h2 className="text-lg font-semibold text-slate-900">Appelli programmati</h2>
@@ -472,13 +491,20 @@ export function ExamsPage() {
                                         )}
                                     </div>
                                     {myExamIds.has(exam.id) && (
-                                        <div className="mt-3 flex justify-end">
+                                        <div className="mt-3 flex items-center justify-end gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() => navigate(`/exams/${exam.id}/edit`)}
                                                 className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
                                             >
                                                 Modifica
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setDeleteTarget(exam.id)}
+                                                className="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                                            >
+                                                Elimina
                                             </button>
                                         </div>
                                     )}
@@ -487,6 +513,16 @@ export function ExamsPage() {
                     </div>
                 </aside>
             </div>
+
+            <ConfirmModal
+                open={deleteTarget !== null}
+                title="Elimina appello"
+                message="Sei sicuro di voler eliminare questo appello? L'operazione non può essere annullata."
+                confirmLabel="Elimina"
+                cancelLabel="Annulla"
+                onConfirm={handleDeleteExam}
+                onCancel={() => setDeleteTarget(null)}
+            />
         </main>
     );
 }

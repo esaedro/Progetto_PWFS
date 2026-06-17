@@ -322,29 +322,25 @@ export class ExamValidationService {
         errors: string[]
     ): void {
         try {
-            const now = new Date();
-            // Crea date in formato locale (senza fuso orario) per confronto corretto
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const insertStart = new Date(
-                session.dateStartInsertion.getFullYear(),
-                session.dateStartInsertion.getMonth(),
-                session.dateStartInsertion.getDate()
-            );
-            const insertEnd = new Date(
-                session.dateEndInsertion.getFullYear(),
-                session.dateEndInsertion.getMonth(),
-                session.dateEndInsertion.getDate()
-            );
+            const startStr = new Date(session.dateStartInsertion)
+                .toISOString()
+                .slice(0, 10);
+            const endStr = new Date(session.dateEndInsertion)
+                .toISOString()
+                .slice(0, 10);
 
-            if (today < insertStart) {
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            if (todayStr < startStr) {
                 errors.push(
-                    `La finestra di inserimento per questa sessione inizierà il ${session.dateStartInsertion.toLocaleDateString('it-IT')}`
+                    `La finestra di inserimento per questa sessione inizierà il ${startStr}`
                 );
             }
 
-            if (today > insertEnd) {
+            if (todayStr > endStr) {
                 errors.push(
-                    `La finestra di inserimento per questa sessione è terminata il ${session.dateEndInsertion.toLocaleDateString('it-IT')}`
+                    `La finestra di inserimento per questa sessione è terminata il ${endStr}`
                 );
             }
         } catch (error) {
@@ -374,18 +370,16 @@ export class ExamValidationService {
             const degreeYear = teaching.year;
             const exams = await examsRepository.findBySessionAndDegree(sessionId, degreeId, degreeYear);
 
-            const newStart = new Date(dateTimeStart).getTime();
-            const newEnd = new Date(dateTimeEnd).getTime();
 
             const conflictingExams = exams.filter((exam: Exam) => {
-                const examStart = new Date(exam.dateTimeStart).getTime();
-                const examEnd = new Date(exam.dateTimeEnd).getTime();
-                return examStart < newEnd && examEnd > newStart;
+                const examDate = new Date(exam.dateTimeStart).toISOString().slice(0, 10);
+                const newExamDate = new Date(dateTimeStart).toISOString().slice(0, 10);
+                return examDate === newExamDate;
             });
 
             if (conflictingExams.length > 0) {
                 const conflictDetails = conflictingExams
-                    .map(e => `${e.teaching.subject.name} (${new Date(e.dateTimeStart).toLocaleString()})`)
+                    .map(e => `${e.teaching.subject.name} (${new Date(e.dateTimeStart).toLocaleDateString('it-IT')})`)
                     .join(', ');
                 errors.push(`Esame in conflitto con: ${conflictDetails}`);
             }
@@ -417,21 +411,19 @@ export class ExamValidationService {
             const degreeYear = teaching.year;
             const exams = await examsRepository.findBySessionAndDegree(sessionId, degreeId, degreeYear);
 
-            const newStart = new Date(dateTimeStart).getTime();
-            const newEnd = new Date(dateTimeEnd).getTime();
 
             const conflictingExams = exams.filter((exam: Exam) => {
                 // Esclude l'esame corrente dal controllo
                 if (exam.id === examId) return false;
 
-                const examStart = new Date(exam.dateTimeStart).getTime();
-                const examEnd = new Date(exam.dateTimeEnd).getTime();
-                return examStart < newEnd && examEnd > newStart;
+                const examDate = new Date(exam.dateTimeStart).toISOString().slice(0, 10);
+                const newExamDate = new Date(dateTimeStart).toISOString().slice(0, 10);
+                return examDate === newExamDate;
             });
 
             if (conflictingExams.length > 0) {
                 const conflictDetails = conflictingExams
-                    .map(e => `${e.teaching.subject.name} (${new Date(e.dateTimeStart).toLocaleString()})`)
+                    .map(e => `${e.teaching.subject.name} (${new Date(e.dateTimeStart).toLocaleDateString('it-IT')})`)
                     .join(', ');
                 errors.push(`Esame in conflitto con: ${conflictDetails}`);
             }
@@ -476,24 +468,17 @@ export class ExamValidationService {
                 degreeYear
             );
 
-            const newStart = dateTimeStart.getTime();
-            const newEnd = dateTimeEnd.getTime();
+            const newExamDate = dateTimeStart.toISOString().slice(0, 10);
 
             for (const exam of exams) {
                 // Esclude l'esame corrente (in caso di modifica)
                 if (examId && exam.id === examId) continue;
 
-                const examStart = new Date(exam.dateTimeStart).getTime();
-                const examEnd = new Date(exam.dateTimeEnd).getTime();
+                const examDate = new Date(exam.dateTimeStart).toISOString().slice(0, 10);
 
-                if (examStart < newEnd && examEnd > newStart) {
-                    const examDate = new Date(exam.dateTimeStart);
-                    const timeStr = examDate.toLocaleTimeString('it-IT', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                if (examDate === newExamDate) {
                     const subjectName = exam.teaching?.subject?.name ?? `Appello #${exam.id}`;
-                    conflicts.push(`${subjectName} (${timeStr})`);
+                    conflicts.push(subjectName);
                 }
             }
         } catch (error) {

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchSessions } from './sessions.api';
+import { fetchSessions, deleteSession } from './sessions.api';
 import { SessionItem } from "@server/exams";
+import { ConfirmModal } from '../shared/confirm-modal';
 
 const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
@@ -60,7 +61,21 @@ export function SessionsPage() {
     const [error, setError] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(() => new Date());
     const [searchQuery, setSearchQuery] = useState('');
+    const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
     const navigate = useNavigate();
+
+    const handleDeleteSession = async () => {
+        if (deleteTarget === null) return;
+        try {
+            await deleteSession(deleteTarget);
+            setDeleteTarget(null);
+            const data = await fetchSessions();
+            setSessions(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setDeleteTarget(null);
+            setError(err instanceof Error ? err.message : 'Errore durante l\'eliminazione');
+        }
+    };
 
     useEffect(() => {
         let active = true;
@@ -143,7 +158,7 @@ export function SessionsPage() {
             </div>
 
             <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-                <section className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[720px]">
+                <section className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[740px]">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <h2 className="text-lg font-semibold text-slate-900">Calendario sessioni</h2>
@@ -242,8 +257,8 @@ export function SessionsPage() {
                             return (
                                 <div
                                     key={day.toISOString()}
-                                    className={`flex h-20 flex-col justify-between rounded-xl border p-2 text-sm ${toneClass} ${isToday ? 'ring-2 ring-sky-400 ring-offset-1 ring-offset-slate-50' : ''
-                                        }`}
+                                    className={`flex flex-col justify-between rounded-xl border p-2 text-sm ${toneClass} ${isToday ? 'ring-2 ring-sky-400 ring-offset-1 ring-offset-slate-50' : ''
+                                        } h-[86px]`}
                                 >
                                     <span className="font-medium">{day.getDate()}</span>
                                 </div>
@@ -252,7 +267,7 @@ export function SessionsPage() {
                     </div>
                 </section>
 
-                <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[720px]">
+                <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:h-[740px]">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-slate-900">Sessioni programmate</h2>
                         <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
@@ -302,7 +317,7 @@ export function SessionsPage() {
                                             {formatDate(session.dateEndExamination)}
                                         </div>
                                     </div>
-                                    <div className="mt-3 flex justify-end">
+                                    <div className="mt-3 flex items-center justify-end gap-2">
                                         <button
                                             type="button"
                                             onClick={() => navigate(`/sessions/${session.id}/edit`)}
@@ -310,12 +325,29 @@ export function SessionsPage() {
                                         >
                                             Modifica
                                         </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeleteTarget(session.id)}
+                                            className="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                                        >
+                                            Elimina
+                                        </button>
                                     </div>
                                 </div>
                             ))}
                     </div>
                 </aside>
             </div>
+
+            <ConfirmModal
+                open={deleteTarget !== null}
+                title="Elimina sessione"
+                message="Sei sicuro di voler eliminare questa sessione? L'operazione non può essere annullata."
+                confirmLabel="Elimina"
+                cancelLabel="Annulla"
+                onConfirm={handleDeleteSession}
+                onCancel={() => setDeleteTarget(null)}
+            />
         </main>
     );
 }
