@@ -18,4 +18,11 @@ export interface ExamItem {
         };
         year: number;
     };
+    professor?: {
+        professor_id: number;
+        user: {
+            name: string;
+            email?: string;
+        };
+    };
 }

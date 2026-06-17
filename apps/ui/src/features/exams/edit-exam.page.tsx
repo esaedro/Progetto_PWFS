@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchExamById, updateExam, checkExamConflicts } from './exams.api';
 import { fetchTeachingsByProfessor } from '../teachings/teachings.api';
@@ -16,6 +16,20 @@ const EXAM_TYPE_OPTIONS = Object.values(ExamType).map((value) => ({
 
 const HOURS = Array.from({ length: 13 }, (_, i) => String(i + 8).padStart(2, '0'));
 const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
+
+function getMonthName(value: string): string {
+    const date = new Date(value + 'T12:00:00');
+    return date.toLocaleDateString('it-IT', { month: 'long' });
+}
+
+function getExaminationPeriodLabel(start: string, end: string): string {
+    const startMonth = getMonthName(start);
+    const endMonth = getMonthName(end);
+    if (startMonth === endMonth) {
+        return startMonth.charAt(0).toUpperCase() + startMonth.slice(1);
+    }
+    return startMonth.charAt(0).toUpperCase() + startMonth.slice(1) + '-' + endMonth.charAt(0).toUpperCase() + endMonth.slice(1);
+}
 
 type ExamForm = {
     teachingId: number;
@@ -83,9 +97,14 @@ export function EditExamPage() {
     const [selectedSession, setSelectedSession] = useState<number | null>(null);
     const [sessionInsertionStart, setSessionInsertionStart] = useState<string | null>(null);
     const [sessionInsertionEnd, setSessionInsertionEnd] = useState<string | null>(null);
+    const [sessionExamStart, setSessionExamStart] = useState<string | null>(null);
+    const [sessionExamEnd, setSessionExamEnd] = useState<string | null>(null);
     const [sessionHolidays, setSessionHolidays] = useState<string[]>([]);
     const [professorId, setProfessorId] = useState<number | null>(null);
     const [conflicts, setConflicts] = useState<string[]>([]);
+    const [teachingSearch, setTeachingSearch] = useState('');
+    const [showTeachingDropdown, setShowTeachingDropdown] = useState(false);
+    const teachingRef = useRef<HTMLDivElement>(null);
 
     // Carica i dati iniziali
     useEffect(() => {
@@ -115,6 +134,7 @@ export function EditExamPage() {
                     return;
                 }
 
+                const teaching = teachingsData.find((t) => t.id === exam.teaching?.id);
                 setForm({
                     teachingId: exam.teaching?.id ?? null,
                     date: toDateInputValue(startDate),
@@ -124,6 +144,13 @@ export function EditExamPage() {
                     description: exam.description ?? '',
                     isPartial: exam.partial,
                 });
+
+                if (teaching) {
+                    setTeachingSearch(`${teaching.subject.name} — ${teaching.degree.name} (Anno ${teaching.year})`);
+                } else if (exam.teaching) {
+                    const fallback = `${(exam.teaching as any).subject?.name ?? ''} — ${(exam.teaching as any).degree?.name ?? ''} (Anno ${(exam.teaching as any).year ?? ''}`;
+                    setTeachingSearch(fallback.trim() || `Insegnamento #${exam.teaching.id}`);
+                }
             })
             .catch((err) => setError(err.message))
             .finally(() => setPageLoading(false));
@@ -138,11 +165,15 @@ export function EditExamPage() {
                         setSelectedSession(session.id);
                         setSessionInsertionStart(session.dateStartInsertion as unknown as string);
                         setSessionInsertionEnd(session.dateEndInsertion as unknown as string);
+                        setSessionExamStart(session.dateStartExamination as unknown as string);
+                        setSessionExamEnd(session.dateEndExamination as unknown as string);
                         setSessionHolidays(session.holidays ?? []);
                     } else {
                         setSelectedSession(null);
                         setSessionInsertionStart(null);
                         setSessionInsertionEnd(null);
+                        setSessionExamStart(null);
+                        setSessionExamEnd(null);
                         setSessionHolidays([]);
                     }
                 })
@@ -187,6 +218,34 @@ export function EditExamPage() {
             clearTimeout(timer);
         };
     }, [form?.date, form?.startTime, form?.endTime, form?.teachingId, selectedSession, id]);
+
+    // Chiude il dropdown cliccando fuori
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            if (teachingRef.current && !teachingRef.current.contains(e.target as Node)) {
+                setShowTeachingDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    const filteredTeachings = teachings.filter((t) => {
+        const q = teachingSearch.toLowerCase();
+        const label = `${t.subject.name} ${t.degree.name} ${t.year}`.toLowerCase();
+        return label.includes(q);
+    });
+
+    const selectTeaching = (teaching: TeachingItem) => {
+        setForm((prev) => prev ? { ...prev, teachingId: teaching.id } : prev);
+        setTeachingSearch(`${teaching.subject.name} — ${teaching.degree.name} (Anno ${teaching.year})`);
+        setShowTeachingDropdown(false);
+    };
+
+    const clearTeaching = () => {
+        setForm((prev) => prev ? { ...prev, teachingId: null } : prev);
+        setTeachingSearch('');
+    };
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -401,7 +460,9 @@ export function EditExamPage() {
                                     <div className="flex items-center gap-3">
                                         <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-200">
                                             <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                                            Sessione #{selectedSession}
+                                            {sessionExamStart
+                                                ? getExaminationPeriodLabel(sessionExamStart, sessionExamEnd ?? '')
+                                                : `Sessione #${selectedSession}`}
                                         </span>
                                     </div>
                                 ) : (
@@ -473,23 +534,55 @@ export function EditExamPage() {
                         </p>
 
                         <div className="mt-4 space-y-4">
-                            <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
-                                Corso
-                                <select
-                                    name="teachingId"
-                                    value={form.teachingId}
-                                    onChange={handleSelectChange}
-                                    required
-                                    className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
-                                >
-                                    <option value="">Seleziona corso</option>
-                                    {teachings.map((t) => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.subject.name} &mdash; {t.degree.name} (Anno {t.year})
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
+                            <div className="relative" ref={teachingRef}>
+                                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                                    Corso
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Cerca un corso..."
+                                            value={teachingSearch}
+                                            onChange={(e) => {
+                                                setTeachingSearch(e.target.value);
+                                                setShowTeachingDropdown(true);
+                                                if (form.teachingId) {
+                                                    setForm((prev) => prev ? { ...prev, teachingId: null } : prev);
+                                                }
+                                            }}
+                                            onFocus={() => setShowTeachingDropdown(true)}
+                                            className="block w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
+                                        />
+                                        {form.teachingId && (
+                                            <button
+                                                type="button"
+                                                onClick={clearTeaching}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                </label>
+                                {showTeachingDropdown && (
+                                    <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                                        {filteredTeachings.length === 0 ? (
+                                            <p className="px-3 py-2 text-xs text-slate-400">Nessun corso trovato</p>
+                                        ) : (
+                                            filteredTeachings.map((t) => (
+                                                <button
+                                                    key={t.id}
+                                                    type="button"
+                                                    onClick={() => selectTeaching(t)}
+                                                    className={`block w-full px-3 py-2 text-left text-sm transition hover:bg-slate-100 ${form.teachingId === t.id ? 'bg-slate-50 font-medium text-slate-900' : 'text-slate-700'
+                                                        }`}
+                                                >
+                                                    {t.subject.name} &mdash; {t.degree.name} (Anno {t.year})
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">

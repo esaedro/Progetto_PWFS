@@ -323,19 +323,28 @@ export class ExamValidationService {
     ): void {
         try {
             const now = new Date();
+            // Crea date in formato locale (senza fuso orario) per confronto corretto
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const insertStart = new Date(session.dateStartInsertion);
-            const insertEnd = new Date(session.dateEndInsertion);
+            const insertStart = new Date(
+                session.dateStartInsertion.getFullYear(),
+                session.dateStartInsertion.getMonth(),
+                session.dateStartInsertion.getDate()
+            );
+            const insertEnd = new Date(
+                session.dateEndInsertion.getFullYear(),
+                session.dateEndInsertion.getMonth(),
+                session.dateEndInsertion.getDate()
+            );
 
             if (today < insertStart) {
                 errors.push(
-                    `La finestra di inserimento per questa sessione inizierà il ${insertStart.toLocaleDateString('it-IT')}`
+                    `La finestra di inserimento per questa sessione inizierà il ${session.dateStartInsertion.toLocaleDateString('it-IT')}`
                 );
             }
 
             if (today > insertEnd) {
                 errors.push(
-                    `La finestra di inserimento per questa sessione è terminata il ${insertEnd.toLocaleDateString('it-IT')}`
+                    `La finestra di inserimento per questa sessione è terminata il ${session.dateEndInsertion.toLocaleDateString('it-IT')}`
                 );
             }
         } catch (error) {

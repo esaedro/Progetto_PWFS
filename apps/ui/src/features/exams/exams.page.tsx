@@ -57,6 +57,7 @@ export function ExamsPage() {
     const [currentMonth, setCurrentMonth] = useState(() => new Date());
     const [showOnlyMine, setShowOnlyMine] = useState(true);
     const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -81,13 +82,17 @@ export function ExamsPage() {
                 setAllExams(Array.isArray(examsData) ? examsData : []);
                 setCurrentUser(userData);
 
-                if (userData?.id) {
+                if (userData?.role !== 'PROFESSOR') {
+                    setShowOnlyMine(false);
+                }
+
+                if (userData?.id && userData?.role === 'PROFESSOR') {
                     try {
                         const professorData = await fetchExamsByProfessor(userData.id);
                         if (active) {
                             setProfessorExams(Array.isArray(professorData) ? professorData : []);
                         }
-                    } catch (professorError) {
+                    } catch {
                         if (active) {
                             setProfessorExams([]);
                         }
@@ -165,11 +170,18 @@ export function ExamsPage() {
     });
 
     const filteredExamsByDate = useMemo(() => {
+        const query = searchQuery.toLowerCase().trim();
+        const bySearch = query
+            ? filteredExams.filter((exam) =>
+                (exam.teaching?.subject?.name ?? '').toLowerCase().includes(query)
+            )
+            : filteredExams;
+
         if (!selectedDateKey) {
-            return filteredExams;
+            return bySearch;
         }
-        return filteredExams.filter((exam) => toDateKey(exam.dateTimeStart) === selectedDateKey);
-    }, [filteredExams, selectedDateKey]);
+        return bySearch.filter((exam) => toDateKey(exam.dateTimeStart) === selectedDateKey);
+    }, [filteredExams, selectedDateKey, searchQuery]);
 
     const selectedDateLabel = selectedDateKey
         ? toDateOnly(selectedDateKey).toLocaleDateString('it-IT', {
@@ -188,13 +200,15 @@ export function ExamsPage() {
                         Calendario delle sessioni e degli appelli fissati.
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => navigate('/exams/new')}
-                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                >
-                    Nuovo appello
-                </button>
+                {currentUser?.role === 'PROFESSOR' && (
+                    <button
+                        type="button"
+                        onClick={() => navigate('/exams/new')}
+                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                    >
+                        Nuovo appello
+                    </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -259,10 +273,12 @@ export function ExamsPage() {
                             <span className="h-3 w-3 rounded-full bg-sky-500" />
                             Appelli fissati (tutti)
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="h-3 w-3 rounded-full bg-indigo-500" />
-                            Appelli miei
-                        </div>
+                        {currentUser?.role === 'PROFESSOR' && (
+                            <div className="flex items-center gap-2">
+                                <span className="h-3 w-3 rounded-full bg-indigo-500" />
+                                Appelli miei
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-6 grid grid-cols-7 text-xs font-semibold text-slate-500">
@@ -334,7 +350,7 @@ export function ExamsPage() {
                                             {examCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />}
                                             {myExamCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
                                         </div>
-                                        {inExamination && !isUnavailable && (
+                                        {currentUser?.role === 'PROFESSOR' && inExamination && !isUnavailable && (
                                             <span
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -357,28 +373,42 @@ export function ExamsPage() {
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <h2 className="text-lg font-semibold text-slate-900">Appelli programmati</h2>
-                            <p className="text-xs text-slate-500">{currentUser?.name ?? currentUser?.email ?? 'Utente'}</p>
+                            {currentUser?.role === 'PROFESSOR' && (
+                                <p className="text-xs text-slate-500">{currentUser?.name ?? currentUser?.email ?? 'Utente'}</p>
+                            )}
                         </div>
                         <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
                             {filteredExamsByDate.length}
                         </span>
                     </div>
 
-                    <label className="mt-4 flex items-center gap-2 text-xs text-slate-600">
+                    <div className="mt-4">
                         <input
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-slate-300 text-slate-900"
-                            checked={showOnlyMine}
-                            onChange={(event) => setShowOnlyMine(event.target.checked)}
+                            type="text"
+                            placeholder="Cerca per insegnamento..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
                         />
-                        Mostra solo i miei appelli
-                    </label>
+                    </div>
+
+                    {currentUser?.role === 'PROFESSOR' && (
+                        <label className="mt-3 flex items-center gap-2 text-xs text-slate-600">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-slate-300 text-slate-900"
+                                checked={showOnlyMine}
+                                onChange={(event) => setShowOnlyMine(event.target.checked)}
+                            />
+                            Mostra solo i miei appelli
+                        </label>
+                    )}
 
                     {selectedDateLabel && (
                         <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
                             Appelli del <span className="font-semibold text-slate-800">{selectedDateLabel}</span>
                             <span className="ml-2 text-xs text-slate-400">
-                                (clicca di nuovo sulla data per rimuovere il filtro)
+                                <br />(clicca di nuovo sulla data per rimuovere il filtro)
                             </span>
                         </div>
                     )}
@@ -429,21 +459,29 @@ export function ExamsPage() {
                                                 <span className="font-medium">Tipo:</span> {exam.type}
                                             </div>
                                         )}
+                                        {currentUser?.role !== 'PROFESSOR' && exam.professor && (
+                                            <div>
+                                                <span className="font-medium">Professore:</span>{' '}
+                                                {exam.professor.user.name}
+                                            </div>
+                                        )}
                                         {exam.room && (
                                             <div>
                                                 <span className="font-medium">Aula:</span> {exam.room}
                                             </div>
                                         )}
                                     </div>
-                                    <div className="mt-3 flex justify-end">
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate(`/exams/${exam.id}/edit`)}
-                                            className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                                        >
-                                            Modifica
-                                        </button>
-                                    </div>
+                                    {myExamIds.has(exam.id) && (
+                                        <div className="mt-3 flex justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/exams/${exam.id}/edit`)}
+                                                className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                                            >
+                                                Modifica
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                     </div>

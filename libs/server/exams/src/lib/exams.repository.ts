@@ -17,11 +17,16 @@ export class ExamsRepository {
         private readonly repository: Repository<Exam>) { }
 
     findById(id: number): Promise<Exam | null> {
-        return this.repository.findOne({ where: { id } });
+        return this.repository.findOne({
+            where: { id },
+            relations: ['teaching', 'teaching.subject']
+        });
     }
 
     findAll(): Promise<Exam[]> {
-        return this.repository.find({ relations: ['teaching', 'teaching.subject'] });
+        return this.repository.find({
+            relations: ['teaching', 'teaching.subject', 'professor', 'professor.user']
+        });
     }
 
     findBySession(session: Session): Promise<Exam[] | null> {
@@ -46,7 +51,7 @@ export class ExamsRepository {
     findByProfessor(professorId: number): Promise<Exam[]> {
         return this.repository.find({
             where: { professor: { professor_id: professorId } },
-            relations: ['teaching', 'teaching.subject']
+            relations: ['teaching', 'teaching.subject', 'professor', 'professor.user']
         });
     }
 
@@ -63,7 +68,7 @@ export class ExamsRepository {
                     year: degreeYear
                 }
             },
-            relations: ['teaching', 'teaching.subject']
+            relations: ['teaching', 'teaching.subject', 'professor', 'professor.user']
         });
     }
 
