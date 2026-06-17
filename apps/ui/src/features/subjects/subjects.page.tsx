@@ -19,6 +19,7 @@ export function SubjectsPage() {
 
     const navigate = useNavigate();
 
+
     async function handleDelete(id: number) {
         const confirmed = window.confirm('Vuoi davvero cancellare questa materia?');
         if (!confirmed) return;
@@ -55,15 +56,30 @@ export function SubjectsPage() {
         }
     }
 
-    useEffect(() => {
-        Promise.all([fetchSubjects(), fetchCurrentUser()])
-            .then(([subjectsData, userData]) => {
-                setSubjects(subjectsData);
+
+    useEffect(() => {  // necessario cambiare useEffect perchè devo caricare l'utente anche quando non ci sono materie
+        async function loadData() {
+            try {
+                const userData = await fetchCurrentUser();
                 setUser(userData);
-            })
-            .catch((err) => setError(err.message))
-            .finally(() => setLoading(false));
+            } catch {
+                // L'utente non si carica, ma non bloccare il resto
+            }
+
+            try {
+                const subjectsData = await fetchSubjects();
+                setSubjects(subjectsData);
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadData();
     }, []);
+
+    const canManageSubjects = user?.role === 'SECRETARY';
 
     if (loading) {
         return (
@@ -79,15 +95,31 @@ export function SubjectsPage() {
         return (
             <main className="min-h-screen bg-slate-50 p-6">
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-                        {error}
-                    </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        {error && (
+                            <p className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                                {error}
+                            </p>
+                        )}
+        
+                        {canManageSubjects && (
+                        <div className="sm:ml-auto">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/subjects/new')}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        >
+                            Nuova materia
+                        </button>
+                        </div>
+                        )}
+                    </div>
                 </div>
             </main>
         );
     }
 
-    const canManageSubjects = user?.role === 'SECRETARY';
+    
 
     return (
         <main className="min-h-screen bg-slate-50 p-6">

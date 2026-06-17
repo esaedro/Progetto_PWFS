@@ -7,6 +7,7 @@ export function CreateSubjectPage() {
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [noProfessors, setNoProfessors] = useState(false);
 
     const [professors, setProfessors] = useState<ProfessorListItem[]>([]);
     const [professorSearch, setProfessorSearch] = useState('');
@@ -16,8 +17,16 @@ export function CreateSubjectPage() {
 
     useEffect(() => {
         fetchProfessors()
-            .then(setProfessors)
-            .catch((err) => setError(err.message));
+            .then((data) => {
+                setProfessors(data);
+            })
+            .catch((err) => {
+                if (err.message === 'Non sono stati trovati professori') {
+                    setNoProfessors(true);
+                } else {
+                    setError(err.message);
+                }
+            });
     }, []);
 
     const filteredProfessors = professors.filter((prof) => {
@@ -71,6 +80,24 @@ export function CreateSubjectPage() {
                         Annulla
                     </button>
                 </div>
+
+                {/* Banner nessun professore disponibile */}
+                {noProfessors && (
+                    <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        <p className="font-medium">
+                            Non è possibile creare una materia perché non è stato inserito nessun professore.
+                        </p>
+                        <p className="mt-1">
+                            <button
+                                type="button"
+                                onClick={() => navigate('/professors/new')}
+                                className="font-semibold underline underline-offset-2 hover:text-amber-900"
+                            >
+                                Clicca qui per aggiungere un professore
+                            </button>
+                        </p>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Nome materia */}
@@ -171,8 +198,8 @@ export function CreateSubjectPage() {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            disabled={loading || noProfessors}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {loading ? 'Salvataggio...' : 'Crea materia'}
                         </button>

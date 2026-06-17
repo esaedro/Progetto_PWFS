@@ -31,10 +31,10 @@ export class ServerUsersService {
     async getUsers(role?: UserRole): Promise<UserEntity[]> {
         const users = await this.usersRepository.findAll(role);
         
-        if(role && users.length===0)
+/*         if(role && users.length===0)
         {
             throw new NotFoundException(`No users found with role ${role}`);
-        }
+        } */
         return users;
     }
 
