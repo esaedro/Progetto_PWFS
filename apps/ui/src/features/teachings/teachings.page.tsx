@@ -54,6 +54,7 @@ export function TeachingsPage() {
                         {error}
                     </p>
                 </div>
+                Gli insegnamenti vengono creati dalla pagina di dettaglio del corso di laurea quando si salva un piano di studi.
             </main>
         );
     }

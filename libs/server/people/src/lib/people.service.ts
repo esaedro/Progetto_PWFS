@@ -22,7 +22,11 @@ export class ServerPeopleService {
     }
 
     async findAll(): Promise<UserEntity[]> {
-        return await this.serverUsersService.getUsers(UserRole.PROFESSOR);
+    const professors = await this.serverUsersService.getUsers(UserRole.PROFESSOR);
+    if (!professors || professors.length === 0) {
+        throw new NotFoundException('Non sono stati trovati professori');
+    }
+    return professors;
     }
 
     async canManageOwnExam(professor_id: number, examId: number): Promise<boolean>{

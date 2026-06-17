@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import book_styles from '../css/books.module.css';
 import { ProfessorListItem } from '@server/people';
 import { deleteProfessor, fetchProfessors } from './professors.api';
 

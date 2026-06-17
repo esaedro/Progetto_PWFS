@@ -13,6 +13,8 @@ export function DegreesPage() {
 
   const navigate = useNavigate();
 
+  const canManageDegrees = user?.role === 'SECRETARY';
+
   async function handleDelete(id: number) {
     if (user?.role !== 'SECRETARY') return;
 
@@ -28,17 +30,27 @@ export function DegreesPage() {
     }
   }
 
-  useEffect(() => {
-    Promise.all([fetchDegrees(), fetchCurrentUser()])
-      .then(([degreesData, userData]) => {
-        setDegrees(degreesData);
-        setUser(userData);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+  useEffect(() => {  // necessario cambiare useEffect perchè devo caricare l'utente anche quando non ci sono corsi
+      async function loadData() {
+          try {
+              const userData = await fetchCurrentUser();
+              setUser(userData);
+          } catch {
+              // L'utente non si carica, ma non bloccare il resto
+          }
 
-  const canManageDegrees = user?.role === 'SECRETARY';
+          try {
+              const degreesData = await fetchDegrees();
+              setDegrees(degreesData);
+          } catch (err: any) {
+              setError(err.message);
+          } finally {
+              setLoading(false);
+          }
+      }
+
+      loadData();
+  }, []);
 
   if (loading) {
     return (
@@ -51,15 +63,31 @@ export function DegreesPage() {
   }
 
   if (error) {
-    return (
-      <main className="min-h-screen bg-slate-50 p-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-            {error}
-          </p>
-        </div>
-      </main>
-    );
+      return (
+          <main className="min-h-screen bg-slate-50 p-6">
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      {error && (
+                          <p className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                              {error}
+                          </p>
+                      )}
+      
+                      {canManageDegrees && (
+                      <div className="sm:ml-auto">
+                      <button
+                          type="button"
+                          onClick={() => navigate('/degrees/new')}
+                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                      >
+                          Nuovo corso di laurea
+                      </button>
+                      </div>
+                      )}
+                  </div>
+              </div>
+          </main>
+      );
   }
 
   return (

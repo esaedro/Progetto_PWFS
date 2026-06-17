@@ -59,9 +59,9 @@ export function CreateProfessorPage() {
         
         {/* Header Block */}
         <div className="mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white">
+{/*           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white">
             <FaPlus className="text-sm" />
-          </div>
+          </div> */}
           <div>
             <h1 className="text-xl font-semibold text-slate-900">Nuovo Professore</h1>
             <p className="text-xs text-slate-500">Registra un nuovo account docente</p>
