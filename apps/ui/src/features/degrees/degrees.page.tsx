@@ -4,6 +4,7 @@ import { DegreeItem } from '@server/courses';
 import { fetchDegrees, deleteDegree } from './degrees.api';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { UserListItem } from '@server/users';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 export function DegreesPage() {
   const [degrees, setDegrees] = useState<DegreeItem[]>([]);
@@ -11,22 +12,22 @@ export function DegreesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const canManageDegrees = user?.role === 'SECRETARY';
 
   async function handleDelete(id: number) {
-    if (user?.role !== 'SECRETARY') return;
-
-    const confirmed = window.confirm('Vuoi davvero cancellare questo corso di laurea?');
-
-    if (!confirmed) return;
+    if (deleteTarget === null) return;
 
     try {
-      await deleteDegree(id);
-      setDegrees((d) => d.filter((deg) => deg.id !== id));
+      await deleteDegree(deleteTarget);
+      setDeleteTarget(null);
+      const data = await fetchDegrees(); 
+      setDegrees(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setError(err.message);
+      setDeleteTarget(null);
+      setError(err instanceof Error ? err.message : 'Errore durante l\'eliminazione');
     }
   }
 
@@ -98,14 +99,14 @@ export function DegreesPage() {
           <div>
             <h1 className="text-3xl font-semibold text-slate-900">Elenco corsi di laurea</h1>
             <p className="text-sm text-slate-600">
-              Elenco dei corsi di laurea presenti nel sistema.
+              Lista dei corsi di laurea presenti nel sistema.
             </p>
           </div>
 
           {canManageDegrees && (
             <button
               type="button"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-base font-bold text-white hover:bg-slate-700"
+              className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700"
               onClick={() => navigate('/degrees/new')}
             >
               Nuovo corso
@@ -127,7 +128,7 @@ export function DegreesPage() {
                     Durata (anni)
                   </th>
                   {canManageDegrees && (
-                    <th className="py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <th className="py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Azioni
                     </th>
                   )}
@@ -140,34 +141,34 @@ export function DegreesPage() {
                     <td className="py-3 pr-4 text-base font-medium text-slate-900">{deg.name}</td>
                     <td className="py-3 pr-4 text-base text-slate-600">{deg.duration}</td>
 
-                      <td className="py-3">
-                        <div className="flex items-center gap-2">
+                      <td className="py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
-                            className="rounded-lg border border-slate-400 px-4 py-1 text-base font-medium text-slate-900 hover:bg-slate-300"
+                            className="rounded-lg border border-slate-600 px-4 py-1.5 text-base font-medium text-slate-900 hover:bg-slate-300 transition"
                             onClick={() => navigate(`/degrees/${deg.id}`)}
                           >
                             Dettagli
                           </button>
 
                           {canManageDegrees && (
-                          <button
-                            type="button"
-                            className="rounded-lg border border-slate-300 px-3 py-1 text-sm font-medium text-slate-400 hover:bg-slate-300"
-                            onClick={() => navigate(`/degrees/${deg.id}/edit`)}
-                          >
-                            Modifica
-                          </button>
+                            <button
+                              type="button"
+                              className="rounded-lg border border-slate-400 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-300 transition"
+                              onClick={() => navigate(`/degrees/${deg.id}/edit`)}
+                            >
+                              Modifica
+                            </button>
                           )}
 
                           {canManageDegrees && (
-                          <button
-                            type="button"
-                            className="rounded-lg border border-red-300 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-100"
-                            onClick={() => handleDelete(deg.id)}
-                          >
-                            Elimina
-                          </button>
+                            <button
+                              type="button"
+                              className="rounded-lg border border-red-300 bg-red-50 px-4 py-1.5 text-sm font-medium text-red-600 hover:bg-red-200 transition"
+                              onClick={() => setDeleteTarget(deg.id)}
+                            >
+                              Elimina
+                            </button>
                           )}
                         </div>
                       </td>
@@ -180,6 +181,18 @@ export function DegreesPage() {
         )}
 
       </section>
+
+      <ConfirmModal
+        open={deleteTarget !== null}
+        title="Elimina Corso di laurea"
+        message="Sei sicuro di voler eliminare questa corso? L'operazione non può essere annullata."
+        confirmLabel="Elimina"
+        cancelLabel="Annulla"
+        onConfirm={() => {
+            void handleDelete(deleteTarget as number);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </main>
   );
 }

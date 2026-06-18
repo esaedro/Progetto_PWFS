@@ -67,8 +67,8 @@ export function App() {
                 <Route path='/subjects/:id/edit' element={<EditSubjectPage />} />
 
                 <Route path='/teachings' element={<TeachingsPage />} />
-                <Route path='/teachings/new' element={<CreateTeachingPage />} />
-                <Route path='/teachings/:id/edit' element={<EditTeachingPage />} />
+                {/* <Route path='/teachings/new' element={<CreateTeachingPage />} />
+                <Route path='/teachings/:id/edit' element={<EditTeachingPage />} /> */}
 
                 <Route path='/professors' element={<ProfessorsPage />} />
                 <Route path='/professors/new' element={<CreateProfessorPage />} /> 

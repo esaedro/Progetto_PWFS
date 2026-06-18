@@ -329,13 +329,13 @@ export function EditStudyPlanPage() {
 
                 {/* Footer azioni */}
                 <div className="mt-6 flex items-center justify-end gap-3">
-                    <button
+                    {/* <button
                         type="button"
                         onClick={() => navigate(`/degrees/${id}`)}
                         className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
                     >
                         Annulla
-                    </button>
+                    </button> */}
                     <button
                         type="button"
                         onClick={handleSave}

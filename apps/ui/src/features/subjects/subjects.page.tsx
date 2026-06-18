@@ -6,6 +6,7 @@ import { fetchTeachingsBySubject } from '../teachings/teachings.api';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { UserListItem } from '@server/users';
 import { IoMdArrowDropdown } from 'react-icons/io';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 export function SubjectsPage() {
     const [subjects, setSubjects] = useState<SubjectItem[]>([]);
@@ -17,18 +18,22 @@ export function SubjectsPage() {
     const [loadingMap, setLoadingMap] = useState<Record<number, boolean>>({});
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
+    const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
     const navigate = useNavigate();
 
 
     async function handleDelete(id: number) {
-        const confirmed = window.confirm('Vuoi davvero cancellare questa materia?');
-        if (!confirmed) return;
-
+        if (deleteTarget === null) return;
+        //const confirmed = window.confirm('Vuoi davvero cancellare questa materia?');
+        //if (!confirmed) return;
         try {
-            await deleteSubject(id);
-            setSubjects((s) => s.filter((sub) => sub.id !== id));
+            await deleteSubject(deleteTarget);
+            setDeleteTarget(null);
+            const data = await fetchSubjects(); 
+            setSubjects(Array.isArray(data) ? data : []);
         } catch (err: any) {
-            setError(err.message);
+            setDeleteTarget(null);
+            setError(err instanceof Error ? err.message : 'Errore durante l\'eliminazione');
         }
     }
 
@@ -119,7 +124,6 @@ export function SubjectsPage() {
         );
     }
 
-    
 
     return (
         <main className="min-h-screen bg-slate-50 p-6">
@@ -128,13 +132,13 @@ export function SubjectsPage() {
                     <div>
                         <h1 className="text-3xl font-semibold text-slate-900">Elenco materie</h1>
                         <p className="text-sm text-slate-600">
-                            Elenco delle materie e dei relativi professori.
+                            Lista delle materie presenti e dei relativi professori.
                         </p>
                     </div>
                     {canManageSubjects && (
                         <button
                             type="button"
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700"
                             onClick={() => navigate('/subjects/new')}
                         >
                             Nuova materia
@@ -196,15 +200,15 @@ export function SubjectsPage() {
                                                         <div className="flex items-center gap-2">
                                                             <button
                                                                 type="button"
-                                                                className="rounded-lg border border-slate-200 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-300"
+                                                                className="rounded-lg border border-slate-400 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-300 transition"
                                                                 onClick={() => navigate(`/subjects/${sub.id}/edit`)}
                                                             >
                                                                 Modifica
                                                             </button>
                                                             <button
                                                                 type="button"
-                                                                className="rounded-lg border border-red-200 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-80"
-                                                                onClick={() => handleDelete(sub.id)}
+                                                                className="rounded-lg border border-red-300 bg-red-50 px-4 py-1.5 text-sm font-medium text-red-600 hover:bg-red-200 transition"
+                                                                onClick={() => setDeleteTarget(sub.id)}
                                                             >
                                                                 Elimina
                                                             </button>
@@ -267,6 +271,19 @@ export function SubjectsPage() {
                     </div>
                 )}
             </section>
+
+            <ConfirmModal
+                open={deleteTarget !== null}
+                title="Elimina Materia"
+                message="Sei sicuro di voler eliminare questa materia? L'operazione non può essere annullata."
+                confirmLabel="Elimina"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    void handleDelete(deleteTarget as number);
+                }}
+                onCancel={() => setDeleteTarget(null)}
+            />
+
         </main>
     );
 }

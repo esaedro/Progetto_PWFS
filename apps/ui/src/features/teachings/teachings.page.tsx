@@ -13,6 +13,8 @@ export function TeachingsPage() {
 
     const navigate = useNavigate();
 
+    const canManageTeachings = user?.role === 'SECRETARY';
+
     async function handleDelete(id: number) {
         const confirmed = window.confirm('Vuoi davvero cancellare questo insegnamento?');
 
@@ -59,20 +61,19 @@ export function TeachingsPage() {
         );
     }
 
-    const canManageTeachings = user?.role === 'SECRETARY';
-
     return (
         <main className="min-h-screen bg-slate-50 p-6">
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-semibold text-slate-900">Elenco insegnamenti</h1>
-                        <p className="text-sm text-slate-600">
-                            Elenco degli insegnamenti tenuti dall'Università.
+                        <p className="text-base text-slate-600">
+                            {/* Elenco degli insegnamenti tenuti dall'Università. <br/> */}
+                            Lista di tutti gli insegnamenti presenti. <br/> Per crearne di nuovi, modificarli o eliminarli è necessario accedere alla pagina di dettaglio del corso di laurea e salvare un piano di studi.
                         </p>
                     </div>
 
-                    {canManageTeachings && (
+                  {/*   {canManageTeachings && (
                         <button
                             type="button"
                             className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
@@ -80,7 +81,7 @@ export function TeachingsPage() {
                         >
                             Nuovo insegnamento
                         </button>
-                    )}
+                    )} */}
                 </header>
 
                 {teachings.length === 0 ? (
@@ -99,11 +100,11 @@ export function TeachingsPage() {
                                     <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
                                         Anno
                                     </th>
-                                    {canManageTeachings && (
+                                    {/* {canManageTeachings && (
                                         <th className="py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                             Azioni
                                         </th>
-                                    )}
+                                    )} */}
                                 </tr>
                             </thead>
                             <tbody>
@@ -112,9 +113,17 @@ export function TeachingsPage() {
                                         <td className="py-3 pr-4 text-base font-medium text-slate-900">
                                             {t.subject.name}
                                         </td>
-                                        <td className="py-3 pr-4 text-base text-slate-600">{t.degree.name}</td>
+                                        <td className="py-3 pr-4 text-base text-slate-600">
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/degrees/${t.degree.id}`)}
+                                                className="text-slate-600 hover:text-slate-900 hover:underline underline-offset-2"
+                                            >
+                                                {t.degree.name}
+                                            </button>
+                                        </td>
                                         <td className="py-3 pr-4 text-base text-slate-600">{t.year}</td>
-
+{/* 
                                         {canManageTeachings && (
                                             <td className="py-3">
                                                 <div className="flex items-center gap-2">
@@ -134,7 +143,7 @@ export function TeachingsPage() {
                                                     </button>
                                                 </div>
                                             </td>
-                                        )}
+                                        )} */}
                                     </tr>
                                 ))}
                             </tbody>
