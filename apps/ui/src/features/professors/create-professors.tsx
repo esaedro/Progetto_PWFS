@@ -1,11 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createProfessor } from "./professors.api"; 
-import { FaPlus } from "react-icons/fa6";
+import { FaCopy, FaCheck } from "react-icons/fa6"; // Imported copy icons
 
 enum UserRole {
     PROFESSOR = 'PROFESSOR',
     SECRETARY = 'SECRETARY'
+}
+
+function generateRandomPassword(): string {
+  const length = 12;
+  const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+  const numberChars = "0123456789";
+  const specialChars = "?^!#@";
+  
+  let password = "";
+  password += uppercaseChars[Math.floor(Math.random() * uppercaseChars.length)];
+  password += specialChars[Math.floor(Math.random() * specialChars.length)];
+  
+  const allChars = uppercaseChars + lowercaseChars + numberChars + specialChars;
+  for (let i = password.length; i < length; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)];
+  }
+  
+  return password.split('').sort(() => 0.5 - Math.random()).join('');
 }
 
 export function CreateProfessorPage() {
@@ -14,27 +33,28 @@ export function CreateProfessorPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false); // Track copy success state
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setPassword(generateRandomPassword());
+  }, []);
+
+  // Clipboard handler
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset icon/text after 2 seconds
+    } catch (err) {
+      console.error("Impossibile copiare la password: ", err);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setLoading(false);
-
-    if (password.length < 8) {
-      setError('La password deve contenere almeno 8 caratteri.');
-      return;
-    }
-    if (!/[A-Z]/.test(password)) {
-      setError('La password deve contenere almeno una lettera maiuscola.');
-      return;
-    }
-    if (!/[?^!#@]/.test(password)) {
-      setError('La password deve contenere almeno un simbolo tra (? ^ ! # @).');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -59,9 +79,6 @@ export function CreateProfessorPage() {
         
         {/* Header Block */}
         <div className="mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
-{/*           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white">
-            <FaPlus className="text-sm" />
-          </div> */}
           <div>
             <h1 className="text-xl font-semibold text-slate-900">Nuovo Professore</h1>
             <p className="text-xs text-slate-500">Registra un nuovo account docente</p>
@@ -97,19 +114,41 @@ export function CreateProfessorPage() {
             />
           </div>
 
-          {/* Password Input */}
+          {/* Password Display with Copy Button Inline */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-700">Password</label>
-            <input
-              type="password"
-              className="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:bg-white focus:outline-none transition"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">
-              Richiesti: min 8 caratteri, una maiuscola e un simbolo tra <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">? ^ ! # @</span>
+            <label className="text-xs font-semibold text-slate-700">Password Generata</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="flex-1 rounded-lg border border-slate-200 bg-amber-50/40 font-mono px-3 py-2 text-sm text-amber-900 focus:outline-none select-all cursor-not-allowed"
+                value={password}
+                readOnly
+              />
+              <button
+                type="button"
+                onClick={handleCopy}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition ${
+                  copied 
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 active:bg-slate-100'
+                }`}
+                title="Copia negli appunti"
+              >
+                {copied ? (
+                  <>
+                    <FaCheck className="text-emerald-600 text-xs" />
+                    <span>Copiato!</span>
+                  </>
+                ) : (
+                  <>
+                    <FaCopy className="text-slate-400 text-xs" />
+                    <span>Copia</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="text-[10px] text-amber-700 mt-0.5 leading-relaxed bg-amber-50 border border-amber-100 rounded px-2 py-1">
+              Nota: Copia questa password prima di salvare. È stata generata rispettando i criteri di sicurezza.
             </p>
           </div>
 

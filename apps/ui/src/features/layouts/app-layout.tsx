@@ -66,7 +66,13 @@ export function AppLayout() {
                     {/* Brand */}
                     <button
                         type="button"
-                        onClick={() => navigate('/home')}
+                        onClick={() => {
+                            if (isProfessor) {
+                                navigate('/exams')
+                            } else if (isSecretary) {
+                                navigate('/sessions')
+                            }
+                        }}
                         className="text-xl font-semibold text-slate-900 hover:text-slate-600"
                     >
                         Home
