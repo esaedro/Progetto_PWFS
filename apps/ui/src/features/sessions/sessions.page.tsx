@@ -317,22 +317,30 @@ export function SessionsPage() {
                                             {formatDate(session.dateEndExamination)}
                                         </div>
                                     </div>
-                                    <div className="mt-3 flex items-center justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate(`/sessions/${session.id}/edit`)}
-                                            className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                                        >
-                                            Modifica
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setDeleteTarget(session.id)}
-                                            className="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-                                        >
-                                            Elimina
-                                        </button>
-                                    </div>
+                                    {(() => {
+                                        const today = new Date();
+                                        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                                        const insertStart = new Date(session.dateStartInsertion).toISOString().slice(0, 10);
+                                        const isStarted = todayStr >= insertStart;
+                                        return !isStarted ? (
+                                            <div className="mt-3 flex items-center justify-end gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/sessions/${session.id}/edit`)}
+                                                    className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                                                >
+                                                    Modifica
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDeleteTarget(session.id)}
+                                                    className="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                                                >
+                                                    Elimina
+                                                </button>
+                                            </div>
+                                        ) : null;
+                                    })()}
                                 </div>
                             ))}
                     </div>

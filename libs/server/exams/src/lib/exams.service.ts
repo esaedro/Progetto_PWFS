@@ -12,6 +12,8 @@ import { Session } from './session.entity';
 import { ExamValidationService } from './exam-validation.service';
 import { SessionValidationService } from './session-validation.service';
 import { Professor } from '@server/people';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { Subject } from '@server/courses/subject.entity';
 import { UserEntity } from '@server/users';
 
 @Injectable()
@@ -67,9 +69,13 @@ export class ServerExamsService {
             );
         }
 
-        // Verifica che il professore loggato sia il proprietario dell'esame
-        if (exam.professor.professor_id !== authenticatedProfessorId) {
-            throw new ForbiddenException('Non puoi aggiornare un esame di un altro professore');
+        // Verifica che il professore loggato insegni la materia dell'esame
+        const subject = exam.teaching?.subject as Subject | undefined;
+        const canEdit = subject?.professors?.some(
+            (p) => p.professor_id === authenticatedProfessorId
+        );
+        if (!canEdit) {
+            throw new ForbiddenException('Non puoi modificare un esame di un insegnamento che non tieni');
         }
 
         await this.examValidationService.validateForUpdate(
@@ -92,9 +98,13 @@ export class ServerExamsService {
         // Estrai l'ID del professore loggato
         const authenticatedProfessorId = await this.estraiUtenteAutenticato(authenticatedUser);
 
-        // Controlla che il professorId dell'esame corrisponda a quello del professore loggato
-        if (exam.professor.professor_id !== authenticatedProfessorId) {
-            throw new ForbiddenException('Non puoi cancellare un esame di un altro professore');
+        // Controlla che il professore loggato insegni la materia dell'esame
+        const subject = exam.teaching?.subject as Subject | undefined;
+        const canDelete = subject?.professors?.some(
+            (p) => p.professor_id === authenticatedProfessorId
+        );
+        if (!canDelete) {
+            throw new ForbiddenException('Non puoi eliminare un esame di un insegnamento che non tieni');
         }
 
         await this.examsRepository.delete(examId);
@@ -187,6 +197,14 @@ export class ServerExamsService {
 
         if (!session) {
             throw new NotFoundException(`Sessione con id ${sessionId} non trovata`);
+        }
+
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const startStr = new Date(session.dateStartInsertion).toISOString().slice(0, 10);
+
+        if (todayStr >= startStr) {
+            throw new ForbiddenException('Non puoi eliminare una sessione il cui periodo di inserimento è già iniziato');
         }
 
         await this.sessionsRepository.delete(sessionId);

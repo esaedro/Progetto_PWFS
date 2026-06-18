@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { fetchSessions } from '../sessions/sessions.api';
-import { fetchExams, fetchExamsByProfessor, deleteExam } from './exams.api';
+import { fetchExams, deleteExam } from './exams.api';
 import { UserListItem } from '@server/users';
 import { ExamItem, SessionItem } from '@server/exams';
 import { ConfirmModal } from '../shared/confirm-modal';
@@ -51,7 +51,6 @@ function formatDateTime(value: string | Date): string {
 export function ExamsPage() {
     const [sessions, setSessions] = useState<SessionItem[]>([]);
     const [allExams, setAllExams] = useState<ExamItem[]>([]);
-    const [professorExams, setProfessorExams] = useState<ExamItem[]>([]);
     const [currentUser, setCurrentUser] = useState<UserListItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -60,6 +59,7 @@ export function ExamsPage() {
     const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+    const [detailTarget, setDetailTarget] = useState<ExamItem | null>(null);
     const navigate = useNavigate();
 
     const handleDeleteExam = async () => {
@@ -67,12 +67,8 @@ export function ExamsPage() {
         try {
             await deleteExam(deleteTarget);
             setDeleteTarget(null);
-            const [examsData, professorData] = await Promise.all([
-                fetchExams(),
-                currentUser?.role === 'PROFESSOR' ? fetchExamsByProfessor(currentUser.id) : Promise.resolve([]),
-            ]);
+            const examsData = await fetchExams();
             setAllExams(Array.isArray(examsData) ? examsData : []);
-            setProfessorExams(Array.isArray(professorData) ? professorData : []);
         } catch (err) {
             setDeleteTarget(null);
             setError(err instanceof Error ? err.message : 'Errore durante l\'eliminazione');
@@ -105,18 +101,8 @@ export function ExamsPage() {
                     setShowOnlyMine(false);
                 }
 
-                if (userData?.id && userData?.role === 'PROFESSOR') {
-                    try {
-                        const professorData = await fetchExamsByProfessor(userData.id);
-                        if (active) {
-                            setProfessorExams(Array.isArray(professorData) ? professorData : []);
-                        }
-                    } catch {
-                        if (active) {
-                            setProfessorExams([]);
-                        }
-                    }
-                }
+                // La distinzione "miei appelli" è ora basata su subjectProfessors
+                // Non serve più fetchare gli esami per professore
             } catch (err) {
                 if (active) {
                     setError(err instanceof Error ? err.message : 'Errore nel caricamento degli appelli');
@@ -156,18 +142,30 @@ export function ExamsPage() {
         return map;
     }, [allExams]);
 
+    // Un esame è "mio" se il professore loggato insegna la materia
+    const myExamIds = useMemo(() => {
+        if (!currentUser) return new Set<number>();
+        const ids = new Set<number>();
+        for (const exam of allExams) {
+            const profs = (exam.teaching?.subject as any)?.professors ?? [];
+            const teaches = profs.some(
+                (p: any) => Number(p.professor_id) === Number(currentUser.id)
+            );
+            if (teaches) ids.add(exam.id);
+        }
+        return ids;
+    }, [allExams, currentUser]);
+
     const mineCountByDay = useMemo(() => {
         const map = new Map<string, number>();
-        professorExams.forEach((exam) => {
-            const key = toDateKey(exam.dateTimeStart);
-            map.set(key, (map.get(key) ?? 0) + 1);
+        allExams.forEach((exam) => {
+            if (myExamIds.has(exam.id)) {
+                const key = toDateKey(exam.dateTimeStart);
+                map.set(key, (map.get(key) ?? 0) + 1);
+            }
         });
         return map;
-    }, [professorExams]);
-
-    const myExamIds = useMemo(() => {
-        return new Set(professorExams.map((exam) => exam.id));
-    }, [professorExams]);
+    }, [allExams, myExamIds]);
 
     const allHolidays = useMemo(() => {
         const holidays = new Set<string>();
@@ -176,12 +174,14 @@ export function ExamsPage() {
     }, [sessions]);
 
     const filteredExams = useMemo(() => {
-        const base = showOnlyMine ? professorExams : allExams;
+        const base = showOnlyMine
+            ? allExams.filter((exam) => myExamIds.has(exam.id))
+            : allExams;
         return [...base].sort(
             (a, b) =>
                 new Date(a.dateTimeStart).getTime() - new Date(b.dateTimeStart).getTime()
         );
-    }, [allExams, professorExams, showOnlyMine]);
+    }, [allExams, myExamIds, showOnlyMine]);
 
     const monthLabel = currentMonth.toLocaleDateString('it-IT', {
         month: 'long',
@@ -473,41 +473,34 @@ export function ExamsPage() {
                                             <span className="font-medium">Fine:</span>{' '}
                                             {formatDateTime(exam.dateTimeEnd)}
                                         </div>
-                                        {exam.type && (
-                                            <div>
-                                                <span className="font-medium">Tipo:</span> {exam.type}
-                                            </div>
-                                        )}
-                                        {currentUser?.role !== 'PROFESSOR' && exam.professor && (
-                                            <div>
-                                                <span className="font-medium">Professore:</span>{' '}
-                                                {exam.professor.user.name}
-                                            </div>
-                                        )}
-                                        {exam.room && (
-                                            <div>
-                                                <span className="font-medium">Aula:</span> {exam.room}
-                                            </div>
+                                    </div>
+                                    <div className="mt-3 flex items-center justify-end gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDetailTarget(exam)}
+                                            className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                                        >
+                                            Dettagli
+                                        </button>
+                                        {myExamIds.has(exam.id) && (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/exams/${exam.id}/edit`)}
+                                                    className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                                                >
+                                                    Modifica
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDeleteTarget(exam.id)}
+                                                    className="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                                                >
+                                                    Elimina
+                                                </button>
+                                            </>
                                         )}
                                     </div>
-                                    {myExamIds.has(exam.id) && (
-                                        <div className="mt-3 flex items-center justify-end gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => navigate(`/exams/${exam.id}/edit`)}
-                                                className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                                            >
-                                                Modifica
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setDeleteTarget(exam.id)}
-                                                className="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-                                            >
-                                                Elimina
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                     </div>
@@ -523,6 +516,91 @@ export function ExamsPage() {
                 onConfirm={handleDeleteExam}
                 onCancel={() => setDeleteTarget(null)}
             />
+
+            {/* Modale dettagli esame */}
+            {detailTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div
+                        className="absolute inset-0 bg-black/40"
+                        onClick={() => setDetailTarget(null)}
+                    />
+                    <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+                        <div className="flex items-center justify-between gap-4">
+                            <h3 className="text-base font-semibold text-slate-900">
+                                Dettagli appello
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setDetailTarget(null)}
+                                className="text-lg text-slate-400 hover:text-slate-600"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="mt-4 space-y-3 text-sm text-slate-700">
+                            <div>
+                                <span className="font-semibold text-slate-900">Insegnamento:</span>{' '}
+                                {detailTarget.teaching?.subject?.name ?? '—'}
+                            </div>
+                            <div>
+                                <span className="font-semibold text-slate-900">Corso di laurea:</span>{' '}
+                                {detailTarget.teaching?.degree?.name ?? '—'}
+                            </div>
+                            <div>
+                                <span className="font-semibold text-slate-900">Anno:</span>{' '}
+                                {detailTarget.teaching?.year ?? '—'}
+                            </div>
+                            <div>
+                                <span className="font-semibold text-slate-900">Inizio:</span>{' '}
+                                {formatDateTime(detailTarget.dateTimeStart)}
+                            </div>
+                            <div>
+                                <span className="font-semibold text-slate-900">Fine:</span>{' '}
+                                {formatDateTime(detailTarget.dateTimeEnd)}
+                            </div>
+                            {detailTarget.type && (
+                                <div>
+                                    <span className="font-semibold text-slate-900">Tipo:</span>{' '}
+                                    {detailTarget.type}
+                                </div>
+                            )}
+                            <div>
+                                <span className="font-semibold text-slate-900">Professori:</span>{' '}
+                                {(detailTarget.teaching?.subject as any)?.professors?.length > 0
+                                    ? (detailTarget.teaching?.subject as any).professors.map((p: any) => p.user?.name).join(', ')
+                                    : detailTarget.professor?.user.name ?? '—'}
+                            </div>
+                            {detailTarget.room && (
+                                <div>
+                                    <span className="font-semibold text-slate-900">Aula:</span>{' '}
+                                    {detailTarget.room}
+                                </div>
+                            )}
+                            <div>
+                                <span className="font-semibold text-slate-900">Parziale:</span>{' '}
+                                {detailTarget.partial ? 'Sì' : 'No'}
+                            </div>
+                            {detailTarget.description && (
+                                <div>
+                                    <span className="font-semibold text-slate-900">Descrizione:</span>{' '}
+                                    {detailTarget.description}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setDetailTarget(null)}
+                                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                            >
+                                Chiudi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

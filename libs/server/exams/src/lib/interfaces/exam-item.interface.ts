@@ -25,4 +25,10 @@ export interface ExamItem {
             email?: string;
         };
     };
+    subjectProfessors?: {
+        professor_id: number;
+        user?: {
+            name: string;
+        };
+    }[];
 }
