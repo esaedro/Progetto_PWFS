@@ -293,7 +293,11 @@ export class ExamValidationService {
 
             while (current <= endDay) {
                 const dayOfWeek = current.getDay(); // 0 = Domenica, 6 = Sabato
-                const dateStr = current.toISOString().split('T')[0];
+                // Usa formato locale YYYY-MM-DD, non UTC, per evitare sfasamenti di fuso orario
+                const year = current.getFullYear();
+                const month = String(current.getMonth() + 1).padStart(2, '0');
+                const day = String(current.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
 
                 if (dayOfWeek === 0) {
                     errors.push(`La data ${dateStr} è di domenica, non è possibile fissare appelli`);
