@@ -85,7 +85,7 @@ export function CreateSubjectPage() {
                 {noProfessors && (
                     <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                         <p className="font-medium">
-                            Non è possibile creare una materia perché non è stato inserito nessun professore.
+                            Non è possibile creare una nuova materia finché non si inserisce un professore nel sistema.
                         </p>
                         <p className="mt-1">
                             <button

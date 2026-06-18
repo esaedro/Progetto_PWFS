@@ -57,7 +57,7 @@ export function ProfessorsPage() {
                   <button
                     type="button"
                     onClick={() => navigate('/professors/new')}
-                    className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition"
+                    className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 transition"
                   >
                     Nuovo professore
                   </button>

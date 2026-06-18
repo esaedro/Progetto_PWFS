@@ -53,10 +53,10 @@ export function TeachingsPage() {
             <main className="min-h-screen bg-slate-50 p-6">
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-                        {error}
+                        {error} <br/> <br/>
+                        Gli insegnamenti vengono creati dalla pagina di dettaglio del corso di laurea quando si salva un piano di studi.
                     </p>
                 </div>
-                Gli insegnamenti vengono creati dalla pagina di dettaglio del corso di laurea quando si salva un piano di studi.
             </main>
         );
     }
