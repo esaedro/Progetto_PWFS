@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { login } from './auth.api';
 import book_styles from '../css/books.module.css';
 
+enum UserRole {
+    PROFESSOR = 'PROFESSOR',
+    SECRETARY = 'SECRETARY'
+}
+
+
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +23,12 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const user = await login(email, password);
+      if (user.role === UserRole.PROFESSOR) {
+        navigate('exams')
+      } else if (user.role === UserRole.SECRETARY) {
+        navigate('sessions')
+      }
       navigate('/home');
     } catch (err: any) {
       setError(err.message);
