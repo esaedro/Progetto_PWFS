@@ -22,13 +22,12 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      const user = await login(email, password);
-      if (user.role === UserRole.PROFESSOR) {
-        navigate('exams')
-      } else if (user.role === UserRole.SECRETARY) {
-        navigate('sessions')
+      const response = await login(email, password);
+      if (response.user.role === UserRole.PROFESSOR) {
+        navigate('/exams')
+      } else if (response.user.role === UserRole.SECRETARY) {
+        navigate('/sessions')
       }
-      navigate('/home');
     } catch (err: any) {
       setError(err.message);
     } finally {

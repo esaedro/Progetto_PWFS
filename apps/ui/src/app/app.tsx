@@ -3,7 +3,6 @@ import { LoginPage } from '../features/auth/login.page';
 import { LogoutPage } from '../features/auth/logout.page';
 import { ProtectedRoute } from '../features/auth/protected-route';
 import { AppLayout } from '../features/layouts/app-layout';
-import { HomePage } from '../features/home/home.page';
 import { UpdatePasswordPage } from '../features/auth/update-password';
 import { TeachingsPage } from '../features/teachings/teachings.page';
 import { SubjectsPage } from '../features/subjects/subjects.page';
@@ -40,7 +39,6 @@ export function App() {
                     </ProtectedRoute>
                 }>
                 
-                <Route path='/home' element={<HomePage />} />
                 <Route path='/changepassword' element={<UpdatePasswordPage />} />
 
                 <Route path='/degrees' element={<DegreesPage />} />
