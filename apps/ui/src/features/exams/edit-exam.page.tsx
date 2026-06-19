@@ -356,7 +356,7 @@ export function EditExamPage() {
                     <button
                         type="button"
                         onClick={() => navigate('/exams')}
-                        className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+                        className="rounded-lg border border-slate-500 px-4 py-2 text-sm text-slate-700 hover:bg-slate-200 transition"
                     >
                         Annulla
                     </button>
@@ -663,13 +663,13 @@ export function EditExamPage() {
                     )}
 
                     <div className="flex items-center justify-end gap-3">
-                        <button
+                        {/* <button
                             type="button"
                             onClick={() => navigate('/exams')}
                             className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
                         >
                             Annulla
-                        </button>
+                        </button> */}
                         <button
                             type="submit"
                             disabled={loading || isSessionMissing || conflicts.length > 0 || isOutsideInsertionWindow || isUnavailableDate || isOutsideExaminationWindow}

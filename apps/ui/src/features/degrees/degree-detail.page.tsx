@@ -25,8 +25,8 @@ export function DegreeDetailPage() {
     useEffect(() => {
         if (!id) return;
 
-        fetchDegreeById(Number(id))
-            .then(async (degreeData) => {
+        Promise.all([
+            fetchDegreeById(Number(id)).then(async (degreeData) => {
                 setDegree(degreeData);
 
                 const years = Array.from({ length: degreeData.duration }, (_, i) => i + 1);
@@ -37,18 +37,15 @@ export function DegreeDetailPage() {
                             const teachings = await fetchTeachingsByDegreeAndYear(Number(id), year);
                             return { year, teachings };
                         } catch {
-                            // Nessun insegnamento per questo anno: restituiamo lista vuota
                             return { year, teachings: [] };
                         }
                     })
                 );
 
                 setYearPlans(results);
-            })
-
-            fetchCurrentUser()
-            .then((userData) => setUser(userData))
-
+            }),
+            fetchCurrentUser().then((userData) => setUser(userData)),
+        ])
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
     }, [id]);
@@ -139,11 +136,6 @@ export function DegreeDetailPage() {
                                             <span className="text-sm font-medium text-slate-900">
                                                 {teaching.subject.name}
                                             </span>
-{/*                                             {teaching.professors?.length > 0 && (
-                                                <span className="text-xs text-slate-500">
-                                                    {teaching.professors.map((p) => p.name).join(', ')}
-                                                </span>
-                                            )} */}
                                         </div>
                                     ))}
                                 </div>

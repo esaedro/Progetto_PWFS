@@ -148,7 +148,7 @@ export function DegreesPage() {
                             className="rounded-lg border border-slate-600 px-4 py-1.5 text-base font-medium text-slate-900 hover:bg-slate-300 transition"
                             onClick={() => navigate(`/degrees/${deg.id}`)}
                           >
-                            Dettagli
+                            Piano di studi
                           </button>
 
                           {canManageDegrees && (

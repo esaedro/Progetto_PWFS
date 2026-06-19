@@ -205,7 +205,7 @@ export function EditStudyPlanPage() {
                     <button
                         type="button"
                         onClick={() => navigate(`/degrees/${id}`)}
-                        className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+                        className="rounded-lg border border-slate-500 px-4 py-2 text-sm text-slate-700 hover:bg-slate-200 transition"
                     >
                         Annulla
                     </button>
