@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { updatePasswordFetch } from './auth.api';
+import { UserRole } from './auth.api';
 
 export function UpdatePasswordPage() {
   const [password, setPassword] = useState('');
@@ -22,8 +23,12 @@ export function UpdatePasswordPage() {
     setLoading(true);
 
     try {
-      await updatePasswordFetch(password);
-      navigate('/home');
+      const response = await updatePasswordFetch(password);
+      if (response.role === UserRole.PROFESSOR) {
+        navigate('/exams')
+      } else if (response.role === UserRole.SECRETARY) {
+        navigate('/sessions')
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

@@ -3,6 +3,10 @@ import { UpdateUserDto, UserListItem } from "@server/users";
 import { ProfessorListItem } from "@server/people";
 import { CreatePeopleDto } from "@server/people";
 
+export enum UserRole {
+    PROFESSOR = 'PROFESSOR',
+    SECRETARY = 'SECRETARY'
+}
 const API_URL = 'http://localhost:3333/api/';
 
 function getAuthHeaders() {

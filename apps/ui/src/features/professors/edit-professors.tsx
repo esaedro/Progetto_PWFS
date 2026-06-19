@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FaPencil } from "react-icons/fa6";
 import { fetchProfessorById, updateProfessor} from './professors.api';
-
-enum UserRole {
-  PROFESSOR = 'PROFESSOR',
-  SECRETARY = 'SECRETARY'
-}
-
+import { UserRole } from './professors.api';
 
 export function EditProfessorPage() {
   const { id } = useParams();

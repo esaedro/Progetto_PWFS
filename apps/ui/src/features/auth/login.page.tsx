@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from './auth.api';
-
-enum UserRole {
-    PROFESSOR = 'PROFESSOR',
-    SECRETARY = 'SECRETARY'
-}
+import { UserRole } from './auth.api';
 
 
 export function LoginPage() {

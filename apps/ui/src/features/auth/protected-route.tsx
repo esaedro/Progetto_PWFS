@@ -1,11 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-
-enum UserRole {
-    PROFESSOR = 'PROFESSOR',
-    SECRETARY = 'SECRETARY'
-}
+import { UserRole } from './auth.api';
 
 interface JwtPayload {
   id: number;

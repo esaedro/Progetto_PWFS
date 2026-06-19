@@ -1,5 +1,10 @@
 const API_URL = 'http://localhost:3333/api';
 
+export enum UserRole {
+    PROFESSOR = 'PROFESSOR',
+    SECRETARY = 'SECRETARY'
+}
+
 export async function login(email: string, password: string) {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
@@ -50,4 +55,7 @@ export async function updatePasswordFetch(newPassword: string) {
     if (!response.ok) {
       throw new Error(`Errore HTTP ${response.status}: Impossibile aggiornare la password`);
     }
+
+    const data = await response.json();
+    return data;
 }

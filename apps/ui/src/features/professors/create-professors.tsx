@@ -2,11 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createProfessor } from "./professors.api"; 
 import { FaCopy, FaCheck } from "react-icons/fa6"; // Imported copy icons
-
-enum UserRole {
-    PROFESSOR = 'PROFESSOR',
-    SECRETARY = 'SECRETARY'
-}
+import { UserRole } from "./professors.api";
 
 function generateRandomPassword(): string {
   const length = 12;
