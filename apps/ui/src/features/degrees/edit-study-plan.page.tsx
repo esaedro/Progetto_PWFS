@@ -328,6 +328,7 @@ export function EditStudyPlanPage() {
                 )}
 
                 {/* Footer azioni */}
+                {!error && (
                 <div className="mt-6 flex items-center justify-end gap-3">
                     {/* <button
                         type="button"
@@ -345,6 +346,7 @@ export function EditStudyPlanPage() {
                         {saving ? 'Salvataggio...' : 'Salva piano di studi'}
                     </button>
                 </div>
+                )}
             </div>
         </main>
     );

@@ -22,11 +22,11 @@ export class Teaching {
     // Validazione max dinamica in service in base a degree.durationYears
 
     //Many to one verso Subject e Degree
-    @ManyToOne(()=>Subject,(subject)=>subject.teachings,{nullable:false, eager:true,onDelete:'RESTRICT'}) //check proprietà
+    @ManyToOne(()=>Subject,(subject)=>subject.teachings,{nullable:false, eager:true,onDelete:'CASCADE'})
     @JoinColumn() // optional on OneToMany relations
     subject: Relation<Subject>;
 
-    @ManyToOne(()=>Degree,(degree)=>degree.teachings,{nullable:false, eager:true,onDelete:'RESTRICT'}) //check proprietà
+    @ManyToOne(()=>Degree,(degree)=>degree.teachings,{nullable:false, eager:true,onDelete:'CASCADE'})
     @JoinColumn()
     degree: Relation<Degree>;
 

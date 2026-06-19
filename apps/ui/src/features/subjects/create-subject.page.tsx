@@ -85,7 +85,7 @@ export function CreateSubjectPage() {
                 {noProfessors && (
                     <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                         <p className="font-medium">
-                            Non è possibile creare una materia perché non è stato inserito nessun professore.
+                            Non è possibile creare una nuova materia finché non si inserisce un professore nel sistema.
                         </p>
                         <p className="mt-1">
                             <button
@@ -199,7 +199,7 @@ export function CreateSubjectPage() {
                         <button
                             type="submit"
                             disabled={loading || noProfessors}
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {loading ? 'Salvataggio...' : 'Crea materia'}
                         </button>

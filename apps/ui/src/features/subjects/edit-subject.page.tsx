@@ -11,6 +11,7 @@ export function EditSubjectPage() {
     const [professors, setProfessors] = useState<ProfessorListItem[]>([]);
     const [professorSearch, setProfessorSearch] = useState('');
     const [selectedProfessors, setSelectedProfessors] = useState<ProfessorListItem[]>([]);
+    const [noProfessors, setNoProfessors] = useState(false);
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -25,7 +26,13 @@ export function EditSubjectPage() {
                 setSelectedProfessors(subject.professors);
                 setProfessors(allProfessors);
             })
-            .catch((err) => setError(err.message))
+            .catch((err) => {
+                if (err.message === 'Non sono stati trovati professori') {
+                    setNoProfessors(true);
+                } else {
+                    setError(err.message);
+                }
+            })
             .finally(() => setLoading(false));
     }, [id]);
 
@@ -95,6 +102,25 @@ export function EditSubjectPage() {
                         Annulla
                     </button>
                 </div>
+
+                {/* Banner nessun professore disponibile */}
+                {noProfessors && (
+                    <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        <p className="font-medium">
+                            Non è possibile modificare questa materia finché non si inserisce un professore nel sistema.
+                        </p>
+                        <p className="mt-1">
+                            <button
+                                type="button"
+                                onClick={() => navigate('/professors/new')}
+                                className="font-semibold underline underline-offset-2 hover:text-amber-900"
+                            >
+                                Clicca qui per aggiungere un professore
+                            </button>
+                        </p>
+                    </div>
+                )}
+
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Nome materia */}
@@ -195,8 +221,8 @@ export function EditSubjectPage() {
                         </button> */}
                         <button
                             type="submit"
-                            disabled={saving}
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            disabled={saving || noProfessors}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
                         >
                             {saving ? 'Salvataggio...' : 'Salva modifiche'}
                         </button>

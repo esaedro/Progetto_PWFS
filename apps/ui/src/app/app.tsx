@@ -12,8 +12,8 @@ import { CreateDegreePage } from '../features/degrees/create-degree.page';
 import { EditDegreePage } from '../features/degrees/edit-degree.page';
 import { CreateSubjectPage } from '../features/subjects/create-subject.page';
 import { EditSubjectPage } from '../features/subjects/edit-subject.page';
-import { CreateTeachingPage } from '../features/teachings/create-teaching.page';
-import { EditTeachingPage } from '../features/teachings/edit-teaching.page';
+/* import { CreateTeachingPage } from '../features/teachings/create-teaching.page';
+import { EditTeachingPage } from '../features/teachings/edit-teaching.page'; */
 import { SessionsPage } from '../features/sessions/sessions.page';
 import { CreateSessionPage } from '../features/sessions/create-session.page';
 import { EditSessionPage } from '../features/sessions/edit-session.page';
