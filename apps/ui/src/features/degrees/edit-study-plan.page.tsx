@@ -34,6 +34,7 @@ export function EditStudyPlanPage() {
     // Stato per la tendina di ricerca aperta per ciascun anno
     const [searchText, setSearchText] = useState<Record<number, string>>({});
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+    const [isDirty, setIsDirty] = useState(false);
     const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
     useEffect(() => {
@@ -98,14 +99,12 @@ export function EditStudyPlanPage() {
     }
 
     function addSubjectToYear(year: number, subject: SubjectItem) {
-        // Cerca se questa materia era stata appena rimossa (ha già un teachingId)
         const previousRow = removedRows.find((r) => r.subjectId === subject.id);
 
         const newRow: PlanRow = previousRow
-            ? { ...previousRow, originalYear: previousRow.originalYear } // riusa teachingId e originalYear
+            ? { ...previousRow, originalYear: previousRow.originalYear }
             : { subjectId: subject.id, subjectName: subject.name, teachingId: null, originalYear: null };
 
-        // Se viene reinserita, non va più eliminata
         if (previousRow) {
             setRemovedRows((rows) => rows.filter((r) => r.subjectId !== subject.id));
         }
@@ -117,8 +116,8 @@ export function EditStudyPlanPage() {
         );
         setSearchText((prev) => ({ ...prev, [year]: '' }));
         setOpenDropdown(null);
+        setIsDirty(true);
     }
-
 
     function removeRow(year: number, subjectId: number) {
         setYearDrafts((prev) =>
@@ -131,6 +130,7 @@ export function EditStudyPlanPage() {
                 return { ...yd, rows: yd.rows.filter((r) => r.subjectId !== subjectId) };
             })
         );
+        setIsDirty(true);
     }
     
     async function handleSave() {
@@ -340,8 +340,8 @@ export function EditStudyPlanPage() {
                     <button
                         type="button"
                         onClick={handleSave}
-                        disabled={saving}
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                        disabled={saving || !isDirty}
+                        className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         {saving ? 'Salvataggio...' : 'Salva piano di studi'}
                     </button>

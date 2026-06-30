@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+/* import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import book_styles from '../css/books.module.css';
@@ -119,3 +119,4 @@ export function CreateTeachingPage() {
     </main>
   );
 }
+ */

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+/* import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import book_styles from '../css/books.module.css';
 import { fetchTeachingById, updateTeaching } from './teachings.api';
@@ -20,6 +20,7 @@ export function EditTeachingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (!id) return;
@@ -136,4 +137,4 @@ export function EditTeachingPage() {
       </section>
     </main>
   );
-}
+} */

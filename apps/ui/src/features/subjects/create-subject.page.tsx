@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createSubject, fetchProfessors } from './subjects.api';
 import { ProfessorListItem } from '@server/people';
@@ -12,6 +12,9 @@ export function CreateSubjectPage() {
     const [professors, setProfessors] = useState<ProfessorListItem[]>([]);
     const [professorSearch, setProfessorSearch] = useState('');
     const [selectedProfessors, setSelectedProfessors] = useState<ProfessorListItem[]>([]);
+
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement | null>(null);
 
     const navigate = useNavigate();
 
@@ -27,6 +30,17 @@ export function CreateSubjectPage() {
                     setError(err.message);
                 }
             });
+    }, []);
+
+    // Chiude il dropdown cliccando fuori
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const filteredProfessors = professors.filter((prof) => {
@@ -127,31 +141,56 @@ export function CreateSubjectPage() {
                         <div className="mt-4 space-y-3">
                             <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
                                 Cerca professore
+                            </label>
+                            <div
+                                className="relative"
+                                ref={dropdownRef}
+                            >
                                 <input
-                                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
+                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
                                     placeholder="Cerca per nome o email"
                                     value={professorSearch}
-                                    onChange={(e) => setProfessorSearch(e.target.value)}
+                                    onFocus={() => setDropdownOpen(true)}
+                                    onChange={(e) => {
+                                        setProfessorSearch(e.target.value);
+                                        setDropdownOpen(true);
+                                    }}
                                 />
-                            </label>
 
-                            {filteredProfessors.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {filteredProfessors.slice(0, 8).map((prof) => (
-                                        <button
-                                            key={prof.id}
-                                            type="button"
-                                            className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                                            onClick={() => {
-                                                setSelectedProfessors((current) => [...current, prof]);
-                                                setProfessorSearch('');
-                                            }}
-                                        >
-                                            {prof.name} {prof.email ? `(${prof.email})` : ''}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                                {dropdownOpen && (
+                                    <div className="absolute z-10 mt-1 w-full rounded-xl border border-slate-200 bg-white shadow-md">
+                                        {filteredProfessors.length === 0 ? (
+                                            <p className="px-3 py-2 text-sm text-slate-500">
+                                                Nessun professore disponibile
+                                            </p>
+                                        ) : (
+                                            <ul className="max-h-48 overflow-y-auto py-1">
+                                                {filteredProfessors.map((prof) => (
+                                                    <li key={prof.id}>
+                                                        <button
+                                                            type="button"
+                                                            className="w-full px-3 py-2 text-left text-sm text-slate-800 hover:bg-slate-50"
+                                                            onMouseDown={(e) => e.preventDefault()}
+                                                            onClick={() => {
+                                                                setSelectedProfessors((current) => [...current, prof]);
+                                                                setProfessorSearch('');
+                                                                setDropdownOpen(false);
+                                                            }}
+                                                        >
+                                                            <span className="font-medium">{prof.name}</span>
+                                                            {prof.email && (
+                                                                <span className="ml-2 text-xs text-slate-400">
+                                                                    {prof.email}
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {selectedProfessors.length > 0 && (
@@ -168,11 +207,11 @@ export function CreateSubjectPage() {
                                         <button
                                             type="button"
                                             className="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-                                            onClick={() =>
+                                            onClick={() => {
                                                 setSelectedProfessors((current) =>
                                                     current.filter((item) => item.id !== p.id)
-                                                )
-                                            }
+                                                );
+                                            }}
                                         >
                                             Rimuovi
                                         </button>

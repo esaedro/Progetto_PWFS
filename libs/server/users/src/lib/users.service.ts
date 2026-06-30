@@ -15,7 +15,7 @@ export class ServerUsersService {
     async findByEmail(email: string): Promise<UserEntity> {
         const user = await this.usersRepository.findByEmail(email);
 
-        if(!user) throw new NotFoundException(`User with email ${email} not found`);
+        if(!user) throw new NotFoundException(`Utente con email ${email} non trovato`);
 
         return user;
     }
@@ -23,7 +23,7 @@ export class ServerUsersService {
     async getOneUser(id: number): Promise<UserEntity> {
         const user = await this.usersRepository.findById(id);
 
-        if(!user) throw new NotFoundException(`User with id ${id} not found`);
+        if(!user) throw new NotFoundException(`Utente con id ${id} non trovato`);
 
         return user;
     }
@@ -44,7 +44,7 @@ export class ServerUsersService {
             : null;
 
         if (existing) {
-            throw new ConflictException('Email already in use');
+            throw new ConflictException('Email già in uso, modificare l\'indirizzo email');
         }
 
         const passwordHash = await bcrypt.hash(dto.password,10);
@@ -55,13 +55,13 @@ export class ServerUsersService {
         if (dto.email) {
             const existing = await this.usersRepository.findByEmail(dto.email);
             if (existing && existing.id !== id) {
-                throw new ConflictException('Email already in use');
+                throw new ConflictException('Email già in uso, modificare l\'indirizzo email');
             }
         }
 
         const updated = await this.usersRepository.updateOne(id, dto);
         if (!updated) {
-            throw new NotFoundException(`User with id ${id} not found`);
+            throw new NotFoundException(`Utente con id ${id} non trovato`);
         }
 
         return updated;
@@ -70,7 +70,7 @@ export class ServerUsersService {
     async removeUser(id: number): Promise<void> {
         const deleted = await this.usersRepository.deleteOne(id);
         if (!deleted) {
-            throw new NotFoundException(`User with id ${id} not found`);
+            throw new NotFoundException(`Utente con id ${id} non trovato`);
         }
     }
 
@@ -80,7 +80,7 @@ export class ServerUsersService {
         const updated = await this.usersRepository.updateOne(user.id, { password: passwordHash });
         
         if (!updated) {
-            throw new NotFoundException(`User with id ${user.id} not found`);
+            throw new NotFoundException(`Utente con id ${user.id} non trovato`);
         }
 
         return updated;

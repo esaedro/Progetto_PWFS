@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { FaPencil } from "react-icons/fa6";
 import { fetchProfessorById, updateProfessor} from './professors.api';
 import { UserRole } from './professors.api';
 
@@ -16,6 +15,7 @@ export function EditProfessorPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
 
     useEffect(() => {
     if (!id) return;
@@ -111,7 +111,7 @@ export function EditProfessorPage() {
               type="text"
               className="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:bg-white focus:outline-none transition"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); setIsDirty(true); }}
               required
             />
           </div>
@@ -123,7 +123,7 @@ export function EditProfessorPage() {
               type="email"
               className="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:bg-white focus:outline-none transition"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setIsDirty(true); }}
               required
             />
           </div>
@@ -134,7 +134,7 @@ export function EditProfessorPage() {
             <select
               className="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none transition"
               value={role}
-              onChange={(e) => setRole(e.target.value as UserRole)}
+              onChange={(e) => { setRole(e.target.value as UserRole); setIsDirty(true); }}
               required
             >
               <option value={UserRole.PROFESSOR}>PROFESSOR</option>
@@ -153,11 +153,11 @@ export function EditProfessorPage() {
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="submit"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:bg-slate-400 transition"
-              disabled={saving}
-            >
+              className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40 transition"
+              disabled={saving || !isDirty}
+          >
               {saving ? 'Salvataggio...' : 'Salva modifiche'}
-            </button>
+          </button>
           </div>
 
         </form>

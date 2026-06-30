@@ -10,12 +10,13 @@ export function TeachingsPage() {
     const [user, setUser] = useState<UserListItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
 
     const navigate = useNavigate();
 
-    const canManageTeachings = user?.role === 'SECRETARY';
+    //const canManageTeachings = user?.role === 'SECRETARY';
 
-    async function handleDelete(id: number) {
+/*     async function handleDelete(id: number) {
         const confirmed = window.confirm('Vuoi davvero cancellare questo insegnamento?');
 
         if (!confirmed) return;
@@ -26,7 +27,7 @@ export function TeachingsPage() {
         } catch (err: any) {
             setError(err.message);
         }
-    }
+    } */
 
     useEffect(() => {
         Promise.all([fetchTeachings(), fetchCurrentUser()])
@@ -87,67 +88,98 @@ export function TeachingsPage() {
                 {teachings.length === 0 ? (
                     <p className="text-sm text-slate-500">Nessun insegnamento disponibile.</p>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-slate-200">
-                                    <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
-                                        Materia
-                                    </th>
-                                    <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
-                                        Corso di laurea
-                                    </th>
-                                    <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
-                                        Anno
-                                    </th>
-                                    {/* {canManageTeachings && (
-                                        <th className="py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                            Azioni
+                    <div className="space-y-4">
+                        <input
+                            type="text"
+                            placeholder="Cerca per materia o corso di laurea..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
+                        />
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-slate-200">
+                                        <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Materia
                                         </th>
-                                    )} */}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {teachings.map((t) => (
-                                    <tr key={t.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                        <td className="py-3 pr-4 text-base font-medium text-slate-900">
-                                            {t.subject.name}
-                                        </td>
-                                        <td className="py-3 pr-4 text-base text-slate-600">
-                                            <button
-                                                type="button"
-                                                onClick={() => navigate(`/degrees/${t.degree.id}`)}
-                                                className="text-slate-600 hover:text-slate-900 hover:underline underline-offset-2"
-                                            >
-                                                {t.degree.name}
-                                            </button>
-                                        </td>
-                                        <td className="py-3 pr-4 text-base text-slate-600">{t.year}</td>
-{/* 
-                                        {canManageTeachings && (
-                                            <td className="py-3">
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        className="rounded-lg border border-slate-200 px-3 py-1 text-sm font-medium text-slate-200 hover:bg-slate-100"
-                                                        onClick={() => navigate(`/teachings/${t.id}/edit`)}
-                                                    >
-                                                        Modifica
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="rounded-lg border border-red-200 px-3 py-1 text-sm font-medium text-red-200 hover:bg-red-50"
-                                                        onClick={() => handleDelete(t.id)}
-                                                    >
-                                                        Elimina
-                                                    </button>
-                                                </div>
-                                            </td>
+                                        <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Corso di laurea
+                                        </th>
+                                        <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Anno
+                                        </th>
+                                        {/* {canManageTeachings && (
+                                            <th className="py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                Azioni
+                                            </th>
                                         )} */}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {teachings
+                                        .filter((t) => {
+                                            const q = search.toLowerCase();
+                                            return (
+                                                t.subject.name.toLowerCase().includes(q) ||
+                                                t.degree.name.toLowerCase().includes(q)
+                                            );
+                                        })
+                                        .map((t) => (
+                                            <tr key={t.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                                                <td className="py-3 pr-4 text-base font-medium text-slate-900">
+                                                    {t.subject.name}
+                                                </td>
+                                                <td className="py-3 pr-4 text-base text-slate-600">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => navigate(`/degrees/${t.degree.id}`)}
+                                                        className="text-slate-600 hover:text-slate-900 hover:underline underline-offset-2"
+                                                    >
+                                                        {t.degree.name}
+                                                    </button>
+                                                </td>
+                                                <td className="py-3 pr-4 text-base text-slate-600">{t.year}</td>
+                                                {/* {canManageTeachings && (
+                                                    <td className="py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                className="rounded-lg border border-slate-200 px-3 py-1 text-sm font-medium text-slate-200 hover:bg-slate-100"
+                                                                onClick={() => navigate(`/teachings/${t.id}/edit`)}
+                                                            >
+                                                                Modifica
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="rounded-lg border border-red-200 px-3 py-1 text-sm font-medium text-red-200 hover:bg-red-50"
+                                                                onClick={() => handleDelete(t.id)}
+                                                            >
+                                                                Elimina
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                )} */}
+                                            </tr>
+                                        ))}
+
+                                    {teachings.filter((t) => {
+                                        const q = search.toLowerCase();
+                                        return (
+                                            t.subject.name.toLowerCase().includes(q) ||
+                                            t.degree.name.toLowerCase().includes(q)
+                                        );
+                                    }).length === 0 && (
+                                        <tr>
+                                            <td colSpan={3} className="py-6 text-center text-sm text-slate-500">
+                                                Nessun insegnamento corrisponde alla ricerca.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </section>
