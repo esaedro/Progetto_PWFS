@@ -79,7 +79,6 @@ export class ExamsRepository {
         const exam = this.repository.create({
             dateTimeStart: dto.dateTimeStart,
             dateTimeEnd: dto.dateTimeEnd,
-            room: dto.room,
             description: dto.description,
             partial: dto.partial,
             type: dto.type,
@@ -99,7 +98,6 @@ export class ExamsRepository {
 
         if (dto.dateTimeStart !== undefined) exam.dateTimeStart = dto.dateTimeStart;
         if (dto.dateTimeEnd !== undefined) exam.dateTimeEnd = dto.dateTimeEnd;
-        if (dto.room !== undefined) exam.room = dto.room;
         if (dto.description !== undefined) exam.description = dto.description;
         if (dto.partial !== undefined) exam.partial = dto.partial;
         if (dto.type !== undefined) exam.type = dto.type;
@@ -114,25 +112,4 @@ export class ExamsRepository {
         const result = await this.repository.delete(id);
         return (result.affected ?? 0) > 0;
     }
-
-    //
-    // Probabilmente non serve perché non dobbiamo gestire le aule
-    //
-    // async existsConflictInSameRoom(sessionId: number, dateTimeStart: Date, dateTimeEnd: Date, room: string): Promise<boolean> {
-    //     const exams = await this.repository.find({
-    //         where: {
-    //             session: { id: sessionId },
-    //             room
-    //         }
-    //     });
-
-    //     const newStart = dateTimeStart.getTime();
-    //     const newEnd = dateTimeEnd.getTime();
-
-    //     return exams.some(exam => {
-    //         const examStart = exam.dateTimeStart.getTime();
-    //         const examEnd = exam.dateTimeEnd.getTime();
-    //         return examStart < newEnd && examEnd > newStart;
-    //     });
-    // }
 }

@@ -39,7 +39,6 @@ describe('ServerExamsService', () => {
         id: 1,
         dateTimeStart: new Date('2026-07-01T09:00:00Z'),
         dateTimeEnd: new Date('2026-07-01T12:00:00Z'),
-        room: 'A1',
         description: 'Esame di Algoritmi',
         partial: false,
         type: ExamType.ORALE,
@@ -51,7 +50,6 @@ describe('ServerExamsService', () => {
     const mockCreateExamDto: CreateExamDto = {
         dateTimeStart: new Date('2026-07-01T09:00:00Z'),
         dateTimeEnd: new Date('2026-07-01T12:00:00Z'),
-        room: 'A1',
         description: 'Esame di Algoritmi',
         partial: false,
         type: ExamType.ORALE,
@@ -182,7 +180,7 @@ describe('ServerExamsService', () => {
             await expect(service.createExam(mockCreateExamDto, mockCurrentUser)).rejects.toThrow(ConflictException);
         });
 
-        it('should create exam with optional fields undefined (room and description)', async () => {
+        it('should create exam with optional fields undefined (description)', async () => {
             const dtoWithoutOptionalFields: CreateExamDto = {
                 dateTimeStart: new Date('2026-07-02T09:00:00Z'),
                 dateTimeEnd: new Date('2026-07-02T12:00:00Z'),
@@ -194,7 +192,7 @@ describe('ServerExamsService', () => {
             };
             (coursesService.getTeachingsByProfessor as jest.Mock).mockResolvedValue([mockTeaching]);
             (sessionsRepository.findById as jest.Mock).mockResolvedValue(mockSession);
-            (examsRepository.create as jest.Mock).mockResolvedValue({ ...mockExam, room: undefined, description: undefined });
+            (examsRepository.create as jest.Mock).mockResolvedValue({ ...mockExam, description: undefined });
 
             const result = await service.createExam(dtoWithoutOptionalFields, mockCurrentUser);
 
@@ -266,14 +264,12 @@ describe('ServerExamsService', () => {
             await expect(service.updateExam(1, updateDto, mockCurrentUser)).rejects.toThrow(ConflictException);
         });
 
-        it('should successfully update optional fields (room, description)', async () => {
+        it('should successfully update optional fields (description)', async () => {
             const updateDto: UpdateExamDto = {
-                room: 'A2',
                 description: 'Updated description',
             };
             const updatedExam = {
                 ...mockExam,
-                room: 'A2',
                 description: 'Updated description'
             };
 

@@ -21,9 +21,6 @@ export class Exam {
     @Column({ type: 'timestamptz', nullable: false })
     dateTimeEnd: Date;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
-    room: string;
-
     @Column({ type: 'varchar', length: 1000, nullable: true })
     description: string;
 

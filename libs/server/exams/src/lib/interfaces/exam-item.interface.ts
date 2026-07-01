@@ -2,7 +2,6 @@ export interface ExamItem {
     id: number;
     dateTimeStart: Date;
     dateTimeEnd: Date;
-    room?: string;
     description?: string;
     partial: boolean;
     type: 'ORALE' | 'SCRITTO' | 'VERBALIZZAZIONE';

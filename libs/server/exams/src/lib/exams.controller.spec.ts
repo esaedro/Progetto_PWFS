@@ -15,7 +15,6 @@ describe('ServerExamsController', () => {
         id: 1,
         dateTimeStart: new Date('2026-07-01T09:00:00Z'),
         dateTimeEnd: new Date('2026-07-01T12:00:00Z'),
-        room: 'A1',
         description: 'Esame di Algoritmi',
         partial: false,
         type: ExamType.ORALE,
@@ -27,7 +26,6 @@ describe('ServerExamsController', () => {
     const mockCreateExamDto: CreateExamDto = {
         dateTimeStart: new Date('2026-07-01T09:00:00Z'),
         dateTimeEnd: new Date('2026-07-01T12:00:00Z'),
-        room: 'A1',
         description: 'Esame di Algoritmi',
         partial: false,
         type: ExamType.ORALE,
@@ -93,7 +91,6 @@ describe('ServerExamsController', () => {
             const dtoWithoutProfessor: CreateExamDto = {
                 dateTimeStart: new Date('2026-07-01T09:00:00Z'),
                 dateTimeEnd: new Date('2026-07-01T12:00:00Z'),
-                room: 'A1',
                 description: 'Esame di Algoritmi',
                 partial: false,
                 type: ExamType.ORALE,

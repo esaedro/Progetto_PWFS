@@ -14,10 +14,6 @@ export class CreateExamDto {
 
     @IsString()
     @IsOptional()
-    room?: string;
-
-    @IsString()
-    @IsOptional()
     description?: string;
 
     @IsBoolean()

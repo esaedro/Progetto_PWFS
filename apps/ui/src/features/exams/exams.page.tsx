@@ -571,12 +571,6 @@ export function ExamsPage() {
                                     ? (detailTarget.teaching?.subject as any).professors.map((p: any) => p.user?.name).join(', ')
                                     : detailTarget.professor?.user.name ?? '—'}
                             </div>
-                            {detailTarget.room && (
-                                <div>
-                                    <span className="font-semibold text-slate-900">Aula:</span>{' '}
-                                    {detailTarget.room}
-                                </div>
-                            )}
                             <div>
                                 <span className="font-semibold text-slate-900">Parziale:</span>{' '}
                                 {detailTarget.partial ? 'Sì' : 'No'}
