@@ -208,6 +208,7 @@ export function DegreesPage() {
         message="Sei sicuro di voler eliminare questa corso? L'operazione non può essere annullata."
         confirmLabel="Elimina"
         cancelLabel="Annulla"
+                destructive
         onConfirm={() => {
             void handleDelete(deleteTarget as number);
         }}

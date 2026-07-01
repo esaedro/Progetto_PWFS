@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchSubjectById, updateSubject, fetchProfessors } from './subjects.api';
 import { ProfessorListItem } from '@server/people';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 export function EditSubjectPage() {
     const { id } = useParams();
@@ -17,6 +18,7 @@ export function EditSubjectPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isDirty, setIsDirty] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -61,9 +63,7 @@ export function EditSubjectPage() {
         );
     });
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-
+    async function handleSave() {
         if (!id) return;
 
         setError(null);
@@ -87,6 +87,11 @@ export function EditSubjectPage() {
         } finally {
             setSaving(false);
         }
+    }
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setShowSaveConfirm(true);
     }
 
     if (loading) {
@@ -271,6 +276,19 @@ export function EditSubjectPage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma modifica"
+                message="Vuoi salvare le modifiche a questa materia?"
+                confirmLabel="Salva modifiche"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

@@ -8,6 +8,7 @@ import { TeachingItem } from '@server/courses';
 import type { SessionItem } from '@server/exams';
 import { ExamType } from '@server/exams/exam-type';
 import type { UpdateExamDto } from '@server/exams';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 const EXAM_TYPE_OPTIONS = Object.values(ExamType).map((value) => ({
     value,
@@ -105,6 +106,7 @@ export function EditExamPage() {
     const [isDirty, setIsDirty] = useState(false);
     const [teachingSearch, setTeachingSearch] = useState('');
     const [showTeachingDropdown, setShowTeachingDropdown] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const teachingRef = useRef<HTMLDivElement>(null);
 
     // Carica i dati iniziali
@@ -291,8 +293,7 @@ export function EditExamPage() {
     const isOutsideExaminationWindow = !!form?.date && !!sessionExamStart && !!sessionExamEnd &&
         (form.date < sessionExamStart.slice(0, 10) || form.date > sessionExamEnd.slice(0, 10));
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
+    const handleSave = async () => {
         if (!form) return;
 
         if (!professorId) {
@@ -319,6 +320,11 @@ export function EditExamPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        setShowSaveConfirm(true);
     };
 
     if (pageLoading) {
@@ -687,6 +693,19 @@ export function EditExamPage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma modifica"
+                message="Vuoi salvare le modifiche a questo appello d'esame?"
+                confirmLabel="Salva modifiche"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

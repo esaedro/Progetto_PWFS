@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchSessionById, updateSession } from './sessions.api';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 type SessionForm = {
     dateStartInsertion: string;
@@ -69,6 +70,7 @@ export function EditSessionPage() {
     const [error, setError] = useState<string | null>(null);
     const [newHoliday, setNewHoliday] = useState('');
     const [isDirty, setIsDirty] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -77,7 +79,9 @@ export function EditSessionPage() {
         if (!id) {
             setError('Sessione non valida');
             setLoading(false);
-            return;
+            return () => {
+                active = false;
+            };
         }
 
         setLoading(true);
@@ -127,8 +131,7 @@ export function EditSessionPage() {
         setIsDirty(true);
     };
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
+    const handleSave = async () => {
         if (!id) {
             setError('Sessione non valida');
             return;
@@ -151,6 +154,11 @@ export function EditSessionPage() {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        setShowSaveConfirm(true);
     };
 
     if (loading) {
@@ -297,6 +305,19 @@ export function EditSessionPage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma modifica"
+                message="Vuoi salvare le modifiche a questa sessione?"
+                confirmLabel="Salva modifiche"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

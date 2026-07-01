@@ -4,6 +4,7 @@ import { fetchDegreeById } from './degrees.api';
 import { fetchSubjects } from '../subjects/subjects.api';
 import { fetchTeachingsByDegreeAndYear, createTeaching, updateTeaching, deleteTeaching } from '../teachings/teachings.api';
 import { DegreeItem, SubjectItem, TeachingItem } from '@server/courses';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 // Una riga del piano: può essere già salvata (ha teachingId) o nuova
 type PlanRow = {
@@ -30,6 +31,7 @@ export function EditStudyPlanPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     // Stato per la tendina di ricerca aperta per ciascun anno
     const [searchText, setSearchText] = useState<Record<number, string>>({});
@@ -177,6 +179,10 @@ export function EditStudyPlanPage() {
         } finally {
             setSaving(false);
         }
+    }
+
+    function requestSave() {
+        setShowSaveConfirm(true);
     }
 
     if (loading) {
@@ -339,7 +345,7 @@ export function EditStudyPlanPage() {
                     </button> */}
                     <button
                         type="button"
-                        onClick={handleSave}
+                        onClick={requestSave}
                         disabled={saving || !isDirty}
                         className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
@@ -348,6 +354,19 @@ export function EditStudyPlanPage() {
                 </div>
                 )}
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma modifica"
+                message="Vuoi salvare le modifiche a questo piano di studi?"
+                confirmLabel="Salva piano"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

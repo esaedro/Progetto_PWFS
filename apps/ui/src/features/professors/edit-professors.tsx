@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { fetchProfessorById, updateProfessor} from './professors.api';
 import { UserRole } from './professors.api';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 export function EditProfessorPage() {
   const { id } = useParams();
@@ -16,6 +17,7 @@ export function EditProfessorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     useEffect(() => {
     if (!id) return;
@@ -43,8 +45,7 @@ export function EditProfessorPage() {
         .finally(() => setLoading(false));
     }, [id]); 
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
+    async function handleSave() {
         if (!id) return;
 
         setError(null);
@@ -69,6 +70,11 @@ export function EditProfessorPage() {
             setSaving(false);
         }
     }
+
+      function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setShowSaveConfirm(true);
+      }
 
   if (loading) {
     return (
@@ -162,6 +168,19 @@ export function EditProfessorPage() {
 
         </form>
       </div>
+
+      <ConfirmModal
+        open={showSaveConfirm}
+        title="Conferma modifica"
+        message="Vuoi salvare le modifiche su questo professore?"
+        confirmLabel="Salva modifiche"
+        cancelLabel="Annulla"
+        onConfirm={() => {
+          setShowSaveConfirm(false);
+          void handleSave();
+        }}
+        onCancel={() => setShowSaveConfirm(false)}
+      />
     </main>
   );
 }

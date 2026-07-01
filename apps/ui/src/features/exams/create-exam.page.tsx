@@ -8,6 +8,7 @@ import { fetchCurrentUser } from '../auth/auth.api';
 import { TeachingItem } from '@server/courses';
 import { ExamType } from '@server/exams/exam-type';
 import type { CreateExamDto } from '@server/exams';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 const EXAM_TYPE_OPTIONS = Object.values(ExamType).map((value) => ({
     value,
@@ -97,6 +98,7 @@ export function CreateExamPage() {
     const [conflicts, setConflicts] = useState<string[]>([]);
     const [teachingSearch, setTeachingSearch] = useState('');
     const [showTeachingDropdown, setShowTeachingDropdown] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const teachingRef = useRef<HTMLDivElement>(null);
 
     const navigate = useNavigate();
@@ -149,7 +151,7 @@ export function CreateExamPage() {
     useEffect(() => {
         if (!selectedSession || !form.teachingId || !form.date || !form.startTime || !form.endTime) {
             setConflicts([]);
-            return;
+            return undefined;
         }
 
         const dateTimeStart = new Date(`${form.date}T${form.startTime}:00`);
@@ -157,7 +159,7 @@ export function CreateExamPage() {
 
         if (dateTimeStart >= dateTimeEnd) {
             setConflicts([]);
-            return;
+            return undefined;
         }
 
         let active = true;
@@ -259,8 +261,7 @@ export function CreateExamPage() {
     const isOutsideExaminationWindow = !!form.date && !!sessionExamStart && !!sessionExamEnd &&
         (form.date < sessionExamStart.slice(0, 10) || form.date > sessionExamEnd.slice(0, 10));
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
+    const handleSave = async () => {
 
         if (!professorId) {
             setError('Impossibile recuperare i dati del docente. Ricarica la pagina e riprova.');
@@ -286,6 +287,11 @@ export function CreateExamPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        setShowSaveConfirm(true);
     };
 
     return (
@@ -625,6 +631,19 @@ export function CreateExamPage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma creazione"
+                message="Vuoi creare questo nuovo appello d'esame?"
+                confirmLabel="Crea appello"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

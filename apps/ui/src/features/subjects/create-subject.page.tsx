@@ -2,12 +2,14 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createSubject, fetchProfessors } from './subjects.api';
 import { ProfessorListItem } from '@server/people';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 export function CreateSubjectPage() {
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [noProfessors, setNoProfessors] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     const [professors, setProfessors] = useState<ProfessorListItem[]>([]);
     const [professorSearch, setProfessorSearch] = useState('');
@@ -49,9 +51,7 @@ export function CreateSubjectPage() {
         return !already && (prof.name.toLowerCase().includes(search) || (prof.email || '').toLowerCase().includes(search));
     });
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
+    async function handleSave() {
         setError(null);
         setLoading(true);
 
@@ -74,6 +74,11 @@ export function CreateSubjectPage() {
         } finally {
             setLoading(false);
         }
+    }
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setShowSaveConfirm(true);
     }
 
     return (
@@ -245,6 +250,20 @@ export function CreateSubjectPage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma creazione"
+                message="Vuoi salvare questa nuova materia?"
+                confirmLabel="Crea materia"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
+
         </main>
     );
 }

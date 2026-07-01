@@ -304,6 +304,7 @@ export function SubjectsPage() {
                 message="Sei sicuro di voler eliminare questa materia? L'operazione non può essere annullata."
                 confirmLabel="Elimina"
                 cancelLabel="Annulla"
+                destructive
                 onConfirm={() => {
                     void handleDelete(deleteTarget as number);
                 }}

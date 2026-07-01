@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDegree } from './degrees.api';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 export function CreateDegreePage() {
     const [name, setName] = useState('');
@@ -8,12 +9,11 @@ export function CreateDegreePage() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     const navigate = useNavigate();
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
+    async function handleSave() {
         setError(null);
         setLoading(true);
 
@@ -29,6 +29,11 @@ export function CreateDegreePage() {
         } finally {
             setLoading(false);
         }
+    }
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setShowSaveConfirm(true);
     }
 
     return (
@@ -109,6 +114,19 @@ export function CreateDegreePage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma creazione"
+                message="Vuoi creare questo nuovo corso di laurea?"
+                confirmLabel="Crea corso"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

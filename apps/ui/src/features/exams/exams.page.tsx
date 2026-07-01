@@ -534,6 +534,7 @@ export function ExamsPage() {
                 message="Sei sicuro di voler eliminare questo appello? L'operazione non può essere annullata."
                 confirmLabel="Elimina"
                 cancelLabel="Annulla"
+                destructive
                 onConfirm={handleDeleteExam}
                 onCancel={() => setDeleteTarget(null)}
             />

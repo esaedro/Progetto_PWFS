@@ -4,8 +4,9 @@ type ConfirmModalProps = {
     open: boolean;
     title: string;
     message: string;
-    confirmLabel?: string;
+    confirmLabel: string;
     cancelLabel?: string;
+    destructive?: boolean;
     onConfirm: () => void;
     onCancel: () => void;
 };
@@ -14,8 +15,9 @@ export function ConfirmModal({
     open,
     title,
     message,
-    confirmLabel = 'Elimina',
+    confirmLabel,
     cancelLabel = 'Annulla',
+    destructive = false,
     onConfirm,
     onCancel,
 }: ConfirmModalProps) {
@@ -62,7 +64,7 @@ export function ConfirmModal({
                         ref={confirmRef}
                         type="button"
                         onClick={onConfirm}
-                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                        className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${destructive ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                     >
                         {confirmLabel}
                     </button>

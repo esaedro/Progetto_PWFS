@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createSession } from './sessions.api';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 type SessionForm = {
     dateStartInsertion: string;
@@ -58,6 +59,7 @@ export function CreateSessionPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [newHoliday, setNewHoliday] = useState('');
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,8 +87,7 @@ export function CreateSessionPage() {
         }));
     };
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
+    const handleSave = async () => {
         const validationError = validateForm(form);
         if (validationError) {
             setError(validationError);
@@ -104,6 +105,11 @@ export function CreateSessionPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        setShowSaveConfirm(true);
     };
 
     return (
@@ -246,6 +252,19 @@ export function CreateSessionPage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma creazione"
+                message="Vuoi creare questa nuova sessione?"
+                confirmLabel="Crea sessione"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

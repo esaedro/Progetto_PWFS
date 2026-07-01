@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchDegreeById, updateDegree } from './degrees.api';
+import { ConfirmModal } from '../shared/confirm-modal';
 
 export function EditDegreePage() {
     const { id } = useParams();
@@ -13,6 +14,7 @@ export function EditDegreePage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isDirty, setIsDirty] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -26,9 +28,7 @@ export function EditDegreePage() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-
+    async function handleSave() {
         if (!id) return;
 
         setError(null);
@@ -46,6 +46,11 @@ export function EditDegreePage() {
         } finally {
             setSaving(false);
         }
+    }
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setShowSaveConfirm(true);
     }
 
     if (loading) {
@@ -136,6 +141,19 @@ export function EditDegreePage() {
                     </div>
                 </form>
             </div>
+
+            <ConfirmModal
+                open={showSaveConfirm}
+                title="Conferma modifica"
+                message="Vuoi salvare le modifiche a questo corso di laurea?"
+                confirmLabel="Salva modifiche"
+                cancelLabel="Annulla"
+                onConfirm={() => {
+                    setShowSaveConfirm(false);
+                    void handleSave();
+                }}
+                onCancel={() => setShowSaveConfirm(false)}
+            />
         </main>
     );
 }

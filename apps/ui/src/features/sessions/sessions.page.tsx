@@ -211,10 +211,10 @@ export function SessionsPage() {
                             <span className="h-3 w-3 rounded-full bg-amber-500" />
                             Esaminazione
                         </div>
-                        {/*<div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <span className="h-3 w-3 rounded-full bg-violet-500" />
-                            Periodi sovrapposti
-                        </div>*/}
+                            Esaminazione per la sessione in corso ed inserimento aperto per la prossima
+                        </div>
                     </div>
 
                     <div className="mt-6 grid grid-cols-7 text-xs font-semibold text-slate-500">
@@ -356,6 +356,7 @@ export function SessionsPage() {
                 message="Sei sicuro di voler eliminare questa sessione? L'operazione non può essere annullata."
                 confirmLabel="Elimina"
                 cancelLabel="Annulla"
+                destructive
                 onConfirm={handleDeleteSession}
                 onCancel={() => setDeleteTarget(null)}
             />

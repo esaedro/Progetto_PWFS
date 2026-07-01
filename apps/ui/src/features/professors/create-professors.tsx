@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createProfessor } from "./professors.api"; 
 import { FaCopy, FaCheck } from "react-icons/fa6"; // Imported copy icons
 import { UserRole } from "./professors.api";
+import { ConfirmModal } from '../shared/confirm-modal';
 
 function generateRandomPassword(): string {
   const length = 12;
@@ -30,6 +31,7 @@ export function CreateProfessorPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false); // Track copy success state
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
   const navigate = useNavigate();
 
@@ -48,8 +50,7 @@ export function CreateProfessorPage() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSave() {
     setError(null);
     setLoading(true);
 
@@ -67,6 +68,11 @@ export function CreateProfessorPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setShowSaveConfirm(true);
   }
 
   return (
@@ -177,6 +183,19 @@ export function CreateProfessorPage() {
 
         </form>
       </div>
+
+      <ConfirmModal
+        open={showSaveConfirm}
+        title="Conferma creazione"
+        message="Vuoi creare questo nuovo professore?"
+        confirmLabel="Crea professore"
+        cancelLabel="Annulla"
+        onConfirm={() => {
+          setShowSaveConfirm(false);
+          void handleSave();
+        }}
+        onCancel={() => setShowSaveConfirm(false)}
+      />
     </main>
   );
 }
