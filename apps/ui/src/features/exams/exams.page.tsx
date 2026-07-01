@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchCurrentUser } from '../auth/auth.api';
 import { fetchSessions } from '../sessions/sessions.api';
 import { fetchExams, deleteExam } from './exams.api';
+import { fetchTeachingsByProfessor } from '../teachings/teachings.api';
 import { UserListItem } from '@server/users';
 import { ExamItem, SessionItem } from '@server/exams';
 import { ConfirmModal } from '../shared/confirm-modal';
@@ -60,6 +61,7 @@ export function ExamsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
     const [detailTarget, setDetailTarget] = useState<ExamItem | null>(null);
+    const [teachingsCount, setTeachingsCount] = useState<number | null>(null);
     const navigate = useNavigate();
 
     const handleDeleteExam = async () => {
@@ -101,8 +103,19 @@ export function ExamsPage() {
                     setShowOnlyMine(false);
                 }
 
-                // La distinzione "miei appelli" è ora basata su subjectProfessors
-                // Non serve più fetchare gli esami per professore
+                // Carica il numero di insegnamenti del professore (per il bottone Nuovo appello)
+                if (userData?.role === 'PROFESSOR') {
+                    try {
+                        const teachings = await fetchTeachingsByProfessor(userData.id);
+                        if (active) {
+                            setTeachingsCount(Array.isArray(teachings) ? teachings.length : 0);
+                        }
+                    } catch {
+                        if (active) setTeachingsCount(0);
+                    }
+                } else {
+                    if (active) setTeachingsCount(null);
+                }
             } catch (err) {
                 if (active) {
                     setError(err instanceof Error ? err.message : 'Errore nel caricamento degli appelli');
@@ -220,13 +233,21 @@ export function ExamsPage() {
                     </p>
                 </div>
                 {currentUser?.role === 'PROFESSOR' && (
-                    <button
-                        type="button"
-                        onClick={() => navigate('/exams/new')}
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700"
-                    >
-                        Nuovo appello
-                    </button>
+                    <div className="flex items-center gap-4">
+                        {teachingsCount === 0 && (
+                            <p className="text-sm text-amber-600 text-right max-w-64">
+                                Non hai insegnamenti a carico,<br></br> non puoi prenotare appelli.
+                            </p>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => navigate('/exams/new')}
+                            disabled={teachingsCount === 0}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Nuovo appello
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -369,7 +390,7 @@ export function ExamsPage() {
                                             {examCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />}
                                             {myExamCount > 0 && <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
                                         </div>
-                                        {currentUser?.role === 'PROFESSOR' && inExamination && !isUnavailable && (
+                                        {currentUser?.role === 'PROFESSOR' && inExamination && !isUnavailable && teachingsCount !== 0 && (
                                             <span
                                                 onClick={(e) => {
                                                     e.stopPropagation();
