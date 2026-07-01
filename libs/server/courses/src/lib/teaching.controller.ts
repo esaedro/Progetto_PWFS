@@ -11,8 +11,6 @@ import { UserRole } from '@server/users';
 export class ServerTeachingController {
     constructor(private serverCoursesService: ServerCoursesService) { }
 
-    //TODO: eventuali guardie
-
     @Get() // GET /teachings
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
@@ -49,13 +47,6 @@ export class ServerTeachingController {
         return this.serverCoursesService.getTeachingsByDegreeAndYear(degreeId, year);
     }
 
-/*     @Get('details/:id') // GET /teachings/details/:id
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
-    getTeachingDetails(@Param('id', ParseIntPipe) id: number) {
-        return this.serverCoursesService.getTeachingDetails(id);
-    } */
 
     @Get(':id') // GET /teachings/:id
     @UseGuards(JwtAuthGuard, RolesGuard)

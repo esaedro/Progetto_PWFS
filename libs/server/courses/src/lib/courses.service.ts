@@ -32,6 +32,44 @@ export class ServerCoursesService {
         private readonly peopleService: ServerPeopleService,
     ) {}
 
+    // Helper: map a single Subject entity to SubjectItem
+    private mapSubject(s: Subject): SubjectItem {
+        return {
+            id: s.id,
+            name: s.name,
+            professors: (s.professors || []).map((p) => ({
+                id: (p as any).professor_id ?? (p as any).id,
+                name: (p as any).user?.name ?? (p as any).name ?? '',
+                email: (p as any).user?.email ?? (p as any).email ?? '',
+                role: (p as any).user?.role ?? (p as any).role ?? (UserRole as any).PROFESSOR,
+            })),
+        };
+    }
+
+    // Helper: map a Teaching entity to TeachingItem
+    private mapTeaching(t: Teaching): TeachingItem {
+        return {
+            id: t.id,
+            subject: {
+                id: t.subject.id,
+                name: t.subject.name,
+            },
+            degree: {
+                id: t.degree.id,
+                name: t.degree.name,
+            },
+            year: t.year,
+        } as TeachingItem;
+    }
+
+    // Helper: map a Degree entity to DegreeItem
+    private mapDegree(d: Degree): DegreeItem {
+        return {
+            id: d.id,
+            name: d.name,
+            duration: (d.durationYears ?? d.durationYears) as number,
+        };
+    }
 
     async getDegrees(): Promise<DegreeItem[]> {
         const degrees = await this.degreeRepository.findAll();
@@ -47,7 +85,6 @@ export class ServerCoursesService {
         return (subjects || []).map((s) => this.mapSubject(s));
     }
     
-
     async getTeachings(): Promise<TeachingItem[]> {
         const teachings = await this.teachingRepository.findAll();
         if (!teachings || teachings.length === 0) 
@@ -83,76 +120,13 @@ export class ServerCoursesService {
         return (teachings || []).map((t) => this.mapTeaching(t));
     }
     
-/*     async getTeachingDetails(teachingId: number): Promise<{ degree: Degree; subject: Subject; year: number }> {
-        const teaching = await this.teachingRepository.findByID(teachingId);
-        if (!teaching) 
-            throw new NotFoundException(`Non è stato trovato l'insegnamento con id = ${teachingId}`);
-        
-        const degree = teaching.degree 
-        const subject = teaching.subject;
-        const year = teaching.year;
-        
-        return { degree, subject, year };
-
-        // TODO? caricare anche i professori che insegnano la materia?
-    } */
-    
-    async getSubjectsByProfessor(professorId: number): Promise<SubjectItem[]> {
-        await this.peopleService.findById(professorId);
-        
-        const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
-        if (!subjects || subjects.length === 0)
-            throw new NotFoundException(`Non sono state trovate insegnamenti per il professore con id = ${professorId}`);
-        
-        return (subjects || []).map((s) => this.mapSubject(s));
-    }
-
-    // Helper: map a single Subject entity to SubjectItem DTO
-    private mapSubject(s: Subject): SubjectItem {
-        return {
-            id: s.id,
-            name: s.name,
-            professors: (s.professors || []).map((p) => ({
-                id: (p as any).professor_id ?? (p as any).id,
-                name: (p as any).user?.name ?? (p as any).name ?? '',
-                email: (p as any).user?.email ?? (p as any).email ?? '',
-                role: (p as any).user?.role ?? (p as any).role ?? (UserRole as any).PROFESSOR,
-            })),
-        };
-    }
-
-    // Helper: map a Teaching entity to TeachingItem DTO (formatted for frontend)
-    private mapTeaching(t: Teaching): TeachingItem {
-        return {
-            id: t.id,
-            subject: {
-                id: t.subject.id,
-                name: t.subject.name,
-            },
-            degree: {
-                id: t.degree.id,
-                name: t.degree.name,
-            },
-            year: t.year,
-        } as TeachingItem;
-    }
-
-    // Helper: map a Degree entity to DegreeItem DTO (format teachings with subject names)
-    private mapDegree(d: Degree): DegreeItem {
-        return {
-            id: d.id,
-            name: d.name,
-            duration: (d.durationYears ?? d.durationYears) as number,
-        };
-    }
-
     // Senza throw in getTeachingsBySubject, restituisce solo lista vuota. OK perchè usata da getTeachingsByProfessor e per le visualizzazioni front-end
     async getTeachingsBySubject(subjectId: number): Promise<TeachingItem[]> {
         const subjectTeachings = await this.teachingRepository.findTeachingsBySubject(subjectId);
         return (subjectTeachings || []).map((t) => this.mapTeaching(t));
     }
 
-    //da usare se il docente deve scegliere tra i propri insegnamenti
+    //da usare quando il docente deve scegliere tra i propri insegnamenti, ad esempio quando crea un appello d'esame
     async getTeachingsByProfessor(professorId: number): Promise<TeachingItem[]> {
         const subjects = this.getSubjectsByProfessor(professorId);
         const teachings: TeachingItem[] = [];
@@ -165,7 +139,15 @@ export class ServerCoursesService {
         return teachings;
     }
 
-
+    async getSubjectsByProfessor(professorId: number): Promise<SubjectItem[]> {
+        await this.peopleService.findById(professorId);
+        
+        const subjects = await this.subjectRepository.findSubjectsByProfessor(professorId);
+        if (!subjects || subjects.length === 0)
+            throw new NotFoundException(`Non sono stati trovate materie per il professore con id = ${professorId}`);
+        
+        return (subjects || []).map((s) => this.mapSubject(s));
+    }
 
     async createSubject(dto: CreateSubjectDto): Promise<Subject> {
         const professors = await this.peopleService.getProfessorsByIds(dto.professorIds);

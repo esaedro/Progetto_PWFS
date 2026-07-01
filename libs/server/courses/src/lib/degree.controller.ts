@@ -11,8 +11,6 @@ import { UserRole } from '@server/users';
 export class ServerDegreeController {
     constructor(private serverCoursesService: ServerCoursesService) { }
 
-    //TODO: eventuali guardie
-
     @Get() // GET /degrees
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)

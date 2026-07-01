@@ -74,7 +74,6 @@ export async function fetchTeachingById(id: number): Promise<TeachingItem> {
   return response.json();
 }
 
-// TODO? API presenti nel controller non implementate nel client
 //GET /teachings/by-professor/:professorId
 export async function fetchTeachingsByProfessor(professorId: number): Promise<TeachingItem[]> {
     const response = await fetch(`${API_URL}/teachings/by-professor/${professorId}`, {

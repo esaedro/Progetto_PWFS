@@ -11,22 +11,12 @@ import { UserRole } from '@server/users';
 export class ServerSubjectController {
     constructor(private serverCoursesService: ServerCoursesService) { }
 
-    //TODO: eventuali guardie
-
     @Get() // GET /subjects
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
     @ApiBearerAuth()
     getSubjects() {
         return this.serverCoursesService.getSubjects();
-    }
-
-    @Get('by-professor/:professorId') // GET /subjects/by-professor/:professorId
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PROFESSOR, UserRole.SECRETARY)
-    @ApiBearerAuth()
-    getSubjectsByProfessor(@Param('professorId', ParseIntPipe) professorId: number) {
-        return this.serverCoursesService.getSubjectsByProfessor(professorId);
     }
 
     @Get(':id') // GET /subjects/:id

@@ -12,15 +12,14 @@ import { Min } from "class-validator";
 @Index("uq_teaching_degree_subject_year", ["degree", "subject", "year"], { unique: true })
 export class Teaching {
 
-    //id, anno, frequenza
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({type: "int", nullable: false /*, comment: "Accettati numeri da 1 a 5" */})  // vincoli 1-5/6?
+    @Column({type: "int", nullable: false})
     @Min(1)
-    year: number; 
     // Validazione max dinamica in service in base a degree.durationYears
-
+    year: number; 
+    
     //Many to one verso Subject e Degree
     @ManyToOne(()=>Subject,(subject)=>subject.teachings,{nullable:false, eager:true,onDelete:'CASCADE'})
     @JoinColumn() // optional on OneToMany relations

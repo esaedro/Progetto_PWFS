@@ -86,16 +86,4 @@ export async function fetchProfessors(): Promise<ProfessorListItem[]> {
   }
 
   return response.json();
-/*     const data = await response.json();
-
-    // mappiamo id -> professor_id
-    return data.map((p: any) => ({
-      id: p.professor_id ?? p.id, // necessario perché viene restituito id, ma le pagina usano professor_id
-      name: p.name,
-      email: p.email,
-      role: p.role,
-    })) as ProfessorListItem[]; */
 }
-
-  // TODO? API presente nel controller ma non implementata nel client
-  // GET /subjects/by-professor/:professorId

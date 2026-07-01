@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ServerCoursesController } from './courses.controller';
 import { ServerDegreeController } from './degree.controller';
 import { ServerSubjectController } from './subject.controller';
 import { ServerTeachingController } from './teaching.controller';
@@ -20,7 +19,6 @@ import { ServerPeopleModule } from '@server/people';
     forwardRef(() => ServerPeopleModule)
   ],
   controllers: [
-    ServerCoursesController,
     ServerDegreeController,
     ServerSubjectController,
     ServerTeachingController,

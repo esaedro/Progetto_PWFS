@@ -1,4 +1,3 @@
-export * from './lib/courses.controller';
 export * from './lib/courses.service';
 export * from './lib/courses.module';
 export * from './lib/degree.entity';
@@ -15,4 +14,3 @@ export * from './lib/dto/update-subject.dto';
 export * from './lib/interfaces/degree-item.interface';
 export * from './lib/interfaces/subject-item.interface';
 export * from './lib/interfaces/teaching-item.interface';
-

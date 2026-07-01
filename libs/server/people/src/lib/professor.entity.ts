@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, OneToOne, OneToMany, ManyToMany, Column, PrimaryColumn } from "typeorm";
+import { Entity, JoinColumn, OneToOne, OneToMany, ManyToMany, PrimaryColumn } from "typeorm";
 import type { Relation } from "typeorm";
 
 import { UserEntity } from '@server/users';
@@ -6,7 +6,6 @@ import { UserEntity } from '@server/users';
 import { Exam } from '@server/exams/exam.entity';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { Subject } from "@server/courses/subject.entity";
-
 
 @Entity("Professors")
 export class Professor {
