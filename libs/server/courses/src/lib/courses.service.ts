@@ -118,7 +118,6 @@ export class ServerCoursesService {
                 email: (p as any).user?.email ?? (p as any).email ?? '',
                 role: (p as any).user?.role ?? (p as any).role ?? (UserRole as any).PROFESSOR,
             })),
-            teachings: (s.teachings || []).map((t) => ({ id: t.id, degree: (t.degree as any)?.name ?? String((t.degree as any)), year: t.year })),
         };
     }
 
@@ -144,11 +143,6 @@ export class ServerCoursesService {
             id: d.id,
             name: d.name,
             duration: (d.durationYears ?? d.durationYears) as number,
-            teachings: (d.teachings || []).map((t) => ({
-                id: t.id,
-                subject: (t.subject as any)?.name ?? String((t.subject as any) ?? ''),
-                year: t.year,
-            })),
         };
     }
 
