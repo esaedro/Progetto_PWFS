@@ -13,6 +13,7 @@ export function SubjectsPage() {
     const [user, setUser] = useState<UserListItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
 
     const [teachingsMap, setTeachingsMap] = useState<Record<number, TeachingItem[]>>({});
     const [loadingMap, setLoadingMap] = useState<Record<number, boolean>>({});
@@ -149,125 +150,150 @@ export function SubjectsPage() {
                 {subjects.length === 0 ? (
                     <p className="text-sm text-slate-500">Nessuna materia disponibile.</p>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-slate-200">
-                                    <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
-                                        Nome
-                                    </th>
-                                    <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
-                                        Professori
-                                    </th>
-                                    {canManageSubjects && (
-                                        <th className="py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                            Azioni
+                    <div className="space-y-4">
+                        {/* Barra di ricerca */}
+                        <input
+                            type="text"
+                            placeholder="Cerca materia..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
+                        />
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-slate-200">
+                                        <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Nome
                                         </th>
-                                    )}
-                                    <th className="py-3 pr-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                        {/* Icona */}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {subjects.map((sub) => {
-                                    const isExpanded = expandedIds.has(sub.id);
-                                    const teachings = teachingsMap[sub.id];
-                                    const isLoadingTeachings = loadingMap[sub.id];
+                                        <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Professori
+                                        </th>
+                                        {canManageSubjects && (
+                                            <th className="py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                Azioni
+                                            </th>
+                                        )}
+                                        <th className="py-3 pr-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                            {/* Icona */}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {subjects
+                                        .filter((sub) =>
+                                            sub.name.toLowerCase().includes(search.toLowerCase())
+                                        )
+                                        .map((sub) => {
+                                            const isExpanded = expandedIds.has(sub.id);
+                                            const teachings = teachingsMap[sub.id];
+                                            const isLoadingTeachings = loadingMap[sub.id];
 
-                                    return (
-                                        <>
-                                            {/* Riga principale: tutta cliccabile (tranne Azioni) */}
-                                            <tr
-                                                key={sub.id}
-                                                className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
-                                                onClick={() => toggleExpand(sub.id)}
-                                            >
-                                                <td className="py-3 pr-4 text-base font-medium text-slate-900">
-                                                    {sub.name}
-                                                </td>
-                                                <td className="py-3 pr-4 text-base text-slate-600">
-                                                    {sub.professors?.length
-                                                        ? sub.professors.map((p) => p.name).join(', ')
-                                                        : 'N/D'}
-                                                </td>
-
-                                                {canManageSubjects && (
-                                                    <td
-                                                        className="py-3"
-                                                        onClick={(e) => e.stopPropagation()}
+                                            return (
+                                                <>
+                                                    <tr
+                                                        key={sub.id}
+                                                        className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                                                        onClick={() => toggleExpand(sub.id)}
                                                     >
-                                                        <div className="flex items-center gap-2">
-                                                            <button
-                                                                type="button"
-                                                                className="rounded-lg border border-slate-400 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-300 transition"
-                                                                onClick={() => navigate(`/subjects/${sub.id}/edit`)}
-                                                            >
-                                                                Modifica
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="rounded-lg border border-red-300 bg-red-50 px-4 py-1.5 text-sm font-medium text-red-600 hover:bg-red-200 transition"
-                                                                onClick={() => setDeleteTarget(sub.id)}
-                                                            >
-                                                                Elimina
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                )}
+                                                        <td className="py-3 pr-4 text-base font-medium text-slate-900">
+                                                            {sub.name}
+                                                        </td>
+                                                        <td className="py-3 pr-4 text-base text-slate-600">
+                                                            {sub.professors?.length
+                                                                ? sub.professors.map((p) => p.name).join(', ')
+                                                                : 'N/D'}
+                                                        </td>
 
-                                                <td className="py-3 pr-2 text-right">
-                                                    <IoMdArrowDropdown
-                                                        className={`ml-auto h-5 w-5 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                                                    />
-                                                </td>
-                                            </tr>
-
-                                            {/* Riga di dettaglio subito sotto */}
-                                            {isExpanded && (
-                                                <tr className="border-b border-slate-100">
-                                                    <td
-                                                        colSpan={canManageSubjects ? 4 : 3}
-                                                        className="pb-3 pl-6 pr-4"
-                                                    >
-                                                        <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-                                                            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                                                                Corsi di laurea
-                                                            </p>
-                                                            {isLoadingTeachings ? (
-                                                                <p className="text-xs text-slate-500">
-                                                                    Caricamento...
-                                                                </p>
-                                                            ) : !teachings || teachings.length === 0 ? (
-                                                                <p className="text-xs text-slate-500">
-                                                                    La materia attualmente non è erogata in nessun corso di laurea.
-                                                                </p>
-                                                            ) : (
-                                                                <div className="flex flex-wrap gap-2">
-                                                                    {teachings.map((t) => (
-                                                                        <button
-                                                                            key={t.id}
-                                                                            type="button"
-                                                                            onClick={() => navigate(`/degrees/${t.degree.id}`)}
-                                                                            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300"
-                                                                        >
-                                                                            {t.degree.name}
-                                                                            <span className="text-slate-400">
-                                                                                · Anno {t.year}
-                                                                            </span>
-                                                                        </button>
-                                                                    ))}
+                                                        {canManageSubjects && (
+                                                            <td
+                                                                className="py-3"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="rounded-lg border border-slate-400 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-300 transition"
+                                                                        onClick={() => navigate(`/subjects/${sub.id}/edit`)}
+                                                                    >
+                                                                        Modifica
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="rounded-lg border border-red-300 bg-red-50 px-4 py-1.5 text-sm font-medium text-red-600 hover:bg-red-200 transition"
+                                                                        onClick={() => setDeleteTarget(sub.id)}
+                                                                    >
+                                                                        Elimina
+                                                                    </button>
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                                            </td>
+                                                        )}
+
+                                                        <td className="py-3 pr-2 text-right">
+                                                            <IoMdArrowDropdown
+                                                                className={`ml-auto h-5 w-5 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                                            />
+                                                        </td>
+                                                    </tr>
+
+                                                    {isExpanded && (
+                                                        <tr className="border-b border-slate-100">
+                                                            <td
+                                                                colSpan={canManageSubjects ? 4 : 3}
+                                                                className="pb-3 pl-6 pr-4"
+                                                            >
+                                                                <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                                                                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                                                        Corsi di laurea
+                                                                    </p>
+                                                                    {isLoadingTeachings ? (
+                                                                        <p className="text-xs text-slate-500">Caricamento...</p>
+                                                                    ) : !teachings || teachings.length === 0 ? (
+                                                                        <p className="text-xs text-slate-500">
+                                                                            La materia attualmente non è erogata in nessun corso di laurea.
+                                                                        </p>
+                                                                    ) : (
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {teachings.map((t) => (
+                                                                                <button
+                                                                                    key={t.id}
+                                                                                    type="button"
+                                                                                    onClick={() => navigate(`/degrees/${t.degree.id}`)}
+                                                                                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300"
+                                                                                >
+                                                                                    {t.degree.name}
+                                                                                    <span className="text-slate-400">
+                                                                                        · Anno {t.year}
+                                                                                    </span>
+                                                                                </button>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </>
+                                            );
+                                        })}
+
+                                    {/* Nessun risultato di ricerca */}
+                                    {subjects.filter((sub) =>
+                                        sub.name.toLowerCase().includes(search.toLowerCase())
+                                    ).length === 0 && (
+                                        <tr>
+                                            <td
+                                                colSpan={canManageSubjects ? 4 : 3}
+                                                className="py-6 text-center text-sm text-slate-500"
+                                            >
+                                                Nessuna materia corrisponde alla ricerca.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </section>

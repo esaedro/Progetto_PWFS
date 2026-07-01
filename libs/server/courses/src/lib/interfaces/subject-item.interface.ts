@@ -5,9 +5,4 @@ export interface SubjectItem {
     id: number;
     name: string;
     professors: ProfessorListItem[];
-    teachings: {
-        id: number;
-        degree: string;
-        year: number;
-    }[];
 }

@@ -11,6 +11,7 @@ export function DegreesPage() {
   const [user, setUser] = useState<UserListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -115,69 +116,88 @@ export function DegreesPage() {
         </header>
 
         {degrees.length === 0 ? (
-          <p className="text-sm text-slate-500">Nessun corso di laurea disponibile.</p>
+            <p className="text-sm text-slate-500">Nessun corso di laurea disponibile.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
-                    Nome
-                  </th>
-                  <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
-                    Durata (anni)
-                  </th>
-                  {canManageDegrees && (
-                    <th className="py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Azioni
-                    </th>
-                  )}
-                </tr>
-              </thead>
+            <div className="space-y-4">
+                <input
+                    type="text"
+                    placeholder="Cerca corso di laurea..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none"
+                />
 
-              <tbody>
-                {degrees.map((deg) => (
-                  <tr key={deg.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                    <td className="py-3 pr-4 text-base font-medium text-slate-900">{deg.name}</td>
-                    <td className="py-3 pr-4 text-base text-slate-600">{deg.duration}</td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-slate-200">
+                                <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                    Nome
+                                </th>
+                                <th className="py-3 pr-4 text-left text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                    Durata (anni)
+                                </th>
+                                {canManageDegrees && (
+                                    <th className="py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        Azioni
+                                    </th>
+                                )}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {degrees
+                                .filter((deg) =>
+                                    deg.name.toLowerCase().includes(search.toLowerCase())
+                                )
+                                .map((deg) => (
+                                    <tr key={deg.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                                        <td className="py-3 pr-4 text-base font-medium text-slate-900">{deg.name}</td>
+                                        <td className="py-3 pr-4 text-base text-slate-600">{deg.duration}</td>
+                                        <td className="py-3 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    type="button"
+                                                    className="rounded-lg border border-slate-600 px-4 py-1.5 text-base font-medium text-slate-900 hover:bg-slate-300 transition"
+                                                    onClick={() => navigate(`/degrees/${deg.id}`)}
+                                                >
+                                                    Piano di studi
+                                                </button>
+                                                {canManageDegrees && (
+                                                    <button
+                                                        type="button"
+                                                        className="rounded-lg border border-slate-400 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-300 transition"
+                                                        onClick={() => navigate(`/degrees/${deg.id}/edit`)}
+                                                    >
+                                                        Modifica
+                                                    </button>
+                                                )}
+                                                {canManageDegrees && (
+                                                    <button
+                                                        type="button"
+                                                        className="rounded-lg border border-red-300 bg-red-50 px-4 py-1.5 text-sm font-medium text-red-600 hover:bg-red-200 transition"
+                                                        onClick={() => setDeleteTarget(deg.id)}
+                                                    >
+                                                        Elimina
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
 
-                      <td className="py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            className="rounded-lg border border-slate-600 px-4 py-1.5 text-base font-medium text-slate-900 hover:bg-slate-300 transition"
-                            onClick={() => navigate(`/degrees/${deg.id}`)}
-                          >
-                            Piano di studi
-                          </button>
-
-                          {canManageDegrees && (
-                            <button
-                              type="button"
-                              className="rounded-lg border border-slate-400 px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-300 transition"
-                              onClick={() => navigate(`/degrees/${deg.id}/edit`)}
-                            >
-                              Modifica
-                            </button>
-                          )}
-
-                          {canManageDegrees && (
-                            <button
-                              type="button"
-                              className="rounded-lg border border-red-300 bg-red-50 px-4 py-1.5 text-sm font-medium text-red-600 hover:bg-red-200 transition"
-                              onClick={() => setDeleteTarget(deg.id)}
-                            >
-                              Elimina
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                            {degrees.filter((deg) =>
+                                deg.name.toLowerCase().includes(search.toLowerCase())
+                            ).length === 0 && (
+                                <tr>
+                                    <td colSpan={canManageDegrees ? 3 : 2} className="py-6 text-center text-sm text-slate-500">
+                                        Nessun corso corrisponde alla ricerca.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         )}
 
       </section>

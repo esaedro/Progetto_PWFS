@@ -12,6 +12,7 @@ export function EditDegreePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isDirty, setIsDirty] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -89,7 +90,7 @@ export function EditDegreePage() {
                                 <input
                                     className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:outline-none"
                                     value={name}
-                                    onChange={(e) => setName(e.target.value)}
+                                    onChange={(e) => { setName(e.target.value); setIsDirty(true); }}
                                     minLength={4}
                                     required
                                 />
@@ -104,7 +105,7 @@ export function EditDegreePage() {
                                     max={5}
                                     step={1}
                                     value={durationYears}
-                                    onChange={(e) => setDurationYears(e.target.value)}
+                                    onChange={(e) => { setDurationYears(e.target.value); setIsDirty(true); }}
                                     required
                                 />
                             </label>
@@ -127,8 +128,8 @@ export function EditDegreePage() {
                         </button> */}
                         <button
                             type="submit"
-                            disabled={saving}
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            disabled={saving || !isDirty}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {saving ? 'Salvataggio...' : 'Salva modifiche'}
                         </button>

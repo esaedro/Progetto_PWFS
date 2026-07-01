@@ -9,5 +9,4 @@ export interface TeachingItem {
         name: string;
     };
     year: number;
-// exams? 
 }
