@@ -204,15 +204,15 @@ export function SessionsPage() {
 
                     <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-600">
                         <div className="flex items-center gap-2">
-                            <span className="h-3 w-3 rounded-full bg-emerald-500" />
+                            <span className="h-3 w-3 full bg-emerald-500" />
                             Inserimento
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="h-3 w-3 rounded-full bg-amber-500" />
+                            <span className="h-3 w-3 full bg-amber-500" />
                             Esaminazione
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="h-3 w-3 rounded-full bg-violet-500" />
+                            <span className="h-3 w-3 full bg-violet-500" />
                             Esaminazione per la sessione in corso ed inserimento aperto per la prossima
                         </div>
                     </div>
