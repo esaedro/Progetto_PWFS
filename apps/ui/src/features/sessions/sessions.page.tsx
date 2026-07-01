@@ -237,7 +237,10 @@ export function SessionsPage() {
                             const isToday = isSameDay(day, new Date());
                             const dayOfWeek = day.getDay();
                             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                            const dateStr = day.toISOString().split('T')[0];
+                            const year = day.getFullYear();
+                            const month = String(day.getMonth() + 1).padStart(2, '0');
+                            const dayOfMonth = String(day.getDate()).padStart(2, '0');
+                            const dateStr = `${year}-${month}-${dayOfMonth}`;
                             const isHoliday = allHolidays.has(dateStr);
                             const isUnavailable = isWeekend || isHoliday;
                             const isGreyedUnavailable = isUnavailable && !inInsertion;
