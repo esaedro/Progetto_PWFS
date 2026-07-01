@@ -102,6 +102,7 @@ export function EditExamPage() {
     const [sessionHolidays, setSessionHolidays] = useState<string[]>([]);
     const [professorId, setProfessorId] = useState<number | null>(null);
     const [conflicts, setConflicts] = useState<string[]>([]);
+    const [isDirty, setIsDirty] = useState(false);
     const [teachingSearch, setTeachingSearch] = useState('');
     const [showTeachingDropdown, setShowTeachingDropdown] = useState(false);
     const teachingRef = useRef<HTMLDivElement>(null);
@@ -240,31 +241,37 @@ export function EditExamPage() {
         setForm((prev) => prev ? { ...prev, teachingId: teaching.id } : prev);
         setTeachingSearch(`${teaching.subject.name} — ${teaching.degree.name} (Anno ${teaching.year})`);
         setShowTeachingDropdown(false);
+        setIsDirty(true);
     };
 
     const clearTeaching = () => {
         setForm((prev) => prev ? { ...prev, teachingId: null } : prev);
         setTeachingSearch('');
+        setIsDirty(true);
     };
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
         setForm((prev) => prev ? { ...prev, [name]: value } : prev);
+        setIsDirty(true);
     };
 
     const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const { name, value } = event.target;
         setForm((prev) => prev ? { ...prev, [name]: value } : prev);
+        setIsDirty(true);
     };
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = event.target;
         setForm((prev) => prev ? { ...prev, [name]: value } : prev);
+        setIsDirty(true);
     };
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
         setForm((prev) => prev ? { ...prev, [name]: checked } : prev);
+        setIsDirty(true);
     };
 
     const isSessionMissing = !!form?.date && !selectedSession;
@@ -672,8 +679,8 @@ export function EditExamPage() {
                         </button> */}
                         <button
                             type="submit"
-                            disabled={loading || isSessionMissing || conflicts.length > 0 || isOutsideInsertionWindow || isUnavailableDate || isOutsideExaminationWindow}
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            disabled={!isDirty || loading || isSessionMissing || conflicts.length > 0 || isOutsideInsertionWindow || isUnavailableDate || isOutsideExaminationWindow}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {loading ? 'Salvataggio...' : 'Salva modifiche'}
                         </button>

@@ -68,6 +68,7 @@ export function EditSessionPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [newHoliday, setNewHoliday] = useState('');
+    const [isDirty, setIsDirty] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -109,27 +110,21 @@ export function EditSessionPage() {
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+        setForm((prev) => ({ ...prev, [name]: value }));
+        setIsDirty(true);
     };
 
     const addHoliday = () => {
         if (!newHoliday) return;
         if (form.holidays.includes(newHoliday)) return;
-        setForm((prev) => ({
-            ...prev,
-            holidays: [...prev.holidays, newHoliday].sort(),
-        }));
+        setForm((prev) => ({ ...prev, holidays: [...prev.holidays, newHoliday].sort() }));
         setNewHoliday('');
+        setIsDirty(true);
     };
 
     const removeHoliday = (date: string) => {
-        setForm((prev) => ({
-            ...prev,
-            holidays: prev.holidays.filter((d) => d !== date),
-        }));
+        setForm((prev) => ({ ...prev, holidays: prev.holidays.filter((d) => d !== date) }));
+        setIsDirty(true);
     };
 
     const handleSubmit = async (event: React.FormEvent) => {
@@ -294,8 +289,8 @@ export function EditSessionPage() {
                     <div className="flex items-center justify-end gap-3">
                         <button
                             type="submit"
-                            disabled={saving}
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            disabled={!isDirty || saving}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-base font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {saving ? 'Salvataggio...' : 'Salva modifiche'}
                         </button>
